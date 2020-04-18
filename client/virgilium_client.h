@@ -40,10 +40,6 @@ class virgilium_client : public QDialog {
     std::vector<symbol> _symbols;
     _int _counter;
 
-    QComboBox *hostCombo = nullptr;
-    QLineEdit *portLineEdit = nullptr;
-    QLabel *statusLabel = nullptr;
-    QPushButton *getFortuneButton = nullptr;
 
 
     QVector<_int> getPosition(QVector<_int> prec,QVector<_int> succ);
@@ -73,7 +69,7 @@ public slots:
     void faiLocalInsert();
     signals:
     void site_id_assignment();
-
+    void insert_into_window(_int pos, QString character );
 
 };
 

@@ -92,4 +92,29 @@ void symbol::printSymbol() {
     std::cout<<"]\n";
 }
 
+bool symbol::operator<=(const symbol &b) {
+    _int i;
+    bool flag=false;
+    //devo ritornare se this è  (strettamente) minore di b
+    _int _max = ( this->pos.size() < b.pos.size() ) ? this->pos.size() : b.pos.size();
+    //ciclo sul vettore più corto
+
+    for(i=0;i<_max;i++){
+        if(  this->pos[i] <  b.pos[i] ){
+            flag=true;
+            break;
+         }
+        else{
+            if(this->pos[i]>b.pos[i]) {
+                flag = false;
+                break;
+            }
+        }
+    }
+    /*if(i==_max&&b.pos.size()>this->pos.size())
+        flag=true;*/
+    return flag;
+
+}
+
 

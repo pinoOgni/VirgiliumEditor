@@ -9,61 +9,12 @@
 #include <iostream>
 #include "exceptions.h"
 
-virgilium_client::virgilium_client(QWidget *parent, QString ServerName, qint64 serverPort):QDialog(parent),
-    hostCombo(new QComboBox),portLineEdit(new QLineEdit),getFortuneButton(new QPushButton(tr("local insert"))){
+virgilium_client::virgilium_client(QWidget *parent, QString ServerName, qint64 serverPort):QDialog(parent){
 
     this->server = new server_virgilium(this, ServerName, serverPort, *this);
     this->_counter=0;
 
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    auto hostLabel = new QLabel(tr("&Server name:"));
-    auto portLabel = new QLabel(tr("S&erver port:"));
-    hostLabel->setBuddy(hostCombo);
-    hostCombo->setEditable(true);
-    getFortuneButton->setDefault(true);
-    getFortuneButton->setEnabled(true);
-    auto quitButton = new QPushButton(tr("Quit"));
-    auto buttonBox = new QDialogButtonBox;
-    buttonBox->addButton(getFortuneButton, QDialogButtonBox::ActionRole);
-    buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
-    QGridLayout *mainLayout = nullptr;
-    if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
-        auto outerVerticalLayout = new QVBoxLayout(this);
-        outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
-        auto outerHorizontalLayout = new QHBoxLayout;
-        outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
-        auto groupBox = new QGroupBox(QGuiApplication::applicationDisplayName());
-        mainLayout = new QGridLayout(groupBox);
-        outerHorizontalLayout->addWidget(groupBox);
-        outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
-        outerVerticalLayout->addLayout(outerHorizontalLayout);
-        outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
-    } else {
-        mainLayout = new QGridLayout(this);
-    }
-    mainLayout->addWidget(hostLabel, 0, 0);
-    mainLayout->addWidget(hostCombo, 0, 1);
-    mainLayout->addWidget(portLabel, 1, 0);
-    mainLayout->addWidget(portLineEdit, 1, 1);
-    mainLayout->addWidget(statusLabel, 2, 0, 1, 2);
-    mainLayout->addWidget(buttonBox, 3, 0, 1, 2);
 
-    setWindowTitle(QGuiApplication::applicationDisplayName());
-    portLineEdit->setFocus();
-    /*
-     * In apertura della connessione il server mandera' un messaggio con codice:
-     * SITE_ID_ASSIGNMENT che contiene l'id del client, quest'ultimo lo assegnerà
-     * a this->_siteId
-     * Per ulteriori informazioni ficcare il naso nello slot readyread della classe server_virgilium
-     *
-     * */
-
-    /*
-     * effettuo la bind dei segnali:
-     * */
-
-    connect(getFortuneButton, &QAbstractButton::clicked,
-            this, &virgilium_client::faiLocalInsert);
     connect(this,&virgilium_client::site_id_assignment,this->server,&server_virgilium::site_id_assignment);
 }
 
@@ -104,17 +55,24 @@ void virgilium_client::process(const message &m) {
     if(m.getAction()=="INSERT"){
         //std::cout<<"Sto facendo una insert\n";
         auto nuovaPos = m.getSymbol().getPosition();
-        for (_int i = 0; i < this->_symbols.size(); i++) {
+        /*for (_int i = 0; i < this->_symbols.size(); i++) {
             if (this->_symbols[i].getPosition() == nuovaPos)
                 //throw wrongpositionException();
-                throw wrongpositionException();
-        }
+                ;//throw wrongpositionException();
+        }*/
 
 
         for(i=0;i<this->_symbols.size(); i++)
-            if( s < this->_symbols[i] ) break; // ho trovato il mio i;
+            if( s <= this->_symbols[i] ) break; // ho trovato il mio i;
         auto it = this->_symbols.begin() + i ;
         this->_symbols.insert(it,s);
+
+        qDebug()<<"ciao mamma i vale "<<i<<" \n";
+
+        emit insert_into_window(i,s.getLetter());
+
+        //dovrei dire alla finestra di stampare
+
     }
     else{
         this->_symbols.erase(
