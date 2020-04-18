@@ -13,7 +13,7 @@ class virgilium_client: public QObject {
     virgilium_server* server;
     _int siteId;
     QTcpSocket *socket;
-   // QDataStream in;
+    QDataStream in;
 
 public:
     virgilium_client(virgilium_server* server,QTcpSocket *socket);
