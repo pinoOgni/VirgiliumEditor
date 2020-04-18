@@ -13,6 +13,8 @@ virgilium_client::virgilium_client(virgilium_server* server,QTcpSocket *socket):
     connect(this->socket, &QTcpSocket::bytesWritten,this, &virgilium_client::bytesWritten);
     connect(this->socket, &QTcpSocket::readyRead,this, &virgilium_client::readyRead);
     // this->in.setDevice(socket);
+    in.setDevice(this->socket);
+    in.setVersion(Q_DATA_STREAM_VERSION);
 
 }
 
@@ -34,10 +36,9 @@ void virgilium_client::readyRead() {
     //TODO
     std::cout<<"E' arrivato qualcosa dal client con id: " << this->siteId<<std::endl;
     _int code;
-    QDataStream in;
-    in.setDevice(this->socket);
-    in.setVersion(Q_DATA_STREAM_VERSION);
-    for(;;){
+   // QDataStream in;
+
+
         in.startTransaction();
         in>>code;
         if(in.commitTransaction()){
@@ -48,26 +49,32 @@ void virgilium_client::readyRead() {
 
                     message m = message();
 
-                    for (;;){
+
                         in.startTransaction();
                         in >> m;
-                        if(in.commitTransaction())
-                            break;
+                        if(!in.commitTransaction()) {
+                            return;
+
+                       /* else{
+                            in.rollbackTransaction();
+                        }*/
                        }
                     qDebug("Arrivato insert o delete bele bele: m: ");
                     m.printMessage();
                     this->server->send(m);
+                    this->server->dispatchmessages();
                     break;
             }
 
         }
         else{
-            qDebug("non ho più niente da leggere sul socket");
-            break;
+            qDebug("non ho letto abbastanza dal socket");
+           // in.rollbackTransaction();
+            return;
         }
         // this->server->dispatchmessages();//tentativo
-    }
-    this->server->dispatchmessages();
+
+    //this->server->dispatchmessages();
 }
 
 void virgilium_client::sendMessage(message &m, _int code) {
