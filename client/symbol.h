@@ -29,6 +29,7 @@ public:
     QVector<_int> getPosition() const;
     bool operator==(const symbol& b);
     bool operator<(const symbol& b);
+    bool operator<=(const symbol& b);
     void writeStream(QDataStream& out);
 
     void printSymbol();

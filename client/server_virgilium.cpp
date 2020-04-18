@@ -56,7 +56,7 @@ void server_virgilium::readyRead() {
     qDebug() << "e' arrivato qualcosa dal server..\n";
     QDataStream in(this->server);
     in.setVersion(Q_DATA_STREAM_VERSION);
-    for (;;) {
+
         in.startTransaction();
         in >> code;//leggi da in e metti in code
         if (in.commitTransaction()) {
@@ -67,13 +67,13 @@ void server_virgilium::readyRead() {
                     break;
                 case SYMBOL_INSERT_OR_ERASE:
                     message m = message();
-                    for (;;) {
+
                         in.startTransaction();
                         in >> m; //leggi oggetto di tipo message dal socket
-                        if (in.commitTransaction()) {
-                            break;
+                        if (!in.commitTransaction()) {
+                            return;
                         }
-                    }
+
 
                     this->client.process(m);
                     std::cout << std::endl << "cotenuto editor: " << this->client.to_string().toStdString()
@@ -85,10 +85,10 @@ void server_virgilium::readyRead() {
             }
 
         } else {
-            break;
+            return;
         }
 
-    }
+
 
 
 
@@ -136,20 +136,16 @@ void server_virgilium::site_id_assignment() {
     //qDebug()<<"Mi stanno per assegnare il site id ihihihihih icsdì\n";
     QDataStream in(this->server);
     in.setVersion(Q_DATA_STREAM_VERSION);
-    for (;;) {
+
         in.startTransaction();
         in >> siteId; //leggo il mio site_id dal socket
         this->client.set_site_id(siteId);
-        if (in.commitTransaction()) {
+        if (in.commitTransaction()){
 
             return;
         } else {
-            break;
+            return;
         }
-    }
-
-
-    return;
 }
 
 void server_virgilium::mandaqualcosa() {
