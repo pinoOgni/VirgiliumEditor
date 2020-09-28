@@ -70,5 +70,6 @@ add_executable(VirgiliumClient ${PROJECT_RESOURCE} src/clientMain.cpp src/common
 
 
 
-target_link_libraries(VirgiliumServer static Qt5::Core Qt5::Network Qt5::Widgets Qt5::PrintSupport Qt5::Sql)
-target_link_libraries(VirgiliumClient static Qt5::Core Qt5::Network Qt5::Widgets Qt5::Charts Qt5::PrintSupport Qt5::Gui)
+
+target_link_libraries(VirgiliumServer Qt5::Core Qt5::Network Qt5::Widgets Qt5::PrintSupport Qt5::Sql)
+target_link_libraries(VirgiliumClient Qt5::Core Qt5::Network Qt5::Widgets Qt5::Charts Qt5::PrintSupport Qt5::Gui)
