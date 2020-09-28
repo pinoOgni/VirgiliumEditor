@@ -1,6 +1,0 @@
-/home/pino/pino_ale/pino_ale/Virgilium/CMakeFiles/rebuild_cache.dir
-/home/pino/pino_ale/pino_ale/Virgilium/CMakeFiles/VirgiliumServer.dir
-/home/pino/pino_ale/pino_ale/Virgilium/CMakeFiles/edit_cache.dir
-/home/pino/pino_ale/pino_ale/Virgilium/CMakeFiles/VirgiliumClient.dir
-/home/pino/pino_ale/pino_ale/Virgilium/CMakeFiles/VirgiliumServer_autogen.dir
-/home/pino/pino_ale/pino_ale/Virgilium/CMakeFiles/VirgiliumClient_autogen.dir
