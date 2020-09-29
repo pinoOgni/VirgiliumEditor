@@ -49,7 +49,10 @@ public:
   bool addCollaborator(UserManagementMessage userManagementMessage);
   bool removeCollaborator(UserManagementMessage userManagementMessage);
   bool unsubscribe(UserManagementMessage userManagementMessage);
-  void closeConnection();
+  void closeConnectionDB();
+  QString createUrlCollaborator(UserManagementMessage userManagementMessage);
+  bool requestToCollaborate(InvitationMessage invitationMessage);
+
 };
 
 #endif // VIRGILIUM_MODEL_H

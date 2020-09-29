@@ -34,6 +34,8 @@ public slots:
     void processFileManagement(_int);
     void processChangePassword(_int);
     void processUserManagement(_int);
+    void processInvitation(_int,InvitationMessage);
+    void processRequestToCollaborate(_int);
 signals:
     void hasReadSome(QString msg);
     void tryToLogin(bool logged);
@@ -47,9 +49,11 @@ signals:
     void isPswChanged(bool);
     void isFileCreated(bool);
     void isCollaboratorAdded(bool);
+    void isInviteCreated(InvitationMessage);
     void isCollaboratorRemoved(bool);
     void isUnsubscribed(bool);
     void getAllData(UserMessage &, _int ,std::vector<FilesMessage>&,_int,std::vector<FilesMessage>&);
+    void isRequestToCollaboratedReceived(bool);
 
 
 private slots:

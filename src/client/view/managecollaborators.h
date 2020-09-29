@@ -38,7 +38,8 @@ private slots:
     void on_add_clicked();
     void on_remove_clicked();
 
-    void isCollaboratorAdded(bool);
+    void isInviteCreated(InvitationMessage);
+    //void isCollaboratorAdded(bool);
     void isCollaboratorRemoved(bool);
 
     void on_cancel_clicked();
