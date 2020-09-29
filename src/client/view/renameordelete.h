@@ -15,15 +15,15 @@
 
 
 namespace Ui {
-class renameOrDelete;
+    class renameOrDelete;
 }
 
-class renameOrDelete : public QDialog
-{
-    Q_OBJECT
+class renameOrDelete : public QDialog {
+Q_OBJECT
 
 public:
     explicit renameOrDelete(QWidget *parent = nullptr);
+
     ~renameOrDelete() override;
 
 private:
@@ -34,20 +34,26 @@ private:
 
     TextEditor *textEditor;
 private slots:
-        void keyPressEvent(QKeyEvent *) override;
-        void receiveData_2(ClientStuff *,QString,QString);
-        void on_delete_2_clicked();
 
-        void on_rename_clicked();
+    void keyPressEvent(QKeyEvent *) override;
 
-        void on_cancel_clicked();
-        void on_openTextEditor_clicked();
+    void receiveData_2(ClientStuff *, QString, QString);
+
+    void on_delete_2_clicked();
+
+    void on_rename_clicked();
+
+    void on_cancel_clicked();
+
+    void on_openTextEditor_clicked();
 
 signals:
-        //send client, email and password to deletefile dialog or to renamefile dialog
-        void sendData_2(ClientStuff *,QString,QString);
+    void sendDataToEditor(ClientSocket *);
 
-        void Want2Close2();
+    //send client, email and password to deletefile dialog or to renamefile dialog
+    void sendData_2(ClientStuff *, QString, QString);
+
+    void Want2Close2();
 };
 
 #endif // RENAMEORDELETE_H

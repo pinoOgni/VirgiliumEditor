@@ -25,6 +25,9 @@
 #define SIGNUP_OK 8
 #define SIGNUP_KO 9
 #define CURSOR_CHANGED 10
+#define LOAD_REQUEST 11
+#define LOAD_RESPONSE 12
+#define SAVE 13
 
 
 //list of constants for interactions with the database

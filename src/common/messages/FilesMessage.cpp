@@ -3,6 +3,8 @@
 //
 
 #include "FilesMessage.h"
+#include "StorageMessage.h"
+
 #include <iostream>
 #include <utility>
 
