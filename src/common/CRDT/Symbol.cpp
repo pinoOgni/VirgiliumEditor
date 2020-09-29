@@ -138,11 +138,4 @@ void Symbol::writeStream(QTextStream &out) {
     //out<<this->font.foreground;
 }
 
-Symbol& operator=(const Symbol& other) {
-    if (this != &other) {
-
-    }
-    return *this;
-}
-
 

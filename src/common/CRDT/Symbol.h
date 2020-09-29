@@ -32,7 +32,6 @@ public:
     bool operator==(const Symbol& b);
     bool operator<(const Symbol& b);
     bool operator<=(const Symbol& b);
-    Symbol& operator=(const Symbol& other);
     void writeStream(QTextStream& out);
     CharFormat getFont() const;
     void printSymbol();

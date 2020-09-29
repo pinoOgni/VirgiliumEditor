@@ -3,9 +3,8 @@
 //
 
 #include "StorageMessage.h"
-
 #include <utility>
-#include <iostream>
+#include <QDataStream>
 
 StorageMessage::StorageMessage(qintptr sender, QVector<Symbol> _symbols, QString fileName): BasicMessage(sender), _symbols(std::move(_symbols)), fileName(std::move(fileName)) {}
 
@@ -22,17 +21,13 @@ QString StorageMessage::getFileName() {
 /* write on stream */
 QDataStream &operator<<(QDataStream &stream, const StorageMessage &myClass) {
     stream << myClass.fileName;
-
-
-    for(const Symbol& _symbol : myClass._symbols)
-        stream << _symbol;
+    stream << myClass._symbols;
     return stream;
 }
 
 /* read from stream */
 QDataStream &operator>>(QDataStream &stream, StorageMessage &myClass) {
     stream >> myClass.fileName;
-    for(Symbol& _symbol : myClass._symbols)
-        stream >> _symbol;
+    stream >> myClass._symbols;
     return stream;
 }
