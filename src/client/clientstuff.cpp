@@ -24,6 +24,8 @@ ClientStuff::ClientStuff(
     connect(clientSocket, &ClientSocket::fileManagementMessageResponse,this,&ClientStuff::processFileManagement);
     connect(clientSocket, &ClientSocket::changePasswordMessageResponse,this,&ClientStuff::processChangePassword);
     connect(clientSocket, &ClientSocket::userManagementMessageResponse,this,&ClientStuff::processUserManagement);
+    connect(clientSocket,&ClientSocket::invitationReceived, this, &ClientStuff::processInvitation);
+    connect(clientSocket,&ClientSocket::requestToCollaborateReceived,this,&ClientStuff::processRequestToCollaborate);
 
     clientSocket->connectToHost(host,port);
 }
@@ -49,6 +51,25 @@ qDebug() << "processAllData";
 
 }
 
+void ClientStuff::processRequestToCollaborate(_int code) {
+    switch(code) {
+        case REQUEST_TO_COLLABORATE_OK:
+            emit isRequestToCollaboratedReceived(true);
+            break;
+        case REQUEST_TO_COLLABORATE_KO:
+            emit isRequestToCollaboratedReceived(false);
+            break;
+    }
+}
+
+void ClientStuff::processInvitation(_int code, InvitationMessage invitationMessage) {
+    switch (code) {
+        case INVITE_CREATED: {
+            qDebug() << "invite created client stuff";
+            emit isInviteCreated(invitationMessage);
+        }
+    }
+}
 
 void ClientStuff::processFilesMessage(_int code, std::vector<FilesMessage> filesMessage) {
     switch(code) {

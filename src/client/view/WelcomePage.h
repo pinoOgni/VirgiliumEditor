@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QObject>
+#include <QtCore/QRegularExpression>
 
 #include "../clientstuff.h"
 

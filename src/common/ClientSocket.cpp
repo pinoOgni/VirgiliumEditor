@@ -118,12 +118,20 @@ void ClientSocket::onReadyRead() {
             emit changePasswordMessageResponse(code);
         }
         break;
+        case CREATE_INVITE:
         case ADD_COLLABORATOR:
         case REMOVE_COLLABORATOR:
         case UNSUBSCRIBE: {
             UserManagementMessage userManagementMessage;
             this-> in >> userManagementMessage;
             emit userManagementMessageReceived(code,userManagementMessage);
+        }
+        break;
+        case INVITE_CREATED:
+        case REQUEST_TO_COLLABORATE: {
+            InvitationMessage invitationMessage;
+            this->in >> invitationMessage;
+            emit invitationReceived(code,invitationMessage);
         }
         break;
         case ADD_COLLABORATOR_OK:
@@ -134,6 +142,15 @@ void ClientSocket::onReadyRead() {
         case UNSUBSCRIBE_KO: {
             emit userManagementMessageResponse(code);
         }
+        case LOGOUT: {
+            emit logoutReceived(LOGOUT);
+        }
+        break;
+        case REQUEST_TO_COLLABORATE_OK:
+        case REQUEST_TO_COLLABORATE_KO: {
+            emit requestToCollaborateReceived(code);
+        }
+        break;
     }
 
 }
@@ -249,6 +266,16 @@ void ClientSocket::send(_int code, UserManagementMessage userManagementMessage) 
 
     out << code;
     out << userManagementMessage;
+
+    this->write(arrBlock);
+}
+
+void ClientSocket::send(_int code, InvitationMessage invitationMessage) {
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
+
+    out << code;
+    out << invitationMessage;
 
     this->write(arrBlock);
 }
