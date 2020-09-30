@@ -43,16 +43,13 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionNew"/>
-    <addaction name="actionSave_as"/>
-    <addaction name="actionEsporta_PDF"/>
+    <addaction name="actionExport_PDF"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Modifica</string>
+     <string>Edit</string>
     </property>
     <addaction name="actionCopy"/>
     <addaction name="actionCut"/>
@@ -62,46 +59,38 @@
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
-    <addaction name="actionTrova_e_sostituisci"/>
+    <addaction name="actionFind_and_Replace"/>
    </widget>
    <widget class="QMenu" name="menuParagraph">
     <property name="title">
-     <string>Formato</string>
+     <string>Paragraph</string>
     </property>
     <widget class="QMenu" name="menuAlignment">
      <property name="title">
-      <string>Allineamento</string>
+      <string>Alignment</string>
      </property>
      <addaction name="actionLeft_alignment"/>
      <addaction name="actionRight_alignment"/>
      <addaction name="actionCenter_alignment"/>
      <addaction name="actionJustify"/>
      <addaction name="separator"/>
-     <addaction name="actionAumenta_rientro"/>
-     <addaction name="actionDiminuisci_rientro"/>
+     <addaction name="actionIndent_Increase"/>
+     <addaction name="actionIndent_Decrease"/>
     </widget>
-    <widget class="QMenu" name="menuTesto">
+    <widget class="QMenu" name="menuText">
      <property name="title">
-      <string>Testo</string>
+      <string>Text</string>
      </property>
      <addaction name="actionUnderline"/>
-     <addaction name="actionGrassetto"/>
-     <addaction name="actionCorsivo"/>
+     <addaction name="actionBost"/>
+     <addaction name="actionItalic"/>
     </widget>
-    <addaction name="menuTesto"/>
+    <addaction name="menuText"/>
     <addaction name="menuAlignment"/>
-   </widget>
-   <widget class="QMenu" name="menuInserisci">
-    <property name="title">
-     <string>Inserisci</string>
-    </property>
-    <addaction name="actionTabella"/>
-    <addaction name="actionImmagine"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuParagraph"/>
-   <addaction name="menuInserisci"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -114,10 +103,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionNew"/>
-   <addaction name="actionOpen"/>
-   <addaction name="actionSave_as"/>
-   <addaction name="actionEsporta_PDF"/>
+   <addaction name="actionExport_PDF"/>
    <addaction name="separator"/>
    <addaction name="actionCopy"/>
    <addaction name="actionPaste"/>
@@ -131,47 +117,14 @@
    <addaction name="actionJustify"/>
    <addaction name="separator"/>
    <addaction name="actionUnderline"/>
-   <addaction name="actionGrassetto"/>
-   <addaction name="actionCorsivo"/>
+   <addaction name="actionBold"/>
+   <addaction name="actionItalic"/>
    <addaction name="separator"/>
-   <addaction name="actionDiminuisci_rientro"/>
-   <addaction name="actionAumenta_rientro"/>
+   <addaction name="actionIndent_Decrease"/>
+   <addaction name="actionIndent_Increase"/>
    <addaction name="separator"/>
-   <addaction name="actionTabella"/>
-   <addaction name="actionImmagine"/>
-   <addaction name="separator"/>
-   <addaction name="actionTrova_e_sostituisci"/>
+   <addaction name="actionFind_and_Replace"/>
   </widget>
-  <action name="actionOpen">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/Open.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Apri..</string>
-   </property>
-  </action>
-  <action name="actionNew">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/New.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Nuovo</string>
-   </property>
-  </action>
-  <action name="actionSave_as">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/Save.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Salva come..</string>
-   </property>
-  </action>
   <action name="actionCopy">
    <property name="icon">
     <iconset>
@@ -179,7 +132,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Copia</string>
+    <string>Copy</string>
    </property>
   </action>
   <action name="actionCut">
@@ -189,7 +142,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Taglia</string>
+    <string>Cut</string>
    </property>
   </action>
   <action name="actionPaste">
@@ -199,7 +152,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Incolla</string>
+    <string>Paste</string>
    </property>
   </action>
   <action name="actionUndo">
@@ -209,7 +162,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Indietro</string>
+    <string>Undo</string>
    </property>
   </action>
   <action name="actionRedo">
@@ -219,7 +172,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Avanti</string>
+    <string>Redo</string>
    </property>
   </action>
   <action name="actionExit">
@@ -229,7 +182,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Esci</string>
+    <string>Exit</string>
    </property>
   </action>
   <action name="actionRight_alignment">
@@ -239,7 +192,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>A destra</string>
+    <string>Right</string>
    </property>
   </action>
   <action name="actionLeft_alignment">
@@ -249,7 +202,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>A sinistra</string>
+    <string>Left</string>
    </property>
   </action>
   <action name="actionCenter_alignment">
@@ -259,7 +212,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Centrato</string>
+    <string>Center</string>
    </property>
   </action>
   <action name="actionJustify">
@@ -269,32 +222,32 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Giustificato</string>
+    <string>Justify</string>
    </property>
   </action>
   <action name="actionSelect_all">
    <property name="text">
-    <string>Seleziona tutto</string>
+    <string>Select all</string>
    </property>
   </action>
-  <action name="actionAumenta_rientro">
+  <action name="actionIndent_Increase">
    <property name="icon">
     <iconset>
      <normalon>:/Icons/indent.png</normalon>
     </iconset>
    </property>
    <property name="text">
-    <string>Aumenta rientro</string>
+    <string>Increase indent</string>
    </property>
   </action>
-  <action name="actionDiminuisci_rientro">
+  <action name="actionIndent_Decrease">
    <property name="icon">
     <iconset>
      <normalon>:/Icons/outdent.png</normalon>
     </iconset>
    </property>
    <property name="text">
-    <string>Diminuisci rientro</string>
+    <string>Decrease indent</string>
    </property>
   </action>
   <action name="actionUnderline">
@@ -307,64 +260,44 @@
     <string>Underline</string>
    </property>
   </action>
-  <action name="actionGrassetto">
+  <action name="actionBold">
    <property name="icon">
     <iconset>
      <normalon>:/Icons/bold.png</normalon>
     </iconset>
    </property>
    <property name="text">
-    <string>Grassetto</string>
+    <string>Bold</string>
    </property>
   </action>
-  <action name="actionCorsivo">
+  <action name="actionItalic">
    <property name="icon">
     <iconset>
      <normalon>:/Icons/italic.png</normalon>
     </iconset>
    </property>
    <property name="text">
-    <string>Corsivo</string>
+    <string>Italic</string>
    </property>
   </action>
-  <action name="actionTrova_e_sostituisci">
+  <action name="actionFind_and_Replace">
    <property name="icon">
     <iconset>
      <normalon>:/Icons/preview.png</normalon>
     </iconset>
    </property>
    <property name="text">
-    <string>Trova e sostituisci</string>
+    <string>Find and Replace</string>
    </property>
   </action>
-  <action name="actionEsporta_PDF">
+  <action name="actionExport_PDF">
    <property name="icon">
     <iconset>
      <normalon>:/Icons/pdf.png</normalon>
     </iconset>
    </property>
    <property name="text">
-    <string>Esporta PDF</string>
-   </property>
-  </action>
-  <action name="actionTabella">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/table.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Tabella</string>
-   </property>
-  </action>
-  <action name="actionImmagine">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/photograph.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Immagine</string>
+    <string>Export PDF</string>
    </property>
   </action>
  </widget>
