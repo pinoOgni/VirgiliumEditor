@@ -128,28 +128,19 @@ TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fil
     users = {user, user2, user3};
 
     this->loadRequest(this->fileName);
-
-    auto *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &TextEditor::save);
-    timer->start(1000 * 10);
 }
 
 void TextEditor::loadRequest(const QString &f) {
-    openFile = true;
     this->client->loadRequest(this->fileName);
 }
 
-void TextEditor::loadResponse(const QString &document) {
-    ui->textEdit->setHtml(document);
-    openFile = false;
+void TextEditor::loadResponse(const QVector<Symbol> &symbols) {
+    for (const Symbol &symbol : symbols)
+        this->insert_text(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont());
 }
 
 void TextEditor::save() {
-    this->client->save(this->fileName);
-
-
-    /*QString text = ui->textEdit->document()->toHtml(); //TODO sistemare il salvataggio sul desktop
-    this->client->save(text, this->fileName);*/
+    this->client->save(this->fileName); //TODO sistemare il salvataggio sul desktop
 }
 
 TextEditor::~TextEditor() {
@@ -198,7 +189,6 @@ void TextEditor::drawFontComboBox() {
                          }
                      });
 }
-
 
 /* This function is used just to draw the button of color text, and within it the corresponding slot is called */
 void TextEditor::drawColorButton() {
@@ -253,6 +243,7 @@ void TextEditor::changeColorSlot() {
 
 void TextEditor::on_actionExit_triggered() {
     QApplication::quit();
+    //this->deleteLater();
 }
 
 void TextEditor::on_actionCopy_triggered() {
@@ -364,13 +355,13 @@ void TextEditor::on_actionExport_PDF_triggered() {
     fileDialog.setDefaultSuffix("pdf");
     if (fileDialog.exec() != QDialog::Accepted)
         return;
-    QString fileName = fileDialog.selectedFiles().first();
+    QString file_name = fileDialog.selectedFiles().first();
     QPrinter printer(QPrinter::HighResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setOutputFileName(fileName);
+    printer.setOutputFileName(file_name);
     ui->textEdit->document()->print(&printer);
     statusBar()->showMessage(tr("Exported \"%1\"")
-                                     .arg(QDir::toNativeSeparators(fileName)));
+                                     .arg(QDir::toNativeSeparators(file_name)));
 }
 
 void TextEditor::on_actionRight_alignment_triggered() {
@@ -460,7 +451,6 @@ void TextEditor::insert_text(_int pos, const QString &character, const Symbol::C
     insertedFont.setUnderline(!(fontList.at(6) == "0"));
 
     textCharFormat.setFont(insertedFont);
-    //textCharFormat.setBackground(font.background);
     textCharFormat.setForeground(font.foreground);
 
     /* Here, alignment and indentation are set. */
@@ -534,10 +524,6 @@ void TextEditor::cursorMoved() {
  * emitted when one or more chars are inserted or deleted. So, this function is used to get all
  * necessary information and send it to the server. */
 void TextEditor::change(int pos, int del, int add) {
-    /* If the file is opened for the first time nothing should happen. */
-    if(del != 0 && pos == 0)
-        return;
-
     /* Here, the format of the char is taken. */
     QTextCursor cursor(ui->textEdit->textCursor());
     cursor.setPosition(cursor.selectionEnd(), QTextCursor::MoveAnchor);
@@ -549,7 +535,6 @@ void TextEditor::change(int pos, int del, int add) {
                      + QString::number(textBlockFormat.indent());
 
     Symbol::CharFormat charData;
-    //charData.background = textCharFormat.background().color();
     charData.foreground = textCharFormat.foreground().color();
     charData.font = result;
 
@@ -557,7 +542,7 @@ void TextEditor::change(int pos, int del, int add) {
 
         QString added = ui->textEdit->toPlainText().mid(pos, add);
         if (add == 1) {
-            this->client->localInsert(pos, added, charData, openFile);
+            this->client->localInsert(pos, added, charData);
             changeBackground(pos + 1, Qt::white);
         } else {
             multipleInsert(pos, added);
@@ -596,12 +581,11 @@ void TextEditor::change(int pos, int del, int add) {
                     alignment = QString::number(textBlockFormat.alignment());
                     indentation = QString::number(textBlockFormat.indent());
 
-                    qDebug() << alignment << "\n";
-
                     /* Prova pezza */
-                    this->client->localInsert(pos, "X", charData, openFile);
+                    this->client->localInsert(pos, "X", charData);
                     this->client->localErase(pos);
                 }
+                this->save();
                 return;
             }
         }
@@ -618,12 +602,13 @@ void TextEditor::change(int pos, int del, int add) {
                 this->client->localErase(i);
             }
             multipleInsert(pos, added);
+            this->save();
             return;
         }
         multipleErase(pos, del);
         multipleInsert(pos, added);
     }
-
+    this->save();
 }
 
 /* This function is invoked when it is necessary to add more than one char. */
@@ -639,10 +624,9 @@ void TextEditor::multipleInsert(int pos, const QString &added) {
                          + QString::number(textBlockFormat.indent());
 
         Symbol::CharFormat charData;
-        //charData.background = textCharFormat.background().color();
         charData.foreground = textCharFormat.foreground().color();
         charData.font = result;
-        this->client->localInsert(pos, c, charData, openFile);
+        this->client->localInsert(pos, c, charData);
         pos++;
     }
 }

@@ -48,7 +48,7 @@ PersonalPage::PersonalPage(QWidget *parent) :
 
 
 void PersonalPage::time_label() {
-    qDebug() << "time_label ";
+    //qDebug() << "time_label ";
     QDateTime dateTime = dateTime.currentDateTime();
     ui->label_orario->setText(dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
 }

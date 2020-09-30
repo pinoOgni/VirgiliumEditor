@@ -42,7 +42,6 @@ private:
     virgilium_client *client;
     QString alignment;
     QString indentation;
-    bool openFile = false;
     QVector<User> users;
     QString fileName;
 
@@ -81,7 +80,9 @@ private slots:
     void change(int pos, int del, int add);
     void cursorMoved();
     void changeCursorPosition(_int position, _int siteId);
-    void loadResponse(const QString& document);
+
+    void loadResponse(const QVector<Symbol> &symbols);
+
     void save();
 };
 

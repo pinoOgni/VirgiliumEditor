@@ -58,16 +58,22 @@ public:
      * */
     ~virgilium_client();
     _int get_id() const;
-    void localInsert(_int index, QString value, Symbol::CharFormat font, boolean open);
-    void process(const CrdtMessage& m);
+
+    void localInsert(_int index, QString value, Symbol::CharFormat font);
+
+    void process(const CrdtMessage &m);
     QString to_string();
     void localErase(_int index);
     void changeCursor(_int position);
     void changeCursorPosition(const CrdtMessage &m);
+
     void set_site_id(_int siteId);
-    void loadRequest(QString fileName);
+
+    void loadRequest(const QString &fileName);
+
     void loadResponse(StorageMessage storageMessage);
-    void save(/*QString text, */QString fileName);
+
+    void save(QString fileName);
     /*void mandaqualcosa();*/
 public slots:
     /*void faiLocalInsert();*/
@@ -75,8 +81,10 @@ public slots:
     void site_id_assignment();
     void insert_into_window(_int pos, QString character, Symbol::CharFormat font);
     void remove_into_window(_int pos);
+
     void change_cursor_position(_int position, _int siteId);
-    void load_response(QString document);
+
+    void load_response(QVector<Symbol> symbols);
 
 };
 

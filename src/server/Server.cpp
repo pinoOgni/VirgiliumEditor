@@ -69,21 +69,20 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch(code) {
         case LOAD_REQUEST: {
-            if (!QFile::exists(storageMessage.getFileName() + ".txt"))
+            if (!QFile::exists(storageMessage.getFileName()))
                 return;
 
-            QFile file(storageMessage.getFileName() + ".txt");
+            QFile file(storageMessage.getFileName());
             if (!file.open(QFile::ReadOnly))
                 return;
 
-            QByteArray data = file.readAll();
-            QTextCodec *codec = Qt::codecForHtml(data);
-            QString str = codec->toUnicode(data);
+            QVector<Symbol> symbols;
+            QDataStream in(&file);
+            in >> symbols;
+            file.close();
 
-            qDebug() << str << "\n";
-
-            //StorageMessage storageMessage1(0, str, storageMessage.getFileName());
-            //sender->sendStorage(LOAD_RESPONSE, storageMessage1);
+            StorageMessage storageMessage1(0, symbols, storageMessage.getFileName());
+            sender->sendStorage(LOAD_RESPONSE, storageMessage1);
             break;
         }
         case SAVE: {
@@ -97,15 +96,13 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
                 QDir().mkdir("storage/" + dataList[1]);
 
             QDir dir("storage/" + dataList[1]);
-            QString filename = dataList[2] + ".txt";
+            QString filename = dataList[2];
             QFile file(dir.absoluteFilePath(filename));
             if (!file.open(QFile::WriteOnly))
                 return;
 
             QDataStream out(&file);
-
-            qDebug() << "TEST100" << storageMessage.getSymbols().size();
-
+            out << storageMessage.getSymbols();
             file.close();
             break;
         }

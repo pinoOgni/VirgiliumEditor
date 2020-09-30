@@ -120,28 +120,29 @@ QVector<_int> virgilium_client::getPosition(QVector<_int> prec, QVector<_int> su
     return nuovaPos;
 }
 
+/* This method is used to send to other clients the new position of my cursor. */
+void virgilium_client::changeCursor(_int position) {
+    QVector <_int> pos = {position - 1, position};
+    Symbol::CharFormat font = Symbol::CharFormat();
+    Symbol s("", this->_siteId, this->_counter, pos, font);
+    CrdtMessage m(0, s, this->_siteId, "CURSOR_CHANGED");
+    this->socket->sendCrdt(CURSOR_CHANGED, m);
+}
+
+/* This method is used to say to other clients that a char is deleted. */
 void virgilium_client::localErase(_int index) {
     auto s = this->_symbols[index];
     auto it = this->_symbols.begin() + index;
     this->_symbols.erase(it);
-    CrdtMessage m(0, s, this->_siteId, "ERASE"); //SIMONE OCCHIO
+    CrdtMessage m(0, s, this->_siteId, "ERASE");
     //this->server->send(m,SYMBOL_INSERT_OR_ERASE);
-    return;
 }
 
-/* Aggiunto per cursore */
-void virgilium_client::changeCursor(_int position) {
-    QVector<_int> pos = {position - 1, position};
-    Symbol::CharFormat font;
-    Symbol s("", this->_siteId, this->_counter, pos, font);
-    CrdtMessage m(0, s, this->_siteId, "CURSOR_CHANGED");
-    //this->server->send(m, CURSOR_CHANGED);
-}
-
-void virgilium_client::localInsert(_int index, QString value, Symbol::CharFormat font, boolean open) {
-    QVector<_int> prec; //= this->_symbols[index-1];
-    QVector<_int> nuovaPos;
-    QVector<_int> succ; //auto succ //= this-> _symbols[index];
+/* This method is used to say to other clients that a char is inserted. */
+void virgilium_client::localInsert(_int index, QString value, Symbol::CharFormat font) {
+    QVector <_int> prec; //= this->_symbols[index-1];
+    QVector <_int> nuovaPos;
+    QVector <_int> succ; //auto succ //= this-> _symbols[index];
     qDebug() << "TEST000 " << this->_symbols.size() << "\n";
 
     if (this->_symbols.empty() && index == 0) {
@@ -177,11 +178,9 @@ void virgilium_client::localInsert(_int index, QString value, Symbol::CharFormat
     Symbol newSymbol(std::move(value), this->_siteId, this->_counter++, nuovaPos, std::move(font));
     auto it = this->_symbols.begin() + index;
     this->_symbols.insert(it, newSymbol);
-    if(!open) {
-        CrdtMessage m(0, newSymbol, this->_siteId, "INSERT");
-        //m.printMessage();
-        //this->server->send(m,SYMBOL_INSERT_OR_ERASE); //TODO da cambiare per bene
-    }
+    CrdtMessage m(0, newSymbol, this->_siteId, "INSERT");
+    //m.printMessage();
+    //this->server->send(m,SYMBOL_INSERT_OR_ERASE); //TODO da cambiare per bene
 }
 
 
@@ -190,24 +189,24 @@ void virgilium_client::set_site_id(qint64 siteId) {
     qDebug() << "Il mio site ID e' : " << this->_siteId << "\n";
 }
 
-void virgilium_client::loadRequest(QString fileName) {
-    /*StorageMessage storageMessage(this->_siteId, "", std::move(fileName));
-    this->socket->sendStorage(LOAD_REQUEST, storageMessage);*/
+void virgilium_client::loadRequest(const QString &fileName) {
+    QVector <Symbol> symbols;
+    StorageMessage storageMessage(this->_siteId, symbols, fileName);
+    this->socket->sendStorage(LOAD_REQUEST, storageMessage);
 }
 
 void virgilium_client::loadResponse(StorageMessage storageMessage) {
-    /*emit load_response(storageMessage.getDocument());*/
+    for (const Symbol &symbol : storageMessage.getSymbols())
+        this->_symbols.push_back(symbol);
+    emit load_response(storageMessage.getSymbols());
 }
 
-void virgilium_client::save(/*QString text,*/ QString fileName) {
-    QVector<Symbol> symbols;
-    for (const auto & _symbol : this->_symbols) {
+void virgilium_client::save(QString fileName) {
+    QVector <Symbol> symbols;
+    for (const auto &_symbol : this->_symbols) {
         symbols.push_back(_symbol);
     }
     StorageMessage storageMessage(this->_siteId, symbols, std::move(fileName));
     this->socket->sendStorage(SAVE, storageMessage);
-
-    /*StorageMessage storageMessage(this->_siteId, std::move(text), std::move(fileName));
-    this->socket->sendStorage(SAVE, storageMessage);*/
 }
 

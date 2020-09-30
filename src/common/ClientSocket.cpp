@@ -271,13 +271,20 @@ void ClientSocket::send(_int code, UserManagementMessage userManagementMessage) 
     this->write(arrBlock);
 }
 
-void ClientSocket::sendStorage(_int code, StorageMessage& storageMessage) {
+void ClientSocket::sendStorage(_int code, StorageMessage &storageMessage) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
 
-    qDebug() << "TEST000 " << storageMessage.getSymbols().size();
-
     out << code;
     out << storageMessage;
+    this->write(arrBlock);
+}
+
+void ClientSocket::sendCrdt(_int code, CrdtMessage &crdtMessage) {
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
+
+    out << code;
+    out << crdtMessage;
     this->write(arrBlock);
 }
