@@ -68,7 +68,7 @@ bool Model::changePassword(ChangePasswordMessage changePasswordMessage) {
 }
 
 bool Model::addCollaborator(UserManagementMessage userManagementMessage) {
-    return Database::getInstance().addCollaboratorDB(userManagementMessage);
+    //return Database::getInstance().addCollaboratorDB(userManagementMessage);
 }
 
 bool Model::removeCollaborator(UserManagementMessage userManagementMessage) {
@@ -79,6 +79,14 @@ bool Model::unsubscribe(UserManagementMessage userManagementMessage) {
     return Database::getInstance().unsubscribeDB(userManagementMessage);
 }
 
-void Model::closeConnection() {
+void Model::closeConnectionDB() {
     Database::getInstance().closeConnectionDB();
+}
+
+QString Model::createUrlCollaborator(UserManagementMessage userManagementMessage) {
+    return Database::getInstance().createUrlCollaboratorDB(userManagementMessage);
+}
+
+bool Model::requestToCollaborate(InvitationMessage invitationMessage) {
+    return Database::getInstance().requestToCollaborateDB(invitationMessage);
 }

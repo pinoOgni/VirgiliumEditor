@@ -36,6 +36,7 @@ private slots:
     void on_actionDark_triggered();
     void on_actionLight_triggered();
     void newFile(QString,QString);
+    void requestToCollaborate(QString,QString);
 
     void time_label();
 
@@ -51,9 +52,14 @@ private slots:
     void getFilesOwner2(_int row,std::vector<FilesMessage>& filesMessage);
     void getUserFiles2(_int row,std::vector<FilesMessage>& filesMessage);
     void isFileCreated(bool);
+    void isRequestToCollaboratedReceived(bool);
     void getAllData2(UserMessage& , _int,std::vector<FilesMessage>&,_int,std::vector<FilesMessage>&);
 
     void on_tableWidget_2_cellDoubleClicked(int row, int column);
+    void on_requestToCollaborate_clicked();
+
+    void on_invitationCode_returnPressed();
+
 signals:
     void Want2Close();
     void sendData(ClientStuff *,QString); //send client and password to changepassworddialog

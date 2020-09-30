@@ -27,6 +27,8 @@ private slots:
     void onChangePasswordMessageReceived(_int code, ChangePasswordMessage changePasswordMessage);
     void onUserManagementMessageReceived(_int code, UserManagementMessage userManagementMessage);
     //void onProcessFileMessage(_int code, FilesMessage fileMessage);
+    void onInvitationReceived(_int code, InvitationMessage invitationMessage);
+    void onLogoutReceived(_int code); //pino close connection  DB user "logout"
 
 public:
     Server(unsigned short port, Model& model);

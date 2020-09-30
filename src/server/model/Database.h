@@ -1,5 +1,5 @@
 //
-// Created by pinoOgni on 26/09/20.
+// Created by pinoOgni on 26/08/20.
 //
 
 #ifndef VIRGILIUM_DATABASE_H
@@ -9,7 +9,7 @@
 #include <QTcpSocket>
 #include <QDataStream>
 #include <QList>
-
+#include "../../common/constants.h"
 
 //virgilium
 #include <QMessageBox>
@@ -21,6 +21,7 @@
 #include <QFile>
 #include <QDir>
 #include <QCryptographicHash>
+#include <common/messages/InvitationMessage.h>
 #include "common/messages/FilesMessage.h"
 #include "common/constants.h"
 #include "common/messages/FileManagementMessage.h"
@@ -41,9 +42,11 @@ private:
 
   	bool openConnection(); //TODO
 
-	void createTablesForTests(QString,QSqlDatabase); 
-	
-	static void printErrorAndExit(const std::string &error = "Unable to connect to DB");
+	void createTables(QString,QSqlDatabase);
+    void fillTablesForTests(QString,QSqlDatabase);
+
+
+    static void printErrorAndExit(const std::string &error = "Unable to connect to DB");
 
 public:
   Database(const Database &) = delete;
@@ -136,6 +139,21 @@ public:
       * @return void
       */
         void closeConnectionDB();
+
+
+        /*
+         * serve a creare un URL che lo user invierà attraverso terze parti ad un altro user
+         * lo aggiunge al DB nella tabella invitation_url
+         * @return l'URL se va bene, empty string altrimenti
+         */
+        QString createUrlCollaboratorDB(UserManagementMessage);
+
+        /*
+         * serve, per aggiungere uno user ad un file, grazie ad un codice di invito
+         * @return true se va bene, false altrimenti
+         */
+        bool requestToCollaborateDB(InvitationMessage invitationMessage);
+
 };
 
 #endif // VIRGILIUM_DATABASE_H

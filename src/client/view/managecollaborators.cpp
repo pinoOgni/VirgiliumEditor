@@ -14,6 +14,7 @@ manageCollaborators::manageCollaborators(QWidget *parent) :
 
 manageCollaborators::~manageCollaborators()
 {
+    disconnect(client, &ClientStuff::isInviteCreated,this,&manageCollaborators::isInviteCreated);
     delete ui;
 }
 
@@ -25,28 +26,28 @@ void manageCollaborators::on_add_clicked()
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     UserManagementMessage userManagementMessage =
-            UserManagementMessage(client->getSocket()->getClientID(),email_collaborator,
+            UserManagementMessage(client->getSocket()->getClientID()
+                                  ,email_collaborator,
                                   email,
                                   filename,
                                   QCryptographicHash::hash(password.toUtf8(),QCryptographicHash::Sha224));
 
-    client->getSocket()->send(ADD_COLLABORATOR,userManagementMessage);
-    qDebug() << "add collaborator on push button clicked " << userManagementMessage.getEmail_owner();
+    qDebug() << "create invite on push button clicked " << userManagementMessage.getEmail_owner();
+    client->getSocket()->send(CREATE_INVITE,userManagementMessage);
 
     //every time the user push on "rename" I connect a signal
-    connect(client, &ClientStuff::isCollaboratorAdded,this,&manageCollaborators::isCollaboratorAdded);
+    connect(client, &ClientStuff::isInviteCreated,this,&manageCollaborators::isInviteCreated);
 }
 
-void manageCollaborators::isCollaboratorAdded(bool res) {
-    if(res) {
-        QMessageBox::information(this,"Done","Collaborator added");
-        disconnect(client, &ClientStuff::isCollaboratorAdded,this,&manageCollaborators::isCollaboratorAdded);
+void manageCollaborators::isInviteCreated(InvitationMessage invitationMessage) {
+    if(!invitationMessage.getInvitationCode().isEmpty()) {
+        QMessageBox::information(this,"Invite created",invitationMessage.getInvitationCode());
         this->close();
     } else {
-        QMessageBox::information(this,"Error","Errore while adding collaborator");
+        QMessageBox::information(this,"Error","Errore while creating invite");
 
         //If there is an error, the signal is disconnected so only one message will be show to the user
-        disconnect(client, &ClientStuff::isCollaboratorAdded,this,&manageCollaborators::isCollaboratorAdded);
+        disconnect(client, &ClientStuff::isInviteCreated,this,&manageCollaborators::isInviteCreated);
     }
     ui->add_password->clear();
     ui->add_collaborator->clear();

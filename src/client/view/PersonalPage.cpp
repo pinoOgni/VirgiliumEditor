@@ -2,6 +2,7 @@
 // Created by pinoOgni on 10/08/20.
 //
 
+#include <common/messages/InvitationMessage.h>
 #include "PersonalPage.h"
 #include "ui_PersonalPage.h"
 #include "changepassworddialog.h"
@@ -62,7 +63,7 @@ PersonalPage::~PersonalPage()
 void PersonalPage::on_logout_clicked()
 {
     disconnect(timer, SIGNAL(timeout()), this, SLOT(time_label()));
-
+    client->getSocket()->send(LOGOUT);
     this->close();
     emit Want2Close();
 }
@@ -301,14 +302,29 @@ void PersonalPage::on_filename_returnPressed()
 void PersonalPage::isFileCreated(bool res) {
     if(res) {
               ui->filename->setText("");
+                //update first table
+                getFilesOwner();
     }
     else {
-            QMessageBox::warning(this,"Error","Error creating file");
-            disconnect(client, &ClientStuff::isFileCreated,this,&PersonalPage::isFileCreated);
+        QMessageBox::warning(this,"Error","Error creating file");
+        disconnect(client, &ClientStuff::isFileCreated,this,&PersonalPage::isFileCreated);
     }
- //update first table
- getFilesOwner();
+
 }
+
+void PersonalPage::isRequestToCollaboratedReceived(bool res) {
+    ui->invitationCode->setText("");
+    if(res) {
+        QMessageBox::information(this,"Done","Now you are a collaborator, check your files");
+        disconnect(client, &ClientStuff::isRequestToCollaboratedReceived,this,&PersonalPage::isRequestToCollaboratedReceived);
+        getUserFiles();
+    } else {
+        QMessageBox::warning(this,"Error","Error while adding you as collaborator, check your url and try again");
+        disconnect(client, &ClientStuff::isRequestToCollaboratedReceived,this,&PersonalPage::isRequestToCollaboratedReceived);
+    }
+
+}
+
 
 void PersonalPage::on_tableWidget_2_cellDoubleClicked(int row, int column)
 {
@@ -325,4 +341,35 @@ void PersonalPage::on_tableWidget_2_cellDoubleClicked(int row, int column)
     qDebug() << "REMOVE MYSELF FROM A FILE";
 
     connect(unsubscribe,SIGNAL(Want2Close2()),this,SLOT(getUserFiles()));
+}
+
+void PersonalPage::on_requestToCollaborate_clicked()
+{
+    QString invitationCode = ui->invitationCode->text();
+
+    if(invitationCode.isEmpty())
+        QMessageBox::warning(this,"Error","Invitation code is empty");
+    else
+        requestToCollaborate(this->email,invitationCode);
+}
+
+
+void PersonalPage::on_invitationCode_returnPressed()
+{
+    on_requestToCollaborate_clicked();
+}
+
+void PersonalPage::requestToCollaborate(QString email, QString invitationCode) {
+    connect(client, &ClientStuff::isRequestToCollaboratedReceived,this,&PersonalPage::isRequestToCollaboratedReceived);
+
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
+
+    InvitationMessage invitationMessage =
+            InvitationMessage(client->getSocket()->getClientID(),email,
+                                  invitationCode);
+    client->getSocket()->send(REQUEST_TO_COLLABORATE,invitationMessage);
+
+    qDebug() << "requestToCollaborate" ;
+
 }

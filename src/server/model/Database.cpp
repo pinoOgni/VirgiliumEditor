@@ -1,14 +1,10 @@
 //
-// Created by pinoOgni on 26/09/20.
+// Created by pinoOgni on 26/08/20.
 //
 
 #include <QtSql/QSqlQuery>
 #include <QtCore/QDateTime>
 #include "Database.h"
-
-//1 --> ricrea i db vergini
-//0 --> usa il DB con i dati che ci sono
-#define TEST 0
 
 Database::Database() {
     if(!db.open())
@@ -21,18 +17,14 @@ void Database::closeConnectionDB() {
 
 void Database::initDatabase() {
     //delete databaase file only for testing
-    QString dbPath = QDir(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)).filePath("database.db");
+    QString dbPath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).filePath("database.db");
 
-    if(TEST==1) {
-        QString doNotTouch = QDir(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)).filePath("doNotTouch.db");
+    if(TESTDB==true) {
         QFile file (dbPath);
-        file.remove();
-        file.open(QIODevice::WriteOnly | QIODevice::Text);
 
-        //database
-        QFile::copy(":/database.db", dbPath);
-        file.copy(doNotTouch);
+        //if(file.exists())  file.remove();
 
+        file.open(QIODevice::WriteOnly | QIODevice::Text);  //create file
     }
     qDebug() << "init database";
     db = QSqlDatabase::addDatabase("QSQLITE"); //"SQLITE"
@@ -42,17 +34,16 @@ void Database::initDatabase() {
              qDebug() << "error first try to open DB";
     } else {
         db.close();
-        if(TEST==1)
-            createTablesForTests(dbPath,db);
+        if(TESTDB==true) {
+            createTables(dbPath,db);
+            fillTablesForTests(dbPath, db);
+        }
     }
 
 }
 
 
-
-
-void Database::createTablesForTests(QString dbPath, QSqlDatabase db) {
-
+void Database::createTables(QString dbPath, QSqlDatabase db) {
     QFileInfo checkfile(dbPath);
     if(checkfile.isFile()) {
         if(db.open()) {
@@ -61,14 +52,59 @@ void Database::createTablesForTests(QString dbPath, QSqlDatabase db) {
 
             if(!db.tables().contains("users")) {
                 QString create_users = "CREATE TABLE users ("
-                        "email VARCHAR(50) PRIMARY KEY,"
-                        "firstName VARCHAR(20),"
-                        "lastName VARCHAR(20),"
-                        "password VARCHAR(255))";
+                                       "email VARCHAR(50) PRIMARY KEY,"
+                                       "firstName VARCHAR(20),"
+                                       "lastName VARCHAR(20),"
+                                       "password VARCHAR(255))";
                 if(!qry.exec(create_users)) {
                     qDebug() <<"error create table users";
                 }
-                else {
+                QString create_files = "CREATE TABLE files ("
+                                       "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
+                                       "filename VARCHAR(50),"
+                                       "email_owner VARCHAR(50),"
+                                       "last_access DATETIME NOT NULL)";
+                if(!qry.exec(create_files)) {
+                    qDebug() <<"error create table files";
+                }
+                QString create_user_files = "CREATE TABLE user_files ("
+                                                "id INTEGER,"
+                                                "email VARCHAR(50),"
+                                                "last_access DATETIME NOT NULL,"
+                                                "PRIMARY KEY (id,email))";
+                    if(!qry.exec(create_user_files)) {
+                        qDebug() <<"error create table files";
+                    }
+                QString create_invitation_urls = "CREATE TABLE invitation_urls ("
+                                            "url VARCHAR(255),"
+                                            "id INTEGER NOT NULL,"
+                                            "timeout DATETIME NOT NULL,"
+                                            "PRIMARY KEY (url))";
+                if(!qry.exec(create_invitation_urls)) {
+                    qDebug() <<"error create table invitation_urls";
+                }
+                QSqlDatabase::database().commit();
+            }
+            db.close();
+            //QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
+        }
+    }
+    else {
+        qDebug() << "error opened db";
+    }
+
+
+}
+
+
+void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
+
+    QFileInfo checkfile(dbPath);
+    if(checkfile.isFile()) {
+        if(db.open()) {
+            QSqlQuery qry;
+            qDebug() << "correct opened db";
+
                     QSqlDatabase::database().transaction();
                     qry.prepare("INSERT INTO users (email,firstName,lastName,password) VALUES(?,?,?,?)");
                     qry.bindValue(0,"pino@pino.com");
@@ -105,29 +141,10 @@ void Database::createTablesForTests(QString dbPath, QSqlDatabase db) {
                         qDebug() << "what??";
                     }
                     QSqlDatabase::database().commit();
-                }
 
 
 
-                QString create_files = "CREATE TABLE files ("
-                        "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
-                        "filename VARCHAR(50),"
-                        "email_owner VARCHAR(50),"
-                        "last_access DATETIME NOT NULL)";
-                if(!qry.exec(create_files)) {
-                    qDebug() <<"error create table files";
-                }
-                else {
-                    QString create_user_files = "CREATE TABLE user_files ("
-                            "id INT,"
-                            "email VARCHAR(50),"
-                            "last_access DATETIME NOT NULL,"
-                            "PRIMARY KEY (id,email))";
-                    if(!qry.exec(create_user_files)) {
-                        qDebug() <<"error create table files";
-                    }
-                    else {
-                        //insert item in files then in user_files, retrieve the last id inserted
+                //insert item in files then in user_files, retrieve the last id inserted
 
                         QSqlDatabase::database().transaction();
                         qry.prepare("INSERT INTO files(filename, email_owner,last_access) VALUES(?,?,?)");
@@ -139,6 +156,16 @@ void Database::createTablesForTests(QString dbPath, QSqlDatabase db) {
                         if(!qry.exec()) {
                             qDebug() << "error insert in files";
                         }
+
+
+                        //create directory for user pino@pino.com
+                        QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).mkdir("pino@pino.com");
+
+                        //create first file "provafile"
+                        QString filenamePath;
+                        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append("pino@pino.com")).filePath("provafile").append(".txt");
+                        QFile file (filenamePath);
+                        file.open(QIODevice::WriteOnly | QIODevice::Text);
 
                         //aggiungo ale@ale.com e ste@ste.com al mio file "provafile"
                         qry.prepare("SELECT LAST_INSERT_ROWID();");
@@ -179,6 +206,11 @@ void Database::createTablesForTests(QString dbPath, QSqlDatabase db) {
                             qDebug() << "error insert in files";
                         }
 
+                        //create second file "ciao"
+                        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append("pino@pino.com")).filePath("ciao").append(".txt");
+                        QFile file2 (filenamePath);
+                        file2.open(QIODevice::WriteOnly | QIODevice::Text);
+
                         //aggiungo ale@ale.com e ste@ste.com al mio file "provafile"
                         qry.prepare("SELECT LAST_INSERT_ROWID();");
                         if(!qry.exec()) {
@@ -208,13 +240,9 @@ void Database::createTablesForTests(QString dbPath, QSqlDatabase db) {
 
                         QSqlDatabase::database().commit();
                     }
-                }
-            }
             db.close();
            //QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
-        }
-    }
-     else {
+    } else {
             qDebug() << "error opened db";
       }
 
@@ -369,9 +397,24 @@ std::vector<FilesMessage>  Database::getUserFiles(User user) {
         QSqlDatabase::database().transaction();
         QSqlQuery qry, qry1;
 
-
+        //select * from files, user_files where files.id IN (select user_files.id FROM user_files WHERE user_files.email = "simo@simo.com") group by files.id;
         //SISTEMARE GROUP BY COME ALL DATA
-        qry.prepare("SELECT files.filename, files.email_owner, files.id,  user_files.last_access FROM files, user_files WHERE files.id IN (SELECT user_files.id FROM user_files WHERE user_files.email = :email ) GROUP BY files.id, files.filename, user_files.last_access, files.email_owner");
+       /*
+        *  qry.prepare("SELECT files.filename, files.email_owner, files.id,  user_files.last_access "
+                    "FROM files, user_files "
+                    "WHERE files.id = "
+                    "(SELECT user_files.id FROM user_files WHERE user_files.email = :email ) "
+                    "GROUP BY files.id, files.filename, user_files.last_access, files.email_owner");
+        */
+        //1|provafile|pino@pino.com|29/09/2020  18:17:07
+        // id, filename, email_owner, last_access
+        //0     , 1     , 2         , 3
+        //qry.prepare("SELECT * FROM files WHERE files.id IN (SELECT user_files.id FROM user_files WHERE user_files.email = :email )");
+
+        qry.prepare("SELECT files.filename, files.email_owner, user_files.last_access, files.id FROM files, user_files WHERE user_files.id = files.id AND user_files.email = :email");
+
+
+        // select files.filename, files.email_owner, user_files.last_access, files.id from files, user_files where user_files.id = files.id and user_files.email = "ale@ale.com";
         qry.bindValue(":email", user.getEmail());
         if(!qry.exec()) {
             qDebug() << "error retrieve file where this user collaborates";
@@ -381,7 +424,7 @@ std::vector<FilesMessage>  Database::getUserFiles(User user) {
 
         for(qry.first(); qry.isValid(); qry.next(), ++row) {
 
-            int id = qry.value(2).toInt();
+            int id = qry.value(3).toInt();
 
             qry1.prepare("SELECT email FROM user_files WHERE id = :id");
             qry1.bindValue(":id",id);
@@ -392,12 +435,16 @@ std::vector<FilesMessage>  Database::getUserFiles(User user) {
                 //collaborators.append(qry1.value(0).toString()).append(" ");
                 collaborators << qry1.value(0).toString();
             }
-            filesMessage.emplace_back(0,qry.value(0).toString(),qry.value(3).toString(),collaborators,qry.value(1).toString());
+            filesMessage.emplace_back(0,qry.value(0).toString(),qry.value(2).toString(),collaborators,qry.value(1).toString());
             collaborators.clear();
 
         }
         QSqlDatabase::database().commit();
         db.close();
+        qDebug() << "database get user files";
+        for(int i=0;i<filesMessage.size();i++)
+            filesMessage[i].printUserInfo();
+
         return filesMessage;
     }
     else {
@@ -524,7 +571,7 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
             db.close();
 
             //TODO PINO delete file in the file system --> PROVA
-            QString filename = QDir(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation).append("/storageVirgilium/").append(fileManagementMessage.getEmail())).filePath(fileManagementMessage.getFilename());
+            QString filename = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(fileManagementMessage.getFilename()).append(".txt");
             QFile file (filename);
             file.remove();
         }
@@ -604,12 +651,13 @@ bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
         }
         QSqlDatabase::database().commit();
         db.close();
-         //TODO PINO create file in the file system --> PROVA
-        QString filenamePath;
-        if(!QDir(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation).append("/storageVirgilium/").append(fileManagementMessage.getEmail())).exists())
-            QDir(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation).append("/storageVirgilium/")).mkdir(fileManagementMessage.getEmail());
 
-        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation).append("/storageVirgilium/").append(fileManagementMessage.getEmail())).filePath(filenameTemp);
+         //TODO PINO create file in the file system
+        QString filenamePath;
+        if(!QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).exists())
+            QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).mkdir(fileManagementMessage.getEmail());
+
+        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(filenameTemp).append(".txt");
 
         qDebug() << "new file db" << filenamePath;
 
@@ -662,7 +710,8 @@ bool Database::changePasswordDB(ChangePasswordMessage changePasswordMessage) {
 
 
 
-bool Database::addCollaboratorDB(UserManagementMessage userManagementMessage) {
+/*
+ * bool Database::addCollaboratorDB(UserManagementMessage userManagementMessage) {
     if(db.open()) {
         qDebug() << "correct opened db to control password";
         QSqlDatabase::database().transaction();
@@ -727,6 +776,170 @@ bool Database::addCollaboratorDB(UserManagementMessage userManagementMessage) {
     else {
         qDebug() << "error opened db";
         return false;
+    }
+}
+
+ */
+
+
+
+bool Database::requestToCollaborateDB(InvitationMessage invitationMessage) {
+    if(db.open()) {
+        qDebug() << "correct opened db to control password";
+        QSqlDatabase::database().transaction();
+        QSqlQuery qry;
+
+        qry.prepare("SELECT email FROM users WHERE email = :collaborator");
+        qry.bindValue(":collaborator", invitationMessage.getEmail());
+        qry.exec();
+        qry.first();
+        QString resUser = qry.value(0).toString();
+        qDebug() << "resCollaborator " << resUser;
+
+
+        //TODO controllare timeout
+        qry.prepare("SELECT id FROM invitation_urls WHERE url =:url");
+        qry.bindValue(":url",invitationMessage.getInvitationCode());
+        qry.exec();
+        qry.first();
+        int idResult = qry.value(0).toInt();
+
+        qry.prepare("SELECT email_owner, filename FROM files WHERE id =:id");
+        qry.bindValue(":id",idResult);
+        qry.exec();
+        qry.first();
+        QString email_owner = qry.value(0).toString();
+        QString filename = qry.value(1).toString();
+        QSqlDatabase::database().commit();
+
+        QString tempURL = QString(email_owner + "/" + filename + "/" + idResult + "/" + invitationMessage.getEmail()).toUtf8().toBase64();
+
+        qDebug() << "resUser " << resUser << "idResult" << idResult;
+        qDebug() << "tempURL " << tempURL;
+        qDebug() << "filename" << filename;
+        qDebug() << "email_owner" << email_owner;
+        qDebug() << "URL" << invitationMessage.getInvitationCode();
+        //se l'utente che richiede di collaborare esiste e se l'url che ricevo corrisponde ad un url corretto ossia idResult esiste
+        if(!resUser.isEmpty()  && QString::compare(tempURL,invitationMessage.getInvitationCode())==0) {
+            QSqlDatabase::database().transaction();
+
+            qry.prepare("DELETE FROM invitation_urls WHERE url = :url");
+            qry.bindValue(":url",invitationMessage.getInvitationCode());
+            if(!qry.exec()) {
+                qDebug() << "error deleteting from invitation_urls";
+                QSqlDatabase::database().commit();
+                db.close();
+                return false;
+            }
+
+            qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
+            qry.bindValue(0,idResult);
+            qry.bindValue(1,invitationMessage.getEmail());
+            qry.bindValue(2,"dd/MM/yyyy  hh:mm:ss");
+            if(!qry.exec()) {
+                qDebug() << "error insert in user_files";
+                QSqlDatabase::database().commit();
+                db.close();
+                return false;
+            } else {
+                QSqlDatabase::database().commit();
+                db.close();
+                return true;
+            }
+        }
+        else {
+            db.close();
+            return false;
+        }
+    }
+    else {
+        qDebug() << "error opened db";
+        return false;
+    }
+}
+
+
+
+
+QString Database::createUrlCollaboratorDB(UserManagementMessage userManagementMessage) {
+    QString URL = "";
+    if(db.open()) {
+        qDebug() << "correct opened db to control password";
+        QSqlDatabase::database().transaction();
+        QSqlQuery qry;
+        qry.prepare("SELECT password FROM users WHERE email = :email");
+        qry.bindValue(":email", userManagementMessage.getEmail_owner());
+        qry.exec();
+        qry.first();
+        QString psw = qry.value(0).toString();
+        qDebug() << "password " << psw;
+
+        qry.prepare("SELECT email FROM users WHERE email = :collaborator");
+        qry.bindValue(":collaborator", userManagementMessage.getEmail_collaborator());
+        qry.exec();
+        qry.first();
+        QString resUser = qry.value(0).toString();
+        qDebug() << "resCollaborator " << resUser;
+
+        qry.prepare("SELECT id FROM files WHERE filename =:filename");
+        qry.bindValue(":filename", userManagementMessage.getFilename());
+        qry.exec();
+        qry.first();
+        int id = qry.value(0).toInt();
+        qDebug() << "id filename " << id;
+
+
+        qry.prepare("SELECT email FROM user_files WHERE id =:id AND email =:email");
+        qry.bindValue(":id",id);
+        qry.bindValue(":email",userManagementMessage.getEmail_collaborator());
+        qry.exec();
+        qry.first();
+        QString isAlreadyCollaborator = qry.value(0).toString();
+        QSqlDatabase::database().commit();
+
+
+        qDebug() << "resUser " << resUser << "id " << id << "isAlreadyCollaborator" << isAlreadyCollaborator;
+        //if password is correct, the user that could be added as collaborator is in user table,
+        //the file is in the files table and the user that could be as collaborator is not alrdeady a collaborator
+        if(QString::compare(psw,userManagementMessage.getPassword())==0 && !resUser.isEmpty() && id != 0 && isAlreadyCollaborator.isEmpty()) {
+            QSqlDatabase::database().transaction();
+
+            URL = QString(userManagementMessage.getEmail_owner() + "/" + userManagementMessage.getFilename() + "/" + id + "/" + userManagementMessage.getEmail_collaborator()).toUtf8().toBase64();
+            qry.prepare("SELECT url FROM invitation_urls WHERE url =:url");
+            qry.bindValue(":url",URL);
+            qry.exec();
+            qry.first();
+            QString urlAlreadyExist = qry.value(0).toString();
+
+            //user try to add multiple times the same user, we update te timeout
+            if(!urlAlreadyExist.isEmpty()) {
+                qry.prepare("UPDATE invitation_urls SET timeout = :timeout WHERE url = :url");
+                QDateTime timeout = timeout.currentDateTime();
+                qry.bindValue(":timeout",timeout.toString("dd/MM/yyyy  hh:mm:ss") );
+                qry.bindValue(":url",URL);
+            }
+                else {
+                qry.prepare("INSERT INTO invitation_urls(url,id,timeout) VALUES(?,?,?)");
+                qry.bindValue(0, URL);
+                qry.bindValue(1, id);
+                QDateTime timeout = timeout.currentDateTime();
+                qry.bindValue(2, timeout.toString("dd/MM/yyyy  hh:mm:ss"));
+            }
+            if(!qry.exec()) {
+                qDebug() << "error insert in invitation_urls";
+                QSqlDatabase::database().commit();
+                db.close();
+                return URL;
+            } else {
+                QSqlDatabase::database().commit();
+                db.close();
+                return URL;
+            }
+        }
+    }
+    else {
+        qDebug() << "error opened db";
+        return URL;
     }
 }
 

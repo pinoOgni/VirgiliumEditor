@@ -1,5 +1,5 @@
 //
-// Created by alex on 10/08/20.
+// Created by alex, pinoOgni on 10/08/20.
 //
 
 #include <common/ClientSocket.h>
@@ -17,9 +17,16 @@ Server::Server(unsigned short port, Model &model) : model(model) {
 
     qDebug() << "Listening on address:" << this->serverAddress().toString() << ":" << this->serverPort() << "\n";
 
+    //ale fai occhio
+    //connect(this, &Server::processFilesMessage, this, &Server::onProcessFileMessage);
+
     //TODO PROVA PINO
-    if (!QDir(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation).append("/storageVirgilium/")).exists())
-        QDir(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)).mkdir("storageVirgilium");
+    if(TESTDB==true) {
+        QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).removeRecursively();
+        QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).mkdir("VIRGILIUM_STORAGE");
+    }
+
+    //if(!QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append("/VIRGILIUM_STORAGE")).exists())
 }
 
 void Server::incomingConnection(qintptr handle) {
@@ -28,6 +35,57 @@ void Server::incomingConnection(qintptr handle) {
         newSocket->deleteLater();
         return;
     }
+    nuovoSocket->setClientID(handle);
+
+    connect(
+            nuovoSocket,
+            &QTcpSocket::stateChanged,
+            this,
+            &Server::onSocketStateChanged
+            );
+    connect(
+            nuovoSocket,
+            &ClientSocket::basicMessageReceived,
+            this,
+            &Server::onProcessBasicMessage
+    );
+    connect(
+            nuovoSocket,
+            &ClientSocket::userMessageReceived,
+            this,
+            &Server::onProcessUserMessage
+    );
+    connect(
+            nuovoSocket,
+            &ClientSocket::fileManagementMessageReceived,
+            this,
+            &Server::onFileManagementMessageReceived
+    );
+    connect(
+            nuovoSocket,
+            &ClientSocket::changePasswordMessageReceived,
+            this,
+            &Server::onChangePasswordMessageReceived
+    );
+    connect(
+            nuovoSocket,
+            &ClientSocket::userManagementMessageReceived,
+            this,
+            &Server::onUserManagementMessageReceived
+    );
+    connect(
+            nuovoSocket,
+            &ClientSocket::logoutReceived,
+            this,
+            &Server::onLogoutReceived
+    );
+    connect(
+            nuovoSocket,
+            &ClientSocket::invitationReceived,
+            this,
+            &Server::onInvitationReceived
+    );
+
 
     newSocket->setClientID(handle);
 
@@ -51,15 +109,13 @@ void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
 
 }
 
-
 void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
     //robe super basic
     switch (code) {
         case CLIENT_CONNECTED:
             break;
-    }
+  }
 
-}
 
 void Server::onProcessCrdtMessage(_int code, CrdtMessage crdtMessage) {
     //logica crdt
@@ -114,13 +170,16 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
 
 void Server::dispatch() {
 
-}
+void Server::processMessage(ClientSocket *sender,QByteArray data) { }
+
+
 
 void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
-    // qDebug() << userMessage.getUser().printMessage();
-    auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
-    qDebug() << "userMessage " << userMessage.getUser().printMessage();
-    switch (code) {
+   // qDebug() << userMessage.getUser().printMessage();
+   auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
+    qDebug() << "userMessage onProcessUserMessage " << userMessage.getUser().printMessage();
+
+  switch (code) {
         case LOGIN: {
             if (Model::loginUser(userMessage.getUser())) {
                 sender->send(LOGIN_OK);
@@ -246,8 +305,16 @@ void Server::onChangePasswordMessageReceived(_int code, ChangePasswordMessage ch
 }
 
 void Server::onUserManagementMessageReceived(_int code, UserManagementMessage userManagementMessage) {
-    auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
-    switch (code) {
+    auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
+    switch(code) {
+        case CREATE_INVITE: {
+            qDebug() << "create_invite: " << userManagementMessage.getEmail_owner() << "\n";
+            QString invitationCode = model.createUrlCollaborator(userManagementMessage);
+            InvitationMessage invitationMessage = InvitationMessage(sender->getClientID(),userManagementMessage.getEmail_owner(),invitationCode);
+            qDebug() << "CREATE INVITE SERVER ";
+            sender->send(INVITE_CREATED, invitationMessage);
+        }
+        break;
         case ADD_COLLABORATOR: {
             qDebug() << "add_collaborator: " << userManagementMessage.getEmail_owner() << "\n";
             if (model.addCollaborator(userManagementMessage))
@@ -272,5 +339,29 @@ void Server::onUserManagementMessageReceived(_int code, UserManagementMessage us
                 sender->send(UNSUBSCRIBE_KO);
         }
             break;
+    }
+}
+
+void Server::onLogoutReceived(_int code) {
+    switch (code) {
+       case LOGOUT: {
+           qDebug() << "close connection DB";
+            model.closeConnectionDB();
+        }
+        break;
+    }
+}
+
+void Server::onInvitationReceived(_int code, InvitationMessage invitationMessage) {
+    auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
+    switch(code) {
+        case REQUEST_TO_COLLABORATE: {
+            qDebug() << "onInvitationReceived";
+            if(model.requestToCollaborate(invitationMessage))
+                sender->send(REQUEST_TO_COLLABORATE_OK);
+            else
+                sender->send(REQUEST_TO_COLLABORATE_KO);
+        }
+        break;
     }
 }

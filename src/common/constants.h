@@ -24,10 +24,12 @@
 #define LOGIN_KO 7
 #define SIGNUP_OK 8
 #define SIGNUP_KO 9
-#define CURSOR_CHANGED 10
-#define LOAD_REQUEST 11
-#define LOAD_RESPONSE 12
-#define SAVE 13
+#define LOGOUT 10
+#define CURSOR_CHANGED 11
+#define LOAD_REQUEST 12
+#define LOAD_RESPONSE 13
+#define SAVE 14
+
 
 
 //list of constants for interactions with the database
@@ -64,5 +66,17 @@
 #define REMOVE_COLLABORATOR_KO 747
 #define UNSUBSCRIBE_OK 748
 #define UNSUBSCRIBE_KO 749
+#define CREATE_INVITE 750
+#define INVITE_CREATED 751
+#define REQUEST_TO_COLLABORATE 752
+#define REQUEST_TO_COLLABORATE_OK 753
+#define REQUEST_TO_COLLABORATE_KO 754
+
+
+//true --> ricrea i db vergini
+//false --> usa il DB con i dati che ci sono
+#define TESTDB true
+#define VIRGILIUM_STORAGE "/VIRGILIUM_STORAGE/"
+
 
 #endif //VIRGILIUM_CONSTANTS_H

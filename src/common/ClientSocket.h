@@ -12,6 +12,7 @@
 #include <QDataStream>
 #include <common/messages/StorageMessage.h>
 #include <common/messages/CrdtMessage.h>
+#include "../common/messages/InvitationMessage.h"
 #include "../common/messages/FilesMessage.h"
 #include "../common/messages/FileManagementMessage.h"
 #include "../common/messages/ChangePasswordMessage.h"
@@ -47,7 +48,9 @@ public:
     void send(_int code, FileManagementMessage fileManagementMessage);
     void send(_int code, UserMessage userMessageReturn, std::vector<FilesMessage> filesOwner, std::vector<FilesMessage> filesCollabs);
     void send(_int code, ChangePasswordMessage changePasswordMessage);
+    void send(_int code, InvitationMessage invitationMessage);
     void send(_int code, UserManagementMessage userManagementMessage);
+
     quint32 getClientID();
 
 signals:
@@ -64,6 +67,9 @@ signals:
     void changePasswordMessageResponse(_int code);
     void userManagementMessageReceived(_int code, UserManagementMessage userManagementMessage);
     void userManagementMessageResponse(_int code);
+    void invitationReceived(_int code, InvitationMessage invitationMessage);
+    void requestToCollaborateReceived(_int code);
+    void logoutReceived(_int code); //pino close connection when client "logout"
 };
 
 
