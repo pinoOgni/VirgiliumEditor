@@ -90,3 +90,18 @@ QString Model::createUrlCollaborator(UserManagementMessage userManagementMessage
 bool Model::requestToCollaborate(InvitationMessage invitationMessage) {
     return Database::getInstance().requestToCollaborateDB(invitationMessage);
 }
+
+void Model::removeUserFromEditor(ClientSocket *socket) {
+    auto toRemove = std::find_if(fileToClients.begin(), fileToClients.end(),
+                                 [socket](auto &pair){
+                                          return socket == pair.second;
+                                          }
+                                 );
+    fileToClients.erase(toRemove);
+}
+
+void Model::insertUserIntoEditor(ServerDocument * serverDocument, ClientSocket * socket) {
+    this->fileToClients.insert(
+            std::pair<ServerDocument *, ClientSocket *>(serverDocument,socket)
+            );
+}

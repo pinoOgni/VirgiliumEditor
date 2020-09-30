@@ -62,7 +62,7 @@ private:
     QString host;
     int port;
     bool status;
-
+   // ClientSocket *clientSocket;
 };
 
 #endif // VIRGILIUM_CLIENTSTUFF_H

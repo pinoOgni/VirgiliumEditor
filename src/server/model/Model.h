@@ -22,7 +22,7 @@
 
 class Model {
 
-    std::multimap< QSharedPointer<ServerDocument> , ClientSocket*> fileToClients;
+    std::multimap< ServerDocument * , ClientSocket*> fileToClients;
     QMutex fileToClientsMutex;
     std::map<ClientSocket*,User> clientToUser;
     std::atomic<quint32> IDSeed;
@@ -33,6 +33,8 @@ public:
   void insertActiveUser(ClientSocket *socket, const User &user);
   void removeActiveUser(ClientSocket *socket);
   User getActiveUser(ClientSocket *socket);
+  void removeUserFromEditor(ClientSocket *socket);
+  void insertUserIntoEditor(ServerDocument *, ClientSocket *);
   static bool loginUser(User user);
   static bool signinUser(User user);
   User getInfoUser(User user);

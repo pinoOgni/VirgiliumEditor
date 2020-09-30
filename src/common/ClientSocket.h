@@ -50,6 +50,7 @@ public:
     void send(_int code, ChangePasswordMessage changePasswordMessage);
     void send(_int code, InvitationMessage invitationMessage);
     void send(_int code, UserManagementMessage userManagementMessage);
+    void send(_int code, CrdtMessage crdtMessage);
 
     quint32 getClientID();
 
@@ -70,6 +71,7 @@ signals:
     void invitationReceived(_int code, InvitationMessage invitationMessage);
     void requestToCollaborateReceived(_int code);
     void logoutReceived(_int code); //pino close connection when client "logout"
+    void crdtMessageReceived(_int code, CrdtMessage crdtMessage);
 };
 
 

@@ -11,29 +11,37 @@ void ClientSocket::onReadyRead() {
     _int code;
     this->in >> code;
     qDebug() << "ClientSocket onreadyRead " << code;
-    if(!this->in.commitTransaction()) {
+    /*if(!this->in.commitTransaction()) {
         qDebug()<<"qualcosa e' andato storto con il clientID"<<this->clientID;
         return;
-    }
+    }*/
     switch(code) {
         case LOAD_RESPONSE: {
             StorageMessage storageMessage;
+            //this->in.startTransaction();
             this->in >> storageMessage;
+            if(this->in.commitTransaction())
             emit storageMessageReceivedLoad(storageMessage);
         }
         break;
         case LOAD_REQUEST:
         case SAVE: {
             StorageMessage storageMessage;
+            //this->in.startTransaction();
             this->in >> storageMessage;
-            qDebug() << "cliensocket, save, load request, code " << code << " path" << storageMessage.getFileName();
+            if(this->in.commitTransaction())
             emit storageMessageReceived(code, storageMessage);
+            qDebug() << "cliensocket, save, load request, code " << code << " path" << storageMessage.getFileName();
+
         }
         break;
         case CLIENT_CONNECTED: {
             BasicMessage bm;
+           // this->in.startTransaction();
             this->in >> bm;
+            if(this->in.commitTransaction())
             emit basicMessageReceived(code, bm);
+            qDebug()<<"Qui arrivo popopo";
         }
         break;
         case LOGIN:
@@ -43,9 +51,13 @@ void ClientSocket::onReadyRead() {
         case GET_FILES_COLLABORATOR:
         case GET_ALL_DATA:{
             UserMessage um;
+           // this->in.startTransaction();
             this->in >> um;
+            auto res = this->in.commitTransaction();
+            qDebug()<<"popoipoi" << um.getUser().printMessage();
+            if(!res) return;
             emit userMessageReceived(code, um);
-            qDebug() << "code " << code;
+            qDebug() << "code " << code<<" res " << res;
         }
         break;
         case LOGIN_KO:
@@ -64,16 +76,19 @@ void ClientSocket::onReadyRead() {
             std::vector<FilesMessage> filesMessage;
             int row = 0;
             FilesMessage temp = FilesMessage();
+            //this->in.startTransaction();
             while(!in.atEnd()) {
                 row++;
                 in >> temp;
                 filesMessage.push_back(temp);
             }
+            if(this->in.commitTransaction())
             emit filesMessageReceived(code,filesMessage);
         }
         break;
         case GET_ALL_DATA_OK: {
             UserMessage um = UserMessage();
+            //this->in.startTransaction();
             in >> um;
 
             std::vector<FilesMessage> filesOwner;
@@ -100,7 +115,7 @@ void ClientSocket::onReadyRead() {
             qDebug() << "GET_ALL_DATA row2 " << row2;
             for(auto item: filesCollabs)
                 item.printUserInfo();
-
+            if(this->in.commitTransaction())
             emit allDataReceived(code,um,row1,filesOwner,row2,filesCollabs);
         }
         break;
@@ -109,7 +124,9 @@ void ClientSocket::onReadyRead() {
         case NEW_FILE: {
             qDebug() << "code " << code;
             FileManagementMessage fileManagementMessage;
+            //this->in.startTransaction();
             this->in >> fileManagementMessage;
+            if(this->in.commitTransaction())
             emit fileManagementMessageReceived(code,fileManagementMessage);
         }
         break;
@@ -119,17 +136,21 @@ void ClientSocket::onReadyRead() {
         case DELETE_FILE_KO:
         case NEW_FILE_OK:
         case NEW_FILE_KO:{
+            this->in.commitTransaction();
             emit fileManagementMessageResponse(code);
         }
         break;
         case CHANGE_PASSWORD: {
             ChangePasswordMessage changePasswordMessage;
+           // this->in.startTransaction();
             this->in >> changePasswordMessage;
+            if(this->in.commitTransaction())
             emit changePasswordMessageReceived(code,changePasswordMessage);
         }
         break;
         case CHANGE_PASSWORD_OK:
         case CHANGE_PASSWORD_KO: {
+            this->in.commitTransaction();
             emit changePasswordMessageResponse(code);
         }
         break;
@@ -138,14 +159,18 @@ void ClientSocket::onReadyRead() {
         case REMOVE_COLLABORATOR:
         case UNSUBSCRIBE: {
             UserManagementMessage userManagementMessage;
+            //this->in.startTransaction();
             this-> in >> userManagementMessage;
+            if(this->in.commitTransaction())
             emit userManagementMessageReceived(code,userManagementMessage);
         }
         break;
         case INVITE_CREATED:
         case REQUEST_TO_COLLABORATE: {
             InvitationMessage invitationMessage;
+            //this->in.startTransaction();
             this->in >> invitationMessage;
+            if(this->in.commitTransaction())
             emit invitationReceived(code,invitationMessage);
         }
         break;
@@ -155,18 +180,29 @@ void ClientSocket::onReadyRead() {
         case REMOVE_COLLABORATOR_KO:
         case UNSUBSCRIBE_OK:
         case UNSUBSCRIBE_KO: {
+            this->in.commitTransaction();
             emit userManagementMessageResponse(code);
         }
         break;
         case LOGOUT: {
+            this->in.commitTransaction();
             emit logoutReceived(LOGOUT);
         }
         break;
         case REQUEST_TO_COLLABORATE_OK:
         case REQUEST_TO_COLLABORATE_KO: {
+            this->in.commitTransaction();
             emit requestToCollaborateReceived(code);
         }
         break;
+
+        case SYMBOL_INSERT_OR_ERASE: {
+            CrdtMessage crdtMessage;
+           // this->in.startTransaction();
+            this->in >> crdtMessage;
+           if( this->in.commitTransaction())
+            emit crdtMessageReceived(code,crdtMessage);
+        }
     }
 
 }
@@ -302,6 +338,15 @@ void ClientSocket::send(_int code, InvitationMessage invitationMessage) {
 
     out << code;
     out << invitationMessage;
+    this->write(arrBlock);
+}
+
+void ClientSocket::send(_int code, CrdtMessage crdtMessage) {
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
+
+    out << code;
+    out << crdtMessage;
     this->write(arrBlock);
 }
 
