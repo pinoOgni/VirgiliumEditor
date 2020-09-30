@@ -10,6 +10,7 @@
 #include <common/constants.h>
 #include <QtCore/QVector>
 #include <QColor>
+#include <QtCore/QTextStream>
 
 class Symbol {
     QString letter;
@@ -19,9 +20,9 @@ class Symbol {
 public:
     struct CharFormat {
         QColor foreground;
-        //QColor background;
         QString font;
     } font;
+
     Symbol();
     Symbol(QString letter, _int _siteId,_int _counterId, QVector<_int> pos,CharFormat font);
     QString getLetter() const;
@@ -31,12 +32,12 @@ public:
     bool operator==(const Symbol& b);
     bool operator<(const Symbol& b);
     bool operator<=(const Symbol& b);
-    void writeStream(QDataStream& out);
+    void writeStream(QTextStream& out);
     CharFormat getFont() const;
     void printSymbol();
 
-    friend QDataStream &operator <<(QDataStream &stream, const Symbol &myclass);
-    friend QDataStream &operator >>(QDataStream &stream, Symbol &myclass);
+    friend QDataStream &operator <<(QDataStream &stream, const Symbol &myClass);
+    friend QDataStream &operator >>(QDataStream &stream, Symbol &myClass);
 };
 
 

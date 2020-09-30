@@ -26,6 +26,9 @@
 #define SIGNUP_KO 9
 #define LOGOUT 10
 #define CURSOR_CHANGED 11
+#define LOAD_REQUEST 12
+#define LOAD_RESPONSE 13
+#define SAVE 14
 
 
 

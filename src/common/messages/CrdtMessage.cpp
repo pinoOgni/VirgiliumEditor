@@ -5,21 +5,18 @@
 #include <iostream>
 #include "CrdtMessage.h"
 #include <QDataStream>
-CrdtMessage::CrdtMessage():BasicMessage(sender) {
+#include <utility>
 
-}
+CrdtMessage::CrdtMessage() : BasicMessage(sender) {}
 
-CrdtMessage::CrdtMessage(quintptr sender, Symbol s, _int from, QString action):
-    BasicMessage(sender),
-    s(s),
-    from(from),
-    action(action) {
-
-}
+CrdtMessage::CrdtMessage(quintptr sender, Symbol s, _int from, QString action) :
+        BasicMessage(sender),
+        s(std::move(s)),
+        from(from),
+        action(std::move(action)) {}
 
 _int CrdtMessage::getFrom() const {
     return this->from;
-    return 0;
 }
 
 Symbol CrdtMessage::getSymbol() const {
@@ -29,7 +26,6 @@ Symbol CrdtMessage::getSymbol() const {
 QString CrdtMessage::getAction() const {
     return this->action;
 }
-
 
 void CrdtMessage::printMessage() {
     std::cout<<"messaggio inviato da: "<<this->from<<"action=\""<<this->action.toStdString()<<"\""<<std::endl;

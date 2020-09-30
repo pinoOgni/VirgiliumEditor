@@ -27,7 +27,6 @@ class Model {
     std::map<ClientSocket*,User> clientToUser;
     std::atomic<quint32> IDSeed;
 
-
 public:
   Model();
 

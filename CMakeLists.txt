@@ -34,8 +34,9 @@ add_executable(VirgiliumServer src/serverMain.cpp src/common/constants.h
         src/server/model/ServerDocument.cpp src/server/model/ServerDocument.h
         src/server/model/Database.h  src/server/model/Database.cpp
         src/server/model/Model.h src/server/model/Model.cpp
+        src/common/messages/StorageMessage.cpp src/common/messages/StorageMessage.h)
         src/common/messages/InvitationMessage.cpp src/common/messages/InvitationMessage.h
-        )
+)
 
 
 
@@ -67,6 +68,7 @@ add_executable(VirgiliumClient ${PROJECT_RESOURCE} src/clientMain.cpp src/common
         src/client/server_virgilium.h src/client/server_virgilium.cpp
         src/client/virgilium_client.h src/client/virgilium_client.cpp
         src/client/view/TextEditor.h src/client/view/TextEditor.cpp src/client/view/TextEditor.ui
+        src/common/messages/StorageMessage.cpp src/common/messages/StorageMessage.h)
         src/common/messages/InvitationMessage.cpp src/common/messages/InvitationMessage.h)
 
 

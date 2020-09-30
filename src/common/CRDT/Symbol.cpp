@@ -6,6 +6,7 @@
 #include "Symbol.h"
 #include <QDataStream>
 #include <common/messages/CrdtMessage.h>
+
 Symbol::Symbol() {
 
 }
@@ -76,14 +77,13 @@ void Symbol::printSymbol() {
     std::cout<<"]\n";
 }
 
-QDataStream &operator<<(QDataStream &stream, const Symbol &myclass) {
-    stream << myclass._siteId;
-    stream << myclass._counterId;
-    stream << myclass.pos;
-    stream << myclass.letter;
-    //stream << myclass.font.background;
-    stream << myclass.font.font;
-    stream << myclass.font.foreground;
+QDataStream &operator<<(QDataStream &stream, const Symbol &myClass) {
+    stream << myClass._siteId;
+    stream << myClass._counterId;
+    stream << myClass.pos;
+    stream << myClass.letter;
+    stream << myClass.font.font;
+    stream << myClass.font.foreground;
     return stream;
 }
 
@@ -92,7 +92,6 @@ QDataStream &operator>>(QDataStream &stream, Symbol &myclass) {
     stream >> myclass._counterId;
     stream >> myclass.pos;
     stream >> myclass.letter;
-    //stream >> myclass.font.background;
     stream >> myclass.font.font;
     stream >> myclass.font.foreground;
     return stream;
@@ -130,14 +129,13 @@ bool Symbol::operator<=(const Symbol &b) {
 }
 
 //TODO: forse sarà cancellato
-void Symbol::writeStream(QDataStream &out) {
+void Symbol::writeStream(QTextStream &out) {
     out<<this->_siteId;
     out<<this->_counterId;
-    out<<this->pos;
+    //out<<this->pos;
     out<<this->letter;
-    //out<<this->font.background;
     out<<this->font.font;
-    out<<this->font.foreground;
+    //out<<this->font.foreground;
 }
 
 

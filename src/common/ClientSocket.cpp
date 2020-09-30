@@ -16,12 +16,25 @@ void ClientSocket::onReadyRead() {
         return;
     }
     switch(code) {
+        case LOAD_RESPONSE: {
+            StorageMessage storageMessage;
+            this->in >> storageMessage;
+            emit storageMessageReceivedLoad(storageMessage);
+            break;
+        }
+        case LOAD_REQUEST:
+        case SAVE: {
+            StorageMessage storageMessage;
+            this->in >> storageMessage;
+            emit storageMessageReceived(code, storageMessage);
+            break;
+        }
         case CLIENT_CONNECTED: {
             BasicMessage bm;
             this->in >> bm;
             emit basicMessageReceived(code, bm);
-        }
             break;
+        }
         case LOGIN:
         case SIGNUP:
         case GET_INFO_USER:
@@ -32,16 +45,16 @@ void ClientSocket::onReadyRead() {
             this->in >> um;
             emit userMessageReceived(code, um);
             qDebug() << "code " << code;
-        }
             break;
+        }
         case LOGIN_KO:
         case LOGIN_OK:
         case SIGNUP_OK:
         case SIGNUP_KO:{
             qDebug() << "ciao ale " << code;
             emit loginSignupReceived(code);
-        }
             break;
+        }
         case GET_FILES_OWNER_OK:
         case GET_FILES_OWNER_KO:
         case GET_FILES_COLLABORATOR_OK:
@@ -56,6 +69,7 @@ void ClientSocket::onReadyRead() {
                 filesMessage.push_back(temp);
             }
             emit filesMessageReceived(code,filesMessage);
+            break;
         }
         case GET_ALL_DATA_OK: {
             UserMessage um = UserMessage();
@@ -87,8 +101,8 @@ void ClientSocket::onReadyRead() {
                 item.printUserInfo();
 
             emit allDataReceived(code,um,row1,filesOwner,row2,filesCollabs);
+            break;
         }
-        break;
         case RENAME_FILE:
         case DELETE_FILE:
         case NEW_FILE: {
@@ -96,8 +110,8 @@ void ClientSocket::onReadyRead() {
             FileManagementMessage fileManagementMessage;
             this->in >> fileManagementMessage;
             emit fileManagementMessageReceived(code,fileManagementMessage);
+            break;
         }
-        break;
         case RENAME_FILE_OK:
         case RENAME_FILE_KO:
         case DELETE_FILE_OK:
@@ -105,17 +119,18 @@ void ClientSocket::onReadyRead() {
         case NEW_FILE_OK:
         case NEW_FILE_KO:{
             emit fileManagementMessageResponse(code);
+            break;
         }
-        break;
         case CHANGE_PASSWORD: {
             ChangePasswordMessage changePasswordMessage;
             this->in >> changePasswordMessage;
             emit changePasswordMessageReceived(code,changePasswordMessage);
+            break;
         }
-        break;
         case CHANGE_PASSWORD_OK:
         case CHANGE_PASSWORD_KO: {
             emit changePasswordMessageResponse(code);
+            break;
         }
         break;
         case CREATE_INVITE:
@@ -125,6 +140,7 @@ void ClientSocket::onReadyRead() {
             UserManagementMessage userManagementMessage;
             this-> in >> userManagementMessage;
             emit userManagementMessageReceived(code,userManagementMessage);
+            break;
         }
         break;
         case INVITE_CREATED:
@@ -141,6 +157,10 @@ void ClientSocket::onReadyRead() {
         case UNSUBSCRIBE_OK:
         case UNSUBSCRIBE_KO: {
             emit userManagementMessageResponse(code);
+            break;
+        }
+        default: {
+
         }
         case LOGOUT: {
             emit logoutReceived(LOGOUT);
@@ -270,12 +290,30 @@ void ClientSocket::send(_int code, UserManagementMessage userManagementMessage) 
     this->write(arrBlock);
 }
 
+void ClientSocket::sendStorage(_int code, StorageMessage &storageMessage) {
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
+
+    out << code;
+    out << storageMessage;
+    this->write(arrBlock);
+}
+  
+
 void ClientSocket::send(_int code, InvitationMessage invitationMessage) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
 
     out << code;
     out << invitationMessage;
+    this->write(arrBlock);
+}
 
+void ClientSocket::sendCrdt(_int code, CrdtMessage &crdtMessage) {
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
+
+    out << code;
+    out << crdtMessage;
     this->write(arrBlock);
 }

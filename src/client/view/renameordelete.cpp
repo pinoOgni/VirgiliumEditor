@@ -9,30 +9,28 @@
 
 
 renameOrDelete::renameOrDelete(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::renameOrDelete)
-{
+        QDialog(parent),
+        ui(new Ui::renameOrDelete) {
     ui->setupUi(this);
 }
 
-renameOrDelete::~renameOrDelete()
-{
+renameOrDelete::~renameOrDelete() {
     delete ui;
 }
 
 
 void renameOrDelete::keyPressEvent(QKeyEvent *e) {
-    switch (e->key ()) {
-           case Qt::Key_Return:
-           case Qt::Key_Enter:
-                on_delete_2_clicked();
-             break;
-           default:
-               QDialog::keyPressEvent (e);
-           }
+    switch (e->key()) {
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+            on_delete_2_clicked();
+            break;
+        default:
+            QDialog::keyPressEvent(e);
+    }
 }
 
-void renameOrDelete::receiveData_2(ClientStuff *client,QString email,QString filename) {
+void renameOrDelete::receiveData_2(ClientStuff *client, QString email, QString filename) {
     //bridge between secondlogin and delete or rename dialog
     this->email = email;
     this->filename = filename;
@@ -40,45 +38,43 @@ void renameOrDelete::receiveData_2(ClientStuff *client,QString email,QString fil
     qDebug() << "receiveData_2 renameordelete" << email << filename;
 }
 
-void renameOrDelete::on_delete_2_clicked()
-{
-       qDebug() << "on_delete_2_clicked";
-       deleteFile *newDeleteFile = new deleteFile(this);
-       connect(this,SIGNAL(sendData_2(ClientStuff *,QString,QString)),newDeleteFile,SLOT(receiveData_2(ClientStuff *,QString,QString)));
-       emit sendData_2(client,email,filename);
+void renameOrDelete::on_delete_2_clicked() {
+    qDebug() << "on_delete_2_clicked";
+    deleteFile *newDeleteFile = new deleteFile(this);
+    connect(this, SIGNAL(sendData_2(ClientStuff * , QString, QString)), newDeleteFile,
+            SLOT(receiveData_2(ClientStuff * , QString, QString)));
+    emit sendData_2(client, email, filename);
 
-       //close the qdialog deletefile, send a signal to secondwindow
-       connect(newDeleteFile,&deleteFile::Want2Close3,this,&renameOrDelete::Want2Close2);
+    //close the qdialog deletefile, send a signal to secondwindow
+    connect(newDeleteFile, &deleteFile::Want2Close3, this, &renameOrDelete::Want2Close2);
 
-       newDeleteFile->show();
-       this->close();
+    newDeleteFile->show();
+    this->close();
 }
 
-void renameOrDelete::on_rename_clicked()
-{
+void renameOrDelete::on_rename_clicked() {
     qDebug() << "on_rename_clicked";
     renameFile *newRenameFile = new renameFile(this);
-    connect(this,SIGNAL(sendData_2(ClientStuff *,QString,QString)),newRenameFile,SLOT(receiveData_2(ClientStuff *,QString,QString)));
-    emit sendData_2(client,email,filename);
+    connect(this, SIGNAL(sendData_2(ClientStuff * , QString, QString)), newRenameFile,
+            SLOT(receiveData_2(ClientStuff * , QString, QString)));
+    emit sendData_2(client, email, filename);
 
 
     //close the qdialog renamefile, send a signal to secondwindow
-    connect(newRenameFile,&renameFile::Want2Close3,this,&renameOrDelete::Want2Close2);
+    connect(newRenameFile, &renameFile::Want2Close3, this, &renameOrDelete::Want2Close2);
 
     newRenameFile->show();
     this->close();
 
 }
 
-void renameOrDelete::on_cancel_clicked()
-{
+void renameOrDelete::on_cancel_clicked() {
     this->close();
 }
 
-void renameOrDelete::on_openTextEditor_clicked()
-{
-    //SIMONE PARTIAMO DA QUAAA
-    textEditor = new TextEditor;
+void renameOrDelete::on_openTextEditor_clicked() {
+    QString path = "storage/" + this->email + "/" + this->filename;
+    textEditor = new TextEditor(nullptr, client->getSocket(), path);
     close();
     textEditor->show();
 }

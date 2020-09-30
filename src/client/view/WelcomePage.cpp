@@ -2,6 +2,7 @@
 // Created by pinoOgni on 10/08/20.
 //
 
+#include <QtCore/QRegularExpression>
 #include "WelcomePage.h"
 #include "ui_WelcomePage.h"
 

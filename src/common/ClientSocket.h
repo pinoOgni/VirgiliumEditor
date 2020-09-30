@@ -10,6 +10,8 @@
 #include "../common/messages/BasicMessage.h"
 #include <QtNetwork/QTcpSocket>
 #include <QDataStream>
+#include <common/messages/StorageMessage.h>
+#include <common/messages/CrdtMessage.h>
 #include "../common/messages/InvitationMessage.h"
 #include "../common/messages/FilesMessage.h"
 #include "../common/messages/FileManagementMessage.h"
@@ -35,6 +37,11 @@ public:
 
     void send(_int code, BasicMessage basicMessage);
     void send(_int code, UserMessage userMessage);
+
+    void sendStorage(_int code, StorageMessage &storageMessage);
+
+    void sendCrdt(_int code, CrdtMessage &crdtMessage);
+
     void send(_int res);
     void send(_int code, std::vector<FilesMessage> filesMessage);
     void setClientID(quintptr clientID);
@@ -49,6 +56,8 @@ public:
 signals:
     void basicMessageReceived( _int code, BasicMessage basicMessage);
     void userMessageReceived(_int code, UserMessage userMessage);
+    void storageMessageReceived(_int code, StorageMessage storageMessage);
+    void storageMessageReceivedLoad(StorageMessage storageMessage);
     void loginSignupReceived(_int code);
     void filesMessageReceived(_int code, std::vector<FilesMessage> filesMessage);
     void fileManagementMessageReceived(_int code, FileManagementMessage fileManagementMessage);

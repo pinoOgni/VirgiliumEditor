@@ -5,12 +5,34 @@
 #include <common/ClientSocket.h>
 #include <common/constants.h>
 #include <common/messages/CrdtMessage.h>
+#include <QtGui/QTextDocument>
+#include <QTextCodec>
 #include "Server.h"
 
+Server::Server(unsigned short port, Model &model) : model(model) {
+    if (!listen(QHostAddress::LocalHost, port)) {
+        qDebug() << "Errore server";
+        exit(-1);
+    }
+
+    qDebug() << "Listening on address:" << this->serverAddress().toString() << ":" << this->serverPort() << "\n";
+
+    //ale fai occhio
+    //connect(this, &Server::processFilesMessage, this, &Server::onProcessFileMessage);
+
+    //TODO PROVA PINO
+    if(TESTDB==true) {
+        QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).removeRecursively();
+        QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).mkdir("VIRGILIUM_STORAGE");
+    }
+
+    //if(!QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append("/VIRGILIUM_STORAGE")).exists())
+}
+
 void Server::incomingConnection(qintptr handle) {
-    auto nuovoSocket =  new ClientSocket(this);
-    if(!nuovoSocket->setSocketDescriptor(handle)){
-        nuovoSocket->deleteLater();
+    auto newSocket = new ClientSocket(this);
+    if (!newSocket->setSocketDescriptor(handle)) {
+        newSocket->deleteLater();
         return;
     }
     nuovoSocket->setClientID(handle);
@@ -65,84 +87,99 @@ void Server::incomingConnection(qintptr handle) {
     );
 
 
+    newSocket->setClientID(handle);
+
+    connect(newSocket, &QTcpSocket::stateChanged, this, &Server::onSocketStateChanged);
+    connect(newSocket, &ClientSocket::basicMessageReceived, this, &Server::onProcessBasicMessage);
+    connect(newSocket, &ClientSocket::userMessageReceived, this, &Server::onProcessUserMessage);
+    connect(newSocket, &ClientSocket::storageMessageReceived, this, &Server::onProcessStorageMessage);
+    connect(newSocket, &ClientSocket::fileManagementMessageReceived, this, &Server::onFileManagementMessageReceived);
+    connect(newSocket, &ClientSocket::changePasswordMessageReceived, this, &Server::onChangePasswordMessageReceived);
+    connect(newSocket, &ClientSocket::userManagementMessageReceived, this, &Server::onUserManagementMessageReceived);
+
     //adesso dire al nuovo client che si è connesso
     BasicMessage basicMessage(handle);
-    qDebug()<<"Sto mandando: " << handle << "\n";
+    qDebug() << "Sending: " << handle << "\n";
+    newSocket->send(CLIENT_CONNECTED, basicMessage);
 
-    nuovoSocket->send(CLIENT_CONNECTED,basicMessage);
-
-    /*    QByteArray blocco;
-    QDataStream out(&blocco,QIODevice::ReadWrite);
-    out.setVersion(Q_DATA_STREAM_VERSION);
-    _int code = CLIENT_CONNECTED;
-    out<<code;
-    out<<basicMessage;
-    nuovoSocket->write(blocco);*/
-    qDebug()<<"ho mandato\n";
-}
-
-void Server::onMessageReceived(QByteArray data) {
-    auto sender = dynamic_cast<ClientSocket *> (QObject::sender());
-
-    auto id = sender->getClientID();
-    qDebug()<<"qui arrivo popo";
-    //_int code =
-    this->processMessage(sender,data);
-
-}
-
-Server::Server(unsigned short port, Model& model):model(model) {
-    if(!listen(QHostAddress::LocalHost, port)){
-        qDebug()<<"Errore server";
-        exit(-1);
-    }
-    qDebug()<<"Listening on address:" << this->serverAddress().toString()<<":" << this->serverPort() <<"\n";
-    //connect(this,&Server::processBasicMessage,this,&Server::onProcessBasicMessage);
-    connect(this,&Server::processCrdtMessage,this,&Server::onProcessCrdtMessage);
-    connect(this,&Server::processUserMessage,this,&Server::onProcessUserMessage);
-
-    //ale fai occhio
-    //connect(this, &Server::processFilesMessage, this, &Server::onProcessFileMessage);
-
-    //TODO PROVA PINO
-    if(TESTDB==true) {
-        QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).removeRecursively();
-        QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).mkdir("VIRGILIUM_STORAGE");
-    }
-
-    //if(!QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append("/VIRGILIUM_STORAGE")).exists())
+    qDebug() << "ho mandato\n";
 }
 
 void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
 
 }
 
+void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
+    //robe super basic
+    switch (code) {
+        case CLIENT_CONNECTED:
+            break;
+  }
+
+
+void Server::onProcessCrdtMessage(_int code, CrdtMessage crdtMessage) {
+    //logica crdt
+}
+
+void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
+    auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
+    switch(code) {
+        case LOAD_REQUEST: {
+            if (!QFile::exists(storageMessage.getFileName()))
+                return;
+
+            QFile file(storageMessage.getFileName());
+            if (!file.open(QFile::ReadOnly))
+                return;
+
+            QVector<Symbol> symbols;
+            QDataStream in(&file);
+            in >> symbols;
+            file.close();
+
+            StorageMessage storageMessage1(0, symbols, storageMessage.getFileName());
+            sender->sendStorage(LOAD_RESPONSE, storageMessage1);
+            break;
+        }
+        case SAVE: {
+            if(!QDir("storage").exists())
+                QDir().mkdir("storage");
+
+            QRegExp tagExp("/");
+            QStringList dataList = storageMessage.getFileName().split(tagExp);
+
+            if(!QDir("storage/" + dataList[1]).exists())
+                QDir().mkdir("storage/" + dataList[1]);
+
+            QDir dir("storage/" + dataList[1]);
+            QString filename = dataList[2];
+            QFile file(dir.absoluteFilePath(filename));
+            if (!file.open(QFile::WriteOnly))
+                return;
+
+            QDataStream out(&file);
+            out << storageMessage.getSymbols();
+            file.close();
+            break;
+        }
+        default: {
+
+        }
+    }
+}
+
+void Server::dispatch() {
+
 void Server::processMessage(ClientSocket *sender,QByteArray data) { }
 
 
 
-void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
-    //robe super basic
-    switch(code){
-        case CLIENT_CONNECTED:
-            break;
-    }
-}
-
-
-void Server::onProcessCrdtMessage(_int code,CrdtMessage crdtMessage) {
-        //logica crdt
-}
-
-void  Server::dispatch() { }
-
-
-
-void Server::onProcessUserMessage(_int code,UserMessage userMessage) {
+void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
    // qDebug() << userMessage.getUser().printMessage();
    auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
     qDebug() << "userMessage onProcessUserMessage " << userMessage.getUser().printMessage();
-    switch (code) {
+
+  switch (code) {
         case LOGIN: {
             if (Model::loginUser(userMessage.getUser())) {
                 sender->send(LOGIN_OK);
@@ -152,7 +189,7 @@ void Server::onProcessUserMessage(_int code,UserMessage userMessage) {
                 qDebug() << "readClient L false";
             }
         }
-        break;
+            break;
         case SIGNUP: {
             if (Model::signinUser(userMessage.getUser())) {
                 sender->send(SIGNUP_OK);
@@ -162,21 +199,20 @@ void Server::onProcessUserMessage(_int code,UserMessage userMessage) {
                 qDebug() << "readClient S false";
             }
         }
-        break;
+            break;
         case GET_INFO_USER: {
             User userReturn = model.getInfoUser(userMessage.getUser());
             // if(userReturn.getEmail().isEmpty())
-            UserMessage userMessageReturn = UserMessage(sender->getClientID(),userReturn);
-            sender->send(GET_INFO_USER,userMessageReturn);
+            UserMessage userMessageReturn = UserMessage(sender->getClientID(), userReturn);
+            sender->send(GET_INFO_USER, userMessageReturn);
         }
-        break;
+            break;
         case GET_FILES_OWNER: {
             std::vector<FilesMessage> filesMessage = model.getFilesOwner(userMessage.getUser());
-            if(filesMessage.size()==0) {
+            if (filesMessage.size() == 0) {
                 qDebug() << "get_files_owner ko";
                 sender->send(GET_FILES_OWNER_KO, filesMessage);
-            }
-            else {
+            } else {
                 qDebug() << "get_files_owner ok";
 
                 //problema con sender dove lo metto?
@@ -185,14 +221,13 @@ void Server::onProcessUserMessage(_int code,UserMessage userMessage) {
                 sender->send(GET_FILES_OWNER_OK, filesMessage);
             }
         }
-        break;
+            break;
         case GET_FILES_COLLABORATOR: {
             std::vector<FilesMessage> filesMessage = model.getUserFiles(userMessage.getUser());
-            if(filesMessage.size()==0) {
+            if (filesMessage.size() == 0) {
                 qDebug() << "get_user_files ko";
                 sender->send(GET_FILES_COLLABORATOR_OK, filesMessage);
-            }
-            else {
+            } else {
                 qDebug() << "get_user_files ok";
 
                 //problema con sender dove lo metto?
@@ -201,11 +236,11 @@ void Server::onProcessUserMessage(_int code,UserMessage userMessage) {
                 sender->send(GET_FILES_COLLABORATOR_KO, filesMessage);
             }
         }
-        break;
+            break;
         case GET_ALL_DATA: {
             User userReturn = model.getInfoUser(userMessage.getUser());
             // if(userReturn.getEmail().isEmpty())
-            UserMessage userMessageReturn = UserMessage(sender->getClientID(),userReturn);
+            UserMessage userMessageReturn = UserMessage(sender->getClientID(), userReturn);
 
             std::vector<FilesMessage> filesOwner = model.getFilesOwner(userMessage.getUser());
             for (int i = 0; i < filesOwner.size(); i++)
@@ -215,57 +250,57 @@ void Server::onProcessUserMessage(_int code,UserMessage userMessage) {
             for (int i = 0; i < filesCollabs.size(); i++)
                 filesCollabs[i].setSender(sender->getClientID());
 
-            sender->send(GET_ALL_DATA_OK, userMessageReturn,filesOwner,filesCollabs);
+            sender->send(GET_ALL_DATA_OK, userMessageReturn, filesOwner, filesCollabs);
             qDebug() << "GET_ALL_DATA_OK ";
         }
-        break;
+            break;
     }
 }
 
 
 void Server::onFileManagementMessageReceived(_int code, FileManagementMessage fileManagementMessage) {
-    auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
+    auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     qDebug() << "onFileManagementMessageReceived ";
-    switch(code) {
+    switch (code) {
         case RENAME_FILE: {
             qDebug() << "rename_file: " << fileManagementMessage.getEmail() << "\n";
-            if(model.renameFile(fileManagementMessage))
+            if (model.renameFile(fileManagementMessage))
                 sender->send(RENAME_FILE_OK);
             else
                 sender->send(RENAME_FILE_KO);
         }
-        break;
+            break;
         case DELETE_FILE: {
             qDebug() << "delete_file: " << fileManagementMessage.getEmail() << "\n";
-            if(model.deleteFile(fileManagementMessage))
+            if (model.deleteFile(fileManagementMessage))
                 sender->send(DELETE_FILE_OK);
             else
                 sender->send(DELETE_FILE_KO);
         }
-        break;
+            break;
         case NEW_FILE: {
             qDebug() << "new_file: " << fileManagementMessage.getEmail() << "\n";
-            if(model.newFile(fileManagementMessage))
+            if (model.newFile(fileManagementMessage))
                 sender->send(NEW_FILE_OK);
             else
                 sender->send(NEW_FILE_KO);
         }
-        break;
+            break;
     }
 }
 
 
 void Server::onChangePasswordMessageReceived(_int code, ChangePasswordMessage changePasswordMessage) {
-    auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
-    switch(code) {
+    auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
+    switch (code) {
         case CHANGE_PASSWORD: {
             qDebug() << "change_password: " << changePasswordMessage.getEmail() << "\n";
-            if(model.changePassword(changePasswordMessage))
+            if (model.changePassword(changePasswordMessage))
                 sender->send(CHANGE_PASSWORD_OK);
             else
                 sender->send(CHANGE_PASSWORD_KO);
         }
-        break;
+            break;
     }
 }
 
@@ -282,28 +317,28 @@ void Server::onUserManagementMessageReceived(_int code, UserManagementMessage us
         break;
         case ADD_COLLABORATOR: {
             qDebug() << "add_collaborator: " << userManagementMessage.getEmail_owner() << "\n";
-            if(model.addCollaborator(userManagementMessage))
+            if (model.addCollaborator(userManagementMessage))
                 sender->send(ADD_COLLABORATOR_OK);
             else
                 sender->send(ADD_COLLABORATOR_KO);
         }
-        break;
+            break;
         case REMOVE_COLLABORATOR: {
             qDebug() << "remove_collaborator: " << userManagementMessage.getEmail_owner() << "\n";
-            if(model.removeCollaborator(userManagementMessage))
+            if (model.removeCollaborator(userManagementMessage))
                 sender->send(REMOVE_COLLABORATOR_OK);
             else
                 sender->send(REMOVE_COLLABORATOR_KO);
         }
-        break;
+            break;
         case UNSUBSCRIBE: {
             qDebug() << "unsubscribe: " << userManagementMessage.getEmail_collaborator() << "\n";
-            if(model.unsubscribe(userManagementMessage))
+            if (model.unsubscribe(userManagementMessage))
                 sender->send(UNSUBSCRIBE_OK);
             else
                 sender->send(UNSUBSCRIBE_KO);
         }
-        break;
+            break;
     }
 }
 

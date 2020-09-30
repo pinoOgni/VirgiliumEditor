@@ -35,19 +35,16 @@ class symbol;
 class virgilium_client : public QDialog {
     Q_OBJECT
 
-    server_virgilium *server; // ------------> QTcpServer *server;
-
+    ClientSocket *socket;
 
     _int _siteId;
     std::vector<Symbol> _symbols;
     _int _counter;
 
-
-
     QVector<_int> getPosition(QVector<_int> prec,QVector<_int> succ);
 
 public:
-    explicit virgilium_client(QWidget *parent=0, QString ServerName=0, _int serverPort=0);
+    explicit virgilium_client(QWidget *parent, ClientSocket *receivedSocket);
     /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
      * Questo è il costruttore del client, è un oggetto QT, prende in input una stringa con l'ip del
      * server (hard-coded(per ora)) e la porta (hard-coded(per ora)).
@@ -61,13 +58,22 @@ public:
      * */
     ~virgilium_client();
     _int get_id() const;
+
     void localInsert(_int index, QString value, Symbol::CharFormat font);
-    void process(const CrdtMessage& m);
+
+    void process(const CrdtMessage &m);
     QString to_string();
     void localErase(_int index);
     void changeCursor(_int position);
     void changeCursorPosition(const CrdtMessage &m);
+
     void set_site_id(_int siteId);
+
+    void loadRequest(const QString &fileName);
+
+    void loadResponse(StorageMessage storageMessage);
+
+    void save(QString fileName);
     /*void mandaqualcosa();*/
 public slots:
     /*void faiLocalInsert();*/
@@ -75,7 +81,10 @@ public slots:
     void site_id_assignment();
     void insert_into_window(_int pos, QString character, Symbol::CharFormat font);
     void remove_into_window(_int pos);
+
     void change_cursor_position(_int position, _int siteId);
+
+    void load_response(QVector<Symbol> symbols);
 
 };
 

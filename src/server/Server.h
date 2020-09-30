@@ -17,23 +17,18 @@ class Server: public QTcpServer {
     //qui i dati del modello
     Model& model;
     void incomingConnection(qintptr handle) override;
-    void processMessage(ClientSocket *sender,QByteArray data);
 private slots:
-    void onMessageReceived(QByteArray data);
-
     void onSocketStateChanged(QTcpSocket::SocketState state);
     void onProcessBasicMessage(_int code,BasicMessage basicMessage);
     void onProcessCrdtMessage(_int code,CrdtMessage crdtMessage);
     void onProcessUserMessage(_int code,UserMessage userMessage);
+    void onProcessStorageMessage(_int code, StorageMessage storageMessage);
     void onFileManagementMessageReceived(_int code, FileManagementMessage fileManagementMessage);
     void onChangePasswordMessageReceived(_int code, ChangePasswordMessage changePasswordMessage);
     void onUserManagementMessageReceived(_int code, UserManagementMessage userManagementMessage);
     //void onProcessFileMessage(_int code, FilesMessage fileMessage);
     void onInvitationReceived(_int code, InvitationMessage invitationMessage);
     void onLogoutReceived(_int code); //pino close connection  DB user "logout"
-
-
-
 
 public:
     Server(unsigned short port, Model& model);
