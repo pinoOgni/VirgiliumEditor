@@ -126,7 +126,7 @@ void virgilium_client::changeCursor(_int position) {
     Symbol::CharFormat font = Symbol::CharFormat();
     Symbol s("", this->_siteId, this->_counter, pos, font);
     CrdtMessage m(0, s, this->_siteId, "CURSOR_CHANGED");
-    this->socket->sendCrdt(CURSOR_CHANGED, m);
+    //this->socket->sendCrdt(CURSOR_CHANGED, m);
 }
 
 /* This method is used to say to other clients that a char is deleted. */

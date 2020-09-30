@@ -73,7 +73,7 @@ void renameOrDelete::on_cancel_clicked() {
 }
 
 void renameOrDelete::on_openTextEditor_clicked() {
-    QString path = "storage/" + this->email + "/" + this->filename;
+    QString path = this->email + "/" + this->filename;
     textEditor = new TextEditor(nullptr, client->getSocket(), path);
     close();
     textEditor->show();

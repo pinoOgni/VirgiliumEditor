@@ -144,6 +144,7 @@ void TextEditor::save() {
 }
 
 TextEditor::~TextEditor() {
+    //ALE CONTROLLA QUA
     delete ui;
 }
 

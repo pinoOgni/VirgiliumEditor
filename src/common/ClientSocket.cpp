@@ -20,21 +20,22 @@ void ClientSocket::onReadyRead() {
             StorageMessage storageMessage;
             this->in >> storageMessage;
             emit storageMessageReceivedLoad(storageMessage);
-            break;
         }
+        break;
         case LOAD_REQUEST:
         case SAVE: {
             StorageMessage storageMessage;
             this->in >> storageMessage;
+            qDebug() << "cliensocket, save, load request, code " << code << " path" << storageMessage.getFileName();
             emit storageMessageReceived(code, storageMessage);
-            break;
         }
+        break;
         case CLIENT_CONNECTED: {
             BasicMessage bm;
             this->in >> bm;
             emit basicMessageReceived(code, bm);
-            break;
         }
+        break;
         case LOGIN:
         case SIGNUP:
         case GET_INFO_USER:
@@ -45,16 +46,16 @@ void ClientSocket::onReadyRead() {
             this->in >> um;
             emit userMessageReceived(code, um);
             qDebug() << "code " << code;
-            break;
         }
+        break;
         case LOGIN_KO:
         case LOGIN_OK:
         case SIGNUP_OK:
         case SIGNUP_KO:{
             qDebug() << "ciao ale " << code;
             emit loginSignupReceived(code);
-            break;
         }
+        break;
         case GET_FILES_OWNER_OK:
         case GET_FILES_OWNER_KO:
         case GET_FILES_COLLABORATOR_OK:
@@ -69,8 +70,8 @@ void ClientSocket::onReadyRead() {
                 filesMessage.push_back(temp);
             }
             emit filesMessageReceived(code,filesMessage);
-            break;
         }
+        break;
         case GET_ALL_DATA_OK: {
             UserMessage um = UserMessage();
             in >> um;
@@ -101,8 +102,8 @@ void ClientSocket::onReadyRead() {
                 item.printUserInfo();
 
             emit allDataReceived(code,um,row1,filesOwner,row2,filesCollabs);
-            break;
         }
+        break;
         case RENAME_FILE:
         case DELETE_FILE:
         case NEW_FILE: {
@@ -110,8 +111,8 @@ void ClientSocket::onReadyRead() {
             FileManagementMessage fileManagementMessage;
             this->in >> fileManagementMessage;
             emit fileManagementMessageReceived(code,fileManagementMessage);
-            break;
         }
+        break;
         case RENAME_FILE_OK:
         case RENAME_FILE_KO:
         case DELETE_FILE_OK:
@@ -119,18 +120,17 @@ void ClientSocket::onReadyRead() {
         case NEW_FILE_OK:
         case NEW_FILE_KO:{
             emit fileManagementMessageResponse(code);
-            break;
         }
+        break;
         case CHANGE_PASSWORD: {
             ChangePasswordMessage changePasswordMessage;
             this->in >> changePasswordMessage;
             emit changePasswordMessageReceived(code,changePasswordMessage);
-            break;
         }
+        break;
         case CHANGE_PASSWORD_OK:
         case CHANGE_PASSWORD_KO: {
             emit changePasswordMessageResponse(code);
-            break;
         }
         break;
         case CREATE_INVITE:
@@ -140,7 +140,6 @@ void ClientSocket::onReadyRead() {
             UserManagementMessage userManagementMessage;
             this-> in >> userManagementMessage;
             emit userManagementMessageReceived(code,userManagementMessage);
-            break;
         }
         break;
         case INVITE_CREATED:
@@ -157,11 +156,8 @@ void ClientSocket::onReadyRead() {
         case UNSUBSCRIBE_OK:
         case UNSUBSCRIBE_KO: {
             emit userManagementMessageResponse(code);
-            break;
         }
-        default: {
-
-        }
+        break;
         case LOGOUT: {
             emit logoutReceived(LOGOUT);
         }
@@ -309,7 +305,8 @@ void ClientSocket::send(_int code, InvitationMessage invitationMessage) {
     this->write(arrBlock);
 }
 
-void ClientSocket::sendCrdt(_int code, CrdtMessage &crdtMessage) {
+/*
+ * void ClientSocket::sendCrdt(_int code, CrdtMessage &crdtMessage) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
 
@@ -317,3 +314,4 @@ void ClientSocket::sendCrdt(_int code, CrdtMessage &crdtMessage) {
     out << crdtMessage;
     this->write(arrBlock);
 }
+ */

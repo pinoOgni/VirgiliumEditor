@@ -40,7 +40,7 @@ public:
 
     void sendStorage(_int code, StorageMessage &storageMessage);
 
-    void sendCrdt(_int code, CrdtMessage &crdtMessage);
+    //void sendCrdt(_int code, CrdtMessage &crdtMessage);
 
     void send(_int res);
     void send(_int code, std::vector<FilesMessage> filesMessage);

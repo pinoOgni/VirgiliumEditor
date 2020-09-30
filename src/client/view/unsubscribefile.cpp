@@ -85,7 +85,8 @@ void unsubscribeFile::isUnsubscribed(bool res) {
 void unsubscribeFile::on_pushButton_clicked()
 {
     //SIMONE PARTIAMO DA QUAAA
-    textEditor = new TextEditor(nullptr, this->client->getSocket(), "storage/test2/TEST.txt");
+    QString path = this->email_owner + "/" + this->filename;
+    textEditor = new TextEditor(nullptr, this->client->getSocket(), path);
     close();
     textEditor->show();
 }

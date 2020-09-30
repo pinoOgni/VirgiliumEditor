@@ -30,9 +30,9 @@ Server::Server(unsigned short port, Model &model) : model(model) {
 }
 
 void Server::incomingConnection(qintptr handle) {
-    auto newSocket = new ClientSocket(this);
-    if (!newSocket->setSocketDescriptor(handle)) {
-        newSocket->deleteLater();
+    auto nuovoSocket = new ClientSocket(this);
+    if (!nuovoSocket->setSocketDescriptor(handle)) {
+        nuovoSocket->deleteLater();
         return;
     }
     nuovoSocket->setClientID(handle);
@@ -42,7 +42,7 @@ void Server::incomingConnection(qintptr handle) {
             &QTcpSocket::stateChanged,
             this,
             &Server::onSocketStateChanged
-            );
+    );
     connect(
             nuovoSocket,
             &ClientSocket::basicMessageReceived,
@@ -86,21 +86,17 @@ void Server::incomingConnection(qintptr handle) {
             &Server::onInvitationReceived
     );
 
+    connect(nuovoSocket, &ClientSocket::storageMessageReceived, this, &Server::onProcessStorageMessage);
 
-    newSocket->setClientID(handle);
 
-    connect(newSocket, &QTcpSocket::stateChanged, this, &Server::onSocketStateChanged);
-    connect(newSocket, &ClientSocket::basicMessageReceived, this, &Server::onProcessBasicMessage);
-    connect(newSocket, &ClientSocket::userMessageReceived, this, &Server::onProcessUserMessage);
-    connect(newSocket, &ClientSocket::storageMessageReceived, this, &Server::onProcessStorageMessage);
-    connect(newSocket, &ClientSocket::fileManagementMessageReceived, this, &Server::onFileManagementMessageReceived);
-    connect(newSocket, &ClientSocket::changePasswordMessageReceived, this, &Server::onChangePasswordMessageReceived);
-    connect(newSocket, &ClientSocket::userManagementMessageReceived, this, &Server::onUserManagementMessageReceived);
+
+    nuovoSocket->setClientID(handle);
+
 
     //adesso dire al nuovo client che si è connesso
     BasicMessage basicMessage(handle);
     qDebug() << "Sending: " << handle << "\n";
-    newSocket->send(CLIENT_CONNECTED, basicMessage);
+    nuovoSocket->send(CLIENT_CONNECTED, basicMessage);
 
     qDebug() << "ho mandato\n";
 }
@@ -114,21 +110,27 @@ void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
     switch (code) {
         case CLIENT_CONNECTED:
             break;
-  }
-
+    }
+}
 
 void Server::onProcessCrdtMessage(_int code, CrdtMessage crdtMessage) {
     //logica crdt
 }
 
 void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
+    qDebug() << "onProcessStorageMessage";
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch(code) {
         case LOAD_REQUEST: {
-            if (!QFile::exists(storageMessage.getFileName()))
+            QFile file (QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).filePath(storageMessage.getFileName()));
+
+            if(!file.exists())
                 return;
 
-            QFile file(storageMessage.getFileName());
+            //QString filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).filePath(storageMessage.getFileName());
+            qDebug() << "onprocessStoragemessage load request" << storageMessage.getFileName();
+            //QFile file(filenamePath);
+
             if (!file.open(QFile::ReadOnly))
                 return;
 
@@ -139,39 +141,30 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
 
             StorageMessage storageMessage1(0, symbols, storageMessage.getFileName());
             sender->sendStorage(LOAD_RESPONSE, storageMessage1);
-            break;
         }
+        break;
         case SAVE: {
-            if(!QDir("storage").exists())
-                QDir().mkdir("storage");
-
             QRegExp tagExp("/");
             QStringList dataList = storageMessage.getFileName().split(tagExp);
 
-            if(!QDir("storage/" + dataList[1]).exists())
-                QDir().mkdir("storage/" + dataList[1]);
-
-            QDir dir("storage/" + dataList[1]);
-            QString filename = dataList[2];
-            QFile file(dir.absoluteFilePath(filename));
+            QString filenamePath =  QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(dataList[0])+"/").filePath(dataList[1]);
+            qDebug() << "onprocessStoragemessage save" << filenamePath;
+            QFile file(filenamePath);
             if (!file.open(QFile::WriteOnly))
                 return;
 
             QDataStream out(&file);
             out << storageMessage.getSymbols();
             file.close();
-            break;
         }
+        break;
         default: {
 
         }
     }
 }
 
-void Server::dispatch() {
-
-void Server::processMessage(ClientSocket *sender,QByteArray data) { }
-
+void Server::dispatch() {}
 
 
 void Server::onProcessUserMessage(_int code, UserMessage userMessage) {

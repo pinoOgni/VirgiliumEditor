@@ -163,7 +163,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
 
                         //create first file "provafile"
                         QString filenamePath;
-                        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append("pino@pino.com")).filePath("provafile").append(".txt");
+                        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append("pino@pino.com")).filePath("provafile");
                         QFile file (filenamePath);
                         file.open(QIODevice::WriteOnly | QIODevice::Text);
 
@@ -207,7 +207,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         }
 
                         //create second file "ciao"
-                        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append("pino@pino.com")).filePath("ciao").append(".txt");
+                        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append("pino@pino.com")).filePath("ciao");
                         QFile file2 (filenamePath);
                         file2.open(QIODevice::WriteOnly | QIODevice::Text);
 
@@ -571,7 +571,7 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
             db.close();
 
             //TODO PINO delete file in the file system --> PROVA
-            QString filename = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(fileManagementMessage.getFilename()).append(".txt");
+            QString filename = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(fileManagementMessage.getFilename());
             QFile file (filename);
             file.remove();
         }
@@ -657,7 +657,7 @@ bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
         if(!QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).exists())
             QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).mkdir(fileManagementMessage.getEmail());
 
-        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(filenameTemp).append(".txt");
+        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(filenameTemp);
 
         qDebug() << "new file db" << filenamePath;
 
@@ -941,6 +941,7 @@ QString Database::createUrlCollaboratorDB(UserManagementMessage userManagementMe
         qDebug() << "error opened db";
         return URL;
     }
+    return URL;
 }
 
 
