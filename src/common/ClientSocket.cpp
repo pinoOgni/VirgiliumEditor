@@ -207,8 +207,133 @@ void ClientSocket::onReadyRead() {
 
 }
 
+
+
+void ClientSocket::onSocketStateChanged(QTcpSocket::SocketState state) {
+
+
+    switch (state) {
+        case QAbstractSocket::ListeningState:
+            qDebug() << "The socket is listening.";
+            break;
+        case QAbstractSocket::UnconnectedState:
+        {
+            qDebug() << "The socket is not connected.";
+            //ADD SPIA ROSSA
+            break;
+        }
+        case QAbstractSocket::HostLookupState:
+            qDebug() << "The socket is performing a hostname lookup.";
+            break;
+        case QAbstractSocket::ConnectedState: {
+            qDebug() << "A connection is established.";
+            //ADD SPIA VERDE
+            break;
+        }
+        case QAbstractSocket::ConnectingState:
+            qDebug() << "The socket has started establishing a connection.";
+            break;
+        case QAbstractSocket::ClosingState:{
+        qDebug() << "The socket is about to close.";
+            auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
+            BasicMessage msg(sender->getClientID());
+            break;
+        }
+        default:
+            qDebug() << "Unknown State.";
+    }
+    return;
+}
+
+//solo per debug
+void ClientSocket::onConnected() {
+    qDebug() << "Connected.";
+    return;
+}
+
+
+void ClientSocket::onDisconnected() {
+    qDebug() << "disconnected.";
+    return;
+}
+
+void ClientSocket::onDisconnectedSocketServer() {
+    qDebug() << "disconnected.";
+    this->deleteLater();
+    return;
+}
+
+
+//solo per debug
+void ClientSocket::onBytesWritten(_int bytes) {
+    qDebug() << bytes << "bytes written";
+    return;
+}
+
+//add gli altri switch case
+void ClientSocket::onDisplayError(QTcpSocket::SocketError error){
+
+    switch (error) {
+        case QAbstractSocket::RemoteHostClosedError:  //l'host cade
+            qDebug() << "RemoteHostClosedError: the remote host closed the connection.";
+            break;
+        case QAbstractSocket::HostNotFoundError: //address ""
+            qDebug() << "HostNotFoundError: the host address was not found.";
+            break;
+        case QAbstractSocket::SocketAccessError:
+            qDebug() << "SocketAccessError: the socket operation failed because the application lacked the required privileges.";
+            break;
+        case QAbstractSocket::SocketResourceError:
+            qDebug() << "SocketResourceError: the local system ran out of resources (e.g., too many sockets).";
+            break;
+        case QAbstractSocket::ConnectionRefusedError: //se provo a connetermi ma il server è down
+            qDebug() << "ConnectionRefusedError: the connection was refused by the peer (or timed out).";
+            break;
+        case QAbstractSocket::NetworkError:
+            qDebug() << "NetworkError: an error occurred with the network.";
+            break;
+        case QAbstractSocket::OperationError:
+            qDebug() << "OperationError: an operation was attempted while the socket was in a state that did not permit it.";
+            break;
+        case QAbstractSocket::UnknownSocketError:
+            qDebug() << "UnknownSocketError: an unidentified error occurred..";
+            break;
+    }
+
+}
+
+//socket lato server
+//connected non serve perché non si fa la connecttohost
 ClientSocket::ClientSocket(QObject *parent) : QTcpSocket(parent), clientID(-1),in(this)  {
+
+    connect(this, &QTcpSocket::stateChanged,this,&ClientSocket::onSocketStateChanged);
+    connect(this, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error),this,&ClientSocket::onDisplayError);
+    connect(this, &QTcpSocket::disconnected, this, &ClientSocket::onDisconnectedSocketServer);
+    connect(this, &QTcpSocket::bytesWritten, this, &ClientSocket::onBytesWritten);
     connect(this,&QTcpSocket::readyRead,this,&ClientSocket::onReadyRead);
+
+    this->in.setVersion(Q_DATA_STREAM_VERSION);
+
+}
+
+//socket lato client
+ClientSocket::ClientSocket(const QString &hostName, quint16 port,QObject *parent) : QTcpSocket(parent), clientID(-1),in(this)  {
+
+    connect(this, &QTcpSocket::stateChanged,this,&ClientSocket::onSocketStateChanged);
+    connect(this, &QTcpSocket::connected, this, &ClientSocket::onConnected);
+    connect(this, &QTcpSocket::disconnected, this, &ClientSocket::onDisconnected);
+    connect(this, &QTcpSocket::bytesWritten, this, &ClientSocket::onBytesWritten);
+    connect(this, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error),this,&ClientSocket::onDisplayError);   //need to overload the QAbstractSocket error:
+    connect(this,&QTcpSocket::readyRead,this,&ClientSocket::onReadyRead);
+
+    this->connectToHost(hostName,port);
+
+
+    if(!this->waitForConnected(ConnectionWaitingTime)){ //5s
+        //this->error();
+    };
+
+
     this->in.setVersion(Q_DATA_STREAM_VERSION);
 
 }

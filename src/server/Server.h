@@ -17,8 +17,10 @@ class Server: public QTcpServer {
     //qui i dati del modello
     Model& model;
     void incomingConnection(qintptr handle) override;
+
+
 private slots:
-    void onSocketStateChanged(QTcpSocket::SocketState state);
+    //void onSocketStateChanged(QTcpSocket::SocketState state);
     void onProcessBasicMessage(_int code,BasicMessage basicMessage);
     void onProcessCrdtMessage(_int code,CrdtMessage crdtMessage);
     void onProcessUserMessage(_int code,UserMessage userMessage);

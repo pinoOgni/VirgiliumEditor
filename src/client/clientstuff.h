@@ -20,7 +20,7 @@ class ClientStuff : public QObject
     Q_OBJECT
 
 public:
-    ClientStuff(const QString hostAddress, int portVal, QObject *parent = 0);
+    ClientStuff(const QString &hostName, quint16 port, QObject *parent = 0);
     ~ClientStuff();
     ClientSocket *clientSocket;
     ClientSocket *getSocket();
@@ -59,9 +59,9 @@ signals:
 private slots:
 
 private:
-    QString host;
-    int port;
-    bool status;
+    /*QString host;
+    unsigned short port; //da modificare
+    bool status;*/
    // ClientSocket *clientSocket;
 };
 
