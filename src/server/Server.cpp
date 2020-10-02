@@ -86,8 +86,17 @@ void Server::incomingConnection(qintptr handle) {
             &Server::onInvitationReceived
     );
 
-    connect(nuovoSocket, &ClientSocket::storageMessageReceived, this, &Server::onProcessStorageMessage);
-
+    connect(
+            nuovoSocket,
+            &ClientSocket::storageMessageReceived,
+            this,
+            &Server::onProcessStorageMessage);
+    connect(
+            nuovoSocket,
+            &ClientSocket::crdtMessageReceived,
+            this,
+            &Server::onProcessCrdtMessage
+            );
 
 
     nuovoSocket->setClientID(handle);
@@ -102,6 +111,11 @@ void Server::incomingConnection(qintptr handle) {
 }
 
 void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
+    if(state == QAbstractSocket::ClosingState){
+        auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
+        BasicMessage msg(sender->getClientID());
+
+    }
 
 }
 
@@ -115,6 +129,7 @@ void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
 
 void Server::onProcessCrdtMessage(_int code, CrdtMessage crdtMessage) {
     //logica crdt
+
 }
 
 void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
@@ -175,8 +190,10 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
 
   switch (code) {
         case LOGIN: {
+            qDebug()<<"popipopi qui arrivo";
             if (Model::loginUser(userMessage.getUser())) {
                 sender->send(LOGIN_OK);
+                this->model.insertActiveUser(sender,userMessage.getUser());
                 qDebug() << "readClient L true";
             } else {
                 sender->send(LOGIN_KO);
@@ -343,10 +360,13 @@ void Server::onUserManagementMessageReceived(_int code, UserManagementMessage us
 }
 
 void Server::onLogoutReceived(_int code) {
+    auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
     switch (code) {
        case LOGOUT: {
            qDebug() << "close connection DB";
             model.closeConnectionDB();
+            this->model.removeUserFromEditor(sender);
+            this->model.removeActiveUser(sender);
         }
         break;
     }

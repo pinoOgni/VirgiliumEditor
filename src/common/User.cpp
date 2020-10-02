@@ -31,15 +31,14 @@ User::User(
 
 //scrive sullo stream (this client è il mittente)
 QDataStream &operator<<(QDataStream &stream, const User &myclass) {
-    QString print =  myclass.email + " " + myclass.password + " " + myclass.firstname + " " + myclass.lastname;
-    std::cout << print.toUtf8().constData();
+   // QString print =  myclass.email + " " + myclass.password + " " + myclass.firstname + " " + myclass.lastname;
+    //std::cout << print.toUtf8().constData();
 
     stream << myclass.email;
     stream << myclass.password;
-    if(!myclass.firstname.isEmpty()) {
-        stream << myclass.firstname;
-        stream << myclass.lastname;
-    }
+    stream << myclass.firstname;
+    stream << myclass.lastname;
+
     return stream;
 }
 

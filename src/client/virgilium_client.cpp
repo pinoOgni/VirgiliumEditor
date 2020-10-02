@@ -14,8 +14,10 @@ virgilium_client::virgilium_client(QWidget *parent, ClientSocket *receivedSocket
     this->_counter = 0;
 
     connect(this->socket, &ClientSocket::storageMessageReceivedLoad, this, &virgilium_client::loadResponse);
-
+    //connect(this->socket, &ClientSocket::basicMessageReceived, this,&virgilium_client::site_id_assignment);
     //connect(this,&virgilium_client::site_id_assignment,this->server,&server_virgilium::site_id_assignment);
+    this->_siteId=this->socket->getClientID();
+    qDebug()<<"Il mio siteID è: " << this->_siteId;
 }
 
 virgilium_client::~virgilium_client() {
@@ -135,7 +137,7 @@ void virgilium_client::localErase(_int index) {
     auto it = this->_symbols.begin() + index;
     this->_symbols.erase(it);
     CrdtMessage m(0, s, this->_siteId, "ERASE");
-    //this->server->send(m,SYMBOL_INSERT_OR_ERASE);
+    this->socket->send(SYMBOL_INSERT_OR_ERASE,m);
 }
 
 /* This method is used to say to other clients that a char is inserted. */
@@ -179,7 +181,7 @@ void virgilium_client::localInsert(_int index, QString value, Symbol::CharFormat
     this->_symbols.insert(it, newSymbol);
     CrdtMessage m(0, newSymbol, this->_siteId, "INSERT");
     //m.printMessage();
-    //this->server->send(m,SYMBOL_INSERT_OR_ERASE); //TODO da cambiare per bene
+    this->socket->send(SYMBOL_INSERT_OR_ERASE,m); //TODO da cambiare per bene
 }
 
 

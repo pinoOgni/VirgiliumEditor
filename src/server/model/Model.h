@@ -22,7 +22,7 @@
 
 class Model {
 
-    //std::multimap< QSharedPointer<ServerDocument> , ClientSocket*> fileToClients;
+    std::multimap< ServerDocument * , ClientSocket*> fileToClients;
     //QMutex fileToClientsMutex;
     std::map<ClientSocket *, User> clientToUser;
     std::map<QString, QList<User>> activeClientsForDocument;
@@ -31,11 +31,11 @@ class Model {
 public:
     Model();
 
-    void insertActiveUser(ClientSocket *socket, const User &user);
-
-    void removeActiveUser(ClientSocket *socket);
-
-    User getActiveUser(ClientSocket *socket);
+  void insertActiveUser(ClientSocket *socket, const User &user);
+  void removeActiveUser(ClientSocket *socket);
+  User getActiveUser(ClientSocket *socket);
+  void removeUserFromEditor(ClientSocket *socket);
+  void insertUserIntoEditor(ServerDocument *, ClientSocket *);
   static bool loginUser(User user);
   static bool signinUser(User user);
   User getInfoUser(User user);
@@ -50,17 +50,12 @@ public:
 
     bool changePassword(ChangePasswordMessage changePasswordMessage);
 
-    bool addCollaborator(UserManagementMessage userManagementMessage);
-
-    bool removeCollaborator(UserManagementMessage userManagementMessage);
-
-    bool unsubscribe(UserManagementMessage userManagementMessage);
-
-    void closeConnectionDB();
-
-    QString createUrlCollaborator(UserManagementMessage userManagementMessage);
-
-    bool requestToCollaborate(InvitationMessage invitationMessage);
+  bool addCollaborator(UserManagementMessage userManagementMessage);
+  bool removeCollaborator(UserManagementMessage userManagementMessage);
+  bool unsubscribe(UserManagementMessage userManagementMessage);
+  void closeConnectionDB();
+  QString createUrlCollaborator(UserManagementMessage userManagementMessage);
+  bool requestToCollaborate(InvitationMessage invitationMessage);
 
     QList<User> addActiveUser(const User &user, const QString &fileName);
 
