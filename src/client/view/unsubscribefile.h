@@ -32,12 +32,14 @@ private:
     QString filename;
     ClientStuff * client;
     QString email_owner;
-
+    User currentUser;
     TextEditor *textEditor;
 
 private slots:
+
     void keyPressEvent(QKeyEvent *) override;
-    void receiveData_2(ClientStuff *,QString,QString,QString);
+
+    void receiveData_2(ClientStuff *, QString, QString, QString, User);
 
     void on_unsubscribe_clicked();
 

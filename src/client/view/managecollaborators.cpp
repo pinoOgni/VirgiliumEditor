@@ -3,7 +3,7 @@
 //
 
 #include "managecollaborators.h"
-#include "ui_managecollaborators.h"
+#include "../../../cmake-build-debug/VirgiliumClient_autogen/include/ui_managecollaborators.h"
 
 manageCollaborators::manageCollaborators(QWidget *parent) :
     QDialog(parent),
@@ -99,7 +99,7 @@ void manageCollaborators::keyPressEvent(QKeyEvent *e) {
            }
 }
 
-void manageCollaborators::receiveData_2(ClientStuff *client,QString email,QString filename) {
+void manageCollaborators::receiveData_2(ClientStuff *client, QString email, QString filename, User user) {
     this->email = email;
     this->filename = filename;
     this->client = client;

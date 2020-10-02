@@ -10,10 +10,17 @@
 
 class UserMessage: public BasicMessage {
     User user;
+    QString fileName;
 public:
     UserMessage(qintptr sender, User user);
+
+    UserMessage(qintptr sender, User user, QString fileName);
+
     explicit UserMessage();
+
     User getUser();
+
+    QString getFileName();
 
     friend QDataStream &operator <<(QDataStream &stream, const UserMessage &myclass);
     friend QDataStream &operator >>(QDataStream &stream, UserMessage &myclass);

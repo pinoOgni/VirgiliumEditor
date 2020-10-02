@@ -3,7 +3,7 @@
 //
 
 #include "renameordelete.h"
-#include "ui_renameordelete.h"
+#include "../../../cmake-build-debug/VirgiliumClient_autogen/include/ui_renameordelete.h"
 #include "deletefile.h"
 #include "renamefile.h"
 
@@ -30,8 +30,9 @@ void renameOrDelete::keyPressEvent(QKeyEvent *e) {
     }
 }
 
-void renameOrDelete::receiveData_2(ClientStuff *client, QString email, QString filename) {
+void renameOrDelete::receiveData_2(ClientStuff *client, QString email, QString filename, User user) {
     //bridge between secondlogin and delete or rename dialog
+    this->currentUser = user;
     this->email = email;
     this->filename = filename;
     this->client = client;
@@ -74,7 +75,8 @@ void renameOrDelete::on_cancel_clicked() {
 
 void renameOrDelete::on_openTextEditor_clicked() {
     QString path = this->email + "/" + this->filename;
-    textEditor = new TextEditor(nullptr, client->getSocket(), path);
+    textEditor = new TextEditor(nullptr, client->getSocket(), path, this->currentUser);
+    textEditor->setAttribute(Qt::WA_DeleteOnClose);
     close();
     textEditor->show();
 }

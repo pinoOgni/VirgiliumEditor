@@ -22,17 +22,20 @@
 
 class Model {
 
-    std::multimap< QSharedPointer<ServerDocument> , ClientSocket*> fileToClients;
-    QMutex fileToClientsMutex;
-    std::map<ClientSocket*,User> clientToUser;
+    //std::multimap< QSharedPointer<ServerDocument> , ClientSocket*> fileToClients;
+    //QMutex fileToClientsMutex;
+    std::map<ClientSocket *, User> clientToUser;
+    std::map<QString, QList<User>> activeClientsForDocument;
     std::atomic<quint32> IDSeed;
 
 public:
-  Model();
+    Model();
 
-  void insertActiveUser(ClientSocket *socket, const User &user);
-  void removeActiveUser(ClientSocket *socket);
-  User getActiveUser(ClientSocket *socket);
+    void insertActiveUser(ClientSocket *socket, const User &user);
+
+    void removeActiveUser(ClientSocket *socket);
+
+    User getActiveUser(ClientSocket *socket);
   static bool loginUser(User user);
   static bool signinUser(User user);
   User getInfoUser(User user);
@@ -42,15 +45,26 @@ public:
 
   bool renameFile(FileManagementMessage fileManagementMessage);
   bool deleteFile(FileManagementMessage fileManagementMessage);
-  bool newFile(FileManagementMessage fileManagementMessage);
-  bool changePassword(ChangePasswordMessage changePasswordMessage);
 
-  bool addCollaborator(UserManagementMessage userManagementMessage);
-  bool removeCollaborator(UserManagementMessage userManagementMessage);
-  bool unsubscribe(UserManagementMessage userManagementMessage);
-  void closeConnectionDB();
-  QString createUrlCollaborator(UserManagementMessage userManagementMessage);
-  bool requestToCollaborate(InvitationMessage invitationMessage);
+    bool newFile(FileManagementMessage fileManagementMessage);
+
+    bool changePassword(ChangePasswordMessage changePasswordMessage);
+
+    bool addCollaborator(UserManagementMessage userManagementMessage);
+
+    bool removeCollaborator(UserManagementMessage userManagementMessage);
+
+    bool unsubscribe(UserManagementMessage userManagementMessage);
+
+    void closeConnectionDB();
+
+    QString createUrlCollaborator(UserManagementMessage userManagementMessage);
+
+    bool requestToCollaborate(InvitationMessage invitationMessage);
+
+    QList<User> addActiveUser(const User &user, const QString &fileName);
+
+    void removeActiveUser(const User &user, const QString &fileName);
 
 };
 

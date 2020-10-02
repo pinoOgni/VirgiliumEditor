@@ -31,13 +31,13 @@ private:
     QString email;
     QString filename;
     ClientStuff *client;
-
+    User currentUser;
     TextEditor *textEditor;
 private slots:
 
     void keyPressEvent(QKeyEvent *) override;
 
-    void receiveData_2(ClientStuff *, QString, QString);
+    void receiveData_2(ClientStuff *, QString, QString, User);
 
     void on_delete_2_clicked();
 

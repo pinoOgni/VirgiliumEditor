@@ -143,7 +143,6 @@ void virgilium_client::localInsert(_int index, QString value, Symbol::CharFormat
     QVector <_int> prec; //= this->_symbols[index-1];
     QVector <_int> nuovaPos;
     QVector <_int> succ; //auto succ //= this-> _symbols[index];
-    qDebug() << "TEST000 " << this->_symbols.size() << "\n";
 
     if (this->_symbols.empty() && index == 0) {
         //primo elemento inserito
@@ -189,24 +188,43 @@ void virgilium_client::set_site_id(qint64 siteId) {
     qDebug() << "Il mio site ID e' : " << this->_siteId << "\n";
 }
 
-void virgilium_client::loadRequest(const QString &fileName) {
-    QVector <Symbol> symbols;
-    StorageMessage storageMessage(this->_siteId, symbols, fileName);
+void virgilium_client::loadRequest(const QString &fileName, User user) {
+    user.setSiteId(this->_siteId);
+    user.setLastCursorPos(0);
+
+    QList<User> users = {user};
+    QVector<Symbol> symbols;
+    StorageMessage storageMessage(this->_siteId, symbols, fileName, users);
     this->socket->sendStorage(LOAD_REQUEST, storageMessage);
 }
 
 void virgilium_client::loadResponse(StorageMessage storageMessage) {
     for (const Symbol &symbol : storageMessage.getSymbols())
         this->_symbols.push_back(symbol);
-    emit load_response(storageMessage.getSymbols());
+
+    QList<User> users;
+    for (User u : storageMessage.getActiveUsers()) {
+        u.setAssignedColor(QColor(QRandomGenerator::global()->bounded(64, 192),
+                                  QRandomGenerator::global()->bounded(64, 192),
+                                  QRandomGenerator::global()->bounded(64, 192)));
+        users.push_back(u);
+    }
+
+    emit load_response(storageMessage.getSymbols(), users);
 }
 
 void virgilium_client::save(QString fileName) {
-    QVector <Symbol> symbols;
+    QVector<Symbol> symbols;
     for (const auto &_symbol : this->_symbols) {
         symbols.push_back(_symbol);
     }
-    StorageMessage storageMessage(this->_siteId, symbols, std::move(fileName));
+    QList<User> users;
+    StorageMessage storageMessage(this->_siteId, symbols, std::move(fileName), users);
     this->socket->sendStorage(SAVE, storageMessage);
+}
+
+void virgilium_client::deleteFromActive(const User &user, const QString &fileName) {
+    UserMessage userMessage(this->_siteId, user, fileName);
+    this->socket->send(DELETE_ACTIVE, userMessage);
 }
 

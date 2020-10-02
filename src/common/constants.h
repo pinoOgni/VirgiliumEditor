@@ -29,6 +29,7 @@
 #define LOAD_REQUEST 12
 #define LOAD_RESPONSE 13
 #define SAVE 14
+#define DELETE_ACTIVE 15
 
 
 

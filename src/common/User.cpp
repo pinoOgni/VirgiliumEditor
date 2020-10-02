@@ -42,6 +42,7 @@ QDataStream &operator<<(QDataStream &stream, const User &myclass) {
     }
     return stream;
 }
+
 //legge dallo stream (this client è il ricevente)
 QDataStream &operator>>(QDataStream &stream, User &myclass) {
     stream >> myclass.email;
@@ -49,6 +50,10 @@ QDataStream &operator>>(QDataStream &stream, User &myclass) {
     stream >> myclass.firstname;
     stream >> myclass.lastname;
     return stream;
+}
+
+bool User::operator==(User other) {
+    return this->getEmail() == other.getEmail();
 }
 
 User::User() {}
@@ -60,13 +65,40 @@ QString User::printMessage() {
 QString User::getEmail() {
     return this->email;
 }
+
 QString User::getPassword() {
     return this->password;
 }
-QString User::getFirstName() {
+
+QString User::getFirstName() const {
     return this->firstname;
 }
-QString User::getLastName() {
+
+QString User::getLastName() const {
     return this->lastname;
+}
+
+_int User::getSiteId() {
+    return this->siteId;
+}
+
+_int User::getLastCursorPos() {
+    return this->lastCursorPos;
+}
+
+QColor User::getAssignedColor() const {
+    return this->assignedColor;
+}
+
+void User::setSiteId(_int id) {
+    this->siteId = id;
+}
+
+void User::setLastCursorPos(_int pos) {
+    this->lastCursorPos = pos;
+}
+
+void User::setAssignedColor(QColor color) {
+    this->assignedColor = std::move(color);
 }
 

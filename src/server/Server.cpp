@@ -122,15 +122,12 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch(code) {
         case LOAD_REQUEST: {
+            /* get the list of symbols inside the document */
             QFile file (QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).filePath(storageMessage.getFileName()));
-
             if(!file.exists())
                 return;
 
-            //QString filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).filePath(storageMessage.getFileName());
             qDebug() << "onprocessStoragemessage load request" << storageMessage.getFileName();
-            //QFile file(filenamePath);
-
             if (!file.open(QFile::ReadOnly))
                 return;
 
@@ -139,7 +136,11 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
             in >> symbols;
             file.close();
 
-            StorageMessage storageMessage1(0, symbols, storageMessage.getFileName());
+            /* get the list of users that are modifying the current document */
+            QList<User> users = model.addActiveUser(storageMessage.getActiveUsers().at(0),
+                                                    storageMessage.getFileName());
+
+            StorageMessage storageMessage1(0, symbols, storageMessage.getFileName(), users);
             sender->sendStorage(LOAD_RESPONSE, storageMessage1);
         }
         break;
@@ -246,8 +247,14 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
             sender->send(GET_ALL_DATA_OK, userMessageReturn, filesOwner, filesCollabs);
             qDebug() << "GET_ALL_DATA_OK ";
         }
-            break;
-    }
+          break;
+      case DELETE_ACTIVE: {
+          this->model.removeActiveUser(userMessage.getUser(), userMessage.getFileName());
+      }
+      default: {
+
+      }
+  }
 }
 
 

@@ -59,24 +59,24 @@
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
-    <addaction name="actionFind_and_Replace"/>
+    <addaction name="actionFind_and_replace"/>
    </widget>
    <widget class="QMenu" name="menuParagraph">
     <property name="title">
      <string>Paragraph</string>
     </property>
-    <widget class="QMenu" name="menuAlignment">
-     <property name="title">
-      <string>Alignment</string>
-     </property>
-     <addaction name="actionLeft_alignment"/>
-     <addaction name="actionRight_alignment"/>
-     <addaction name="actionCenter_alignment"/>
-     <addaction name="actionJustify"/>
-     <addaction name="separator"/>
-     <addaction name="actionIndent_Increase"/>
-     <addaction name="actionIndent_Decrease"/>
-    </widget>
+       <widget class="QMenu" name="menuAlignment">
+           <property name="title">
+               <string>Alignment</string>
+           </property>
+           <addaction name="actionLeft_alignment"/>
+           <addaction name="actionRight_alignment"/>
+           <addaction name="actionCenter_alignment"/>
+           <addaction name="actionJustify"/>
+           <addaction name="separator"/>
+           <addaction name="actionIncrease_indent"/>
+           <addaction name="actionDecrease_indent"/>
+       </widget>
     <widget class="QMenu" name="menuText">
      <property name="title">
       <string>Text</string>
@@ -110,20 +110,20 @@
    <addaction name="actionCut"/>
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
-   <addaction name="separator"/>
-   <addaction name="actionRight_alignment"/>
-   <addaction name="actionCenter_alignment"/>
-   <addaction name="actionLeft_alignment"/>
-   <addaction name="actionJustify"/>
-   <addaction name="separator"/>
-   <addaction name="actionUnderline"/>
-   <addaction name="actionBold"/>
-   <addaction name="actionItalic"/>
-   <addaction name="separator"/>
-   <addaction name="actionIndent_Decrease"/>
-   <addaction name="actionIndent_Increase"/>
-   <addaction name="separator"/>
-   <addaction name="actionFind_and_Replace"/>
+      <addaction name="separator"/>
+      <addaction name="actionRight_alignment"/>
+      <addaction name="actionCenter_alignment"/>
+      <addaction name="actionLeft_alignment"/>
+      <addaction name="actionJustify"/>
+      <addaction name="separator"/>
+      <addaction name="actionUnderline"/>
+      <addaction name="actionBold"/>
+      <addaction name="actionItalic"/>
+      <addaction name="separator"/>
+      <addaction name="actionIncrease_indent"/>
+      <addaction name="actionDecrease_indent"/>
+      <addaction name="separator"/>
+      <addaction name="actionFind_and_replace"/>
   </widget>
   <action name="actionCopy">
    <property name="icon">
@@ -230,26 +230,26 @@
     <string>Select all</string>
    </property>
   </action>
-  <action name="actionIndent_Increase">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/indent.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Increase indent</string>
-   </property>
-  </action>
-  <action name="actionIndent_Decrease">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/outdent.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Decrease indent</string>
-   </property>
-  </action>
+     <action name="actionIncrease_indent">
+         <property name="icon">
+             <iconset>
+                 <normalon>:/Icons/indent.png</normalon>
+             </iconset>
+         </property>
+         <property name="text">
+             <string>Increase indent</string>
+         </property>
+     </action>
+     <action name="actionDecrease_indent">
+         <property name="icon">
+             <iconset>
+                 <normalon>:/Icons/outdent.png</normalon>
+             </iconset>
+         </property>
+         <property name="text">
+             <string>Decrease indent</string>
+         </property>
+     </action>
   <action name="actionUnderline">
    <property name="icon">
     <iconset>
@@ -280,16 +280,16 @@
     <string>Italic</string>
    </property>
   </action>
-  <action name="actionFind_and_Replace">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/preview.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Find and Replace</string>
-   </property>
-  </action>
+     <action name="actionFind_and_replace">
+         <property name="icon">
+             <iconset>
+                 <normalon>:/Icons/preview.png</normalon>
+             </iconset>
+         </property>
+         <property name="text">
+             <string>Find and Replace</string>
+         </property>
+     </action>
   <action name="actionExport_PDF">
    <property name="icon">
     <iconset>

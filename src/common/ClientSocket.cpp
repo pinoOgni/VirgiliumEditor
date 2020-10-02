@@ -1,5 +1,5 @@
 //
-// Created by alex & pinoOgni on 10/08/20.
+// Created by alex, pinoOgni & simod on 10/08/20.
 //
 
 
@@ -26,7 +26,6 @@ void ClientSocket::onReadyRead() {
         case SAVE: {
             StorageMessage storageMessage;
             this->in >> storageMessage;
-            qDebug() << "cliensocket, save, load request, code " << code << " path" << storageMessage.getFileName();
             emit storageMessageReceived(code, storageMessage);
         }
         break;
@@ -41,7 +40,8 @@ void ClientSocket::onReadyRead() {
         case GET_INFO_USER:
         case GET_FILES_OWNER:
         case GET_FILES_COLLABORATOR:
-        case GET_ALL_DATA:{
+        case DELETE_ACTIVE:
+        case GET_ALL_DATA: {
             UserMessage um;
             this->in >> um;
             emit userMessageReceived(code, um);

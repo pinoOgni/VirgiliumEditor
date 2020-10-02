@@ -37,11 +37,8 @@ public:
 
     void send(_int code, BasicMessage basicMessage);
     void send(_int code, UserMessage userMessage);
-
     void sendStorage(_int code, StorageMessage &storageMessage);
-
     //void sendCrdt(_int code, CrdtMessage &crdtMessage);
-
     void send(_int res);
     void send(_int code, std::vector<FilesMessage> filesMessage);
     void setClientID(quintptr clientID);

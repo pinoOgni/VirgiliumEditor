@@ -3,7 +3,7 @@
 //
 
 #include "unsubscribefile.h"
-#include "ui_unsubscribefile.h"
+#include "../../../cmake-build-debug/VirgiliumClient_autogen/include/ui_unsubscribefile.h"
 
 unsubscribeFile::unsubscribeFile(QWidget *parent) :
     QDialog(parent),
@@ -51,7 +51,9 @@ void unsubscribeFile::keyPressEvent(QKeyEvent *e) {
            }
 }
 
-void unsubscribeFile::receiveData_2(ClientStuff *client,QString email,QString filename, QString email_owner) {
+void
+unsubscribeFile::receiveData_2(ClientStuff *client, QString email, QString filename, QString email_owner, User user) {
+    this->currentUser = std::move(user);
     this->email = email;
     this->filename = filename;
     this->client = client;
@@ -82,11 +84,10 @@ void unsubscribeFile::isUnsubscribed(bool res) {
 
 }
 
-void unsubscribeFile::on_pushButton_clicked()
-{
-    //SIMONE PARTIAMO DA QUAAA
+void unsubscribeFile::on_pushButton_clicked() {
     QString path = this->email_owner + "/" + this->filename;
-    textEditor = new TextEditor(nullptr, this->client->getSocket(), path);
+    textEditor = new TextEditor(nullptr, this->client->getSocket(), path, this->currentUser);
+    textEditor->setAttribute(Qt::WA_DeleteOnClose);
     close();
     textEditor->show();
 }

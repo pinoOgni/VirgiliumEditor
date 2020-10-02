@@ -33,7 +33,8 @@ private:
     ClientStuff * client;
 private slots:
     void keyPressEvent(QKeyEvent *) override;
-    void receiveData_2(ClientStuff *,QString,QString);
+
+    void receiveData_2(ClientStuff *, QString, QString, User);
 
     void on_add_clicked();
     void on_remove_clicked();

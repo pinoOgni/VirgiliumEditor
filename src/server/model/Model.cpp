@@ -90,3 +90,31 @@ QString Model::createUrlCollaborator(UserManagementMessage userManagementMessage
 bool Model::requestToCollaborate(InvitationMessage invitationMessage) {
     return Database::getInstance().requestToCollaborateDB(invitationMessage);
 }
+
+QList<User> Model::addActiveUser(const User &user, const QString &fileName) {
+    auto it = activeClientsForDocument.find(fileName); //TODO sostituire filename con id del file
+    if (it != activeClientsForDocument.end()) { /* file already opened */
+        QList<User> users = activeClientsForDocument.at(fileName);
+        users.push_back(user);
+        //TODO mandare agli altri la nuova lista
+        return users;
+    }
+
+    QList<User> users = {user};
+    activeClientsForDocument.insert(std::pair<QString, QList<User>>(fileName, users));
+    return users;
+}
+
+void Model::removeActiveUser(const User &user, const QString &fileName) {
+    auto it = activeClientsForDocument.find(fileName);
+    if (it == activeClientsForDocument.end())
+        return;
+
+    QMutableListIterator<User> i(activeClientsForDocument.at(fileName));
+    while (i.hasNext()) {
+        if (i.next() == user)
+            i.remove();
+    }
+    qDebug() << "PROVAAA " << activeClientsForDocument.at(fileName).size();
+    //TODO mandare agli altri la nuova lista
+}
