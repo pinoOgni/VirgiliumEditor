@@ -5,17 +5,18 @@
 #include "clientstuff.h"
 
 ClientStuff::ClientStuff(
-        const QString hostAddress,
-        int portNumber,
+        const QString &hostName,
+        quint16 port,
         QObject *parent
-        ) : QObject(parent)
+) : QObject(parent)
 {
-    status = false;
+    /*status = false;
 
     host = hostAddress;
-    port = portNumber;
+    port = portNumber;*/
 
-    clientSocket = new ClientSocket();
+    clientSocket = new ClientSocket(hostName,port,parent);
+
     connect(clientSocket, &ClientSocket::basicMessageReceived, this, &ClientStuff::processBasicMessage);
     connect(clientSocket, &ClientSocket::loginSignupReceived,this, &ClientStuff::processLoginAndSignup);
     connect(clientSocket, &ClientSocket::userMessageReceived, this, &ClientStuff::processUserMessage);
@@ -27,7 +28,7 @@ ClientStuff::ClientStuff(
     connect(clientSocket,&ClientSocket::invitationReceived, this, &ClientStuff::processInvitation);
     connect(clientSocket,&ClientSocket::requestToCollaborateReceived,this,&ClientStuff::processRequestToCollaborate);
 
-    clientSocket->connectToHost(host,port);
+    //clientSocket->connectToHost(host,port);
 }
 void ClientStuff::processAllData(_int code, UserMessage userMessage,
                                  _int row1, std::vector<FilesMessage> filesOwner,
@@ -232,6 +233,6 @@ ClientSocket * ClientStuff::getSocket() {
 
 ClientStuff::~ClientStuff() {
     this->clientSocket->close();
-    delete this->clientSocket;
+    delete this->clientSocket; //svolge le operazioni dentro il distruttore della classe ClientSocket
     qDebug() << "client stuff ~";
 }
