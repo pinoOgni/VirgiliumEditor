@@ -46,10 +46,8 @@ QDataStream &operator <<(QDataStream &stream, const FileManagementMessage &mycla
     stream << myclass.filename;
 
     stream << myclass.password;
-    if(!myclass.oldfilename.isEmpty())
-        stream << myclass.oldfilename;
-    else
-        stream << "oldFilename";
+    stream << myclass.oldfilename;
+ 
     return stream;
 }
 

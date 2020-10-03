@@ -22,6 +22,7 @@
 class ClientSocket: public QTcpSocket {
 Q_OBJECT
 private:
+
     quint32 clientID;
     QDataStream in;
 
@@ -29,8 +30,20 @@ private:
 
 private slots:
     void onReadyRead();
+    void onSocketStateChanged(QTcpSocket::SocketState state);
+    void onConnected();
+    void onDisconnected();
+    void onDisconnectedSocketServer();
+    void onBytesWritten(_int bytes);
+    void onDisplayError(QTcpSocket::SocketError error);
+
 public:
+    //socket lato server
     explicit ClientSocket(QObject *parent=nullptr);
+
+    //socket lato client
+    explicit ClientSocket(const QString &hostName, quint16 port, QObject *parent = 0);
+    ~ClientSocket(){ qDebug() << "ClientSocket ~";};
 
     bool operator==(const ClientSocket &b);
     bool operator==(const ClientSocket *b);

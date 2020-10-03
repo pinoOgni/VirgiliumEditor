@@ -9,13 +9,16 @@
 #include <QTextCodec>
 #include "Server.h"
 
+//ADD quint16 port è un unsigned short
 Server::Server(unsigned short port, Model &model) : model(model) {
+
+
     if (!listen(QHostAddress::LocalHost, port)) {
-        qDebug() << "Errore server";
+        qDebug() << "Error: server is not listening" << "\n";
         exit(-1);
     }
 
-    qDebug() << "Listening on address:" << this->serverAddress().toString() << ":" << this->serverPort() << "\n";
+    qDebug() << "Server is listening on address:" << this->serverAddress().toString() << ":" << this->serverPort() << "\n";
 
     //ale fai occhio
     //connect(this, &Server::processFilesMessage, this, &Server::onProcessFileMessage);
@@ -30,6 +33,7 @@ Server::Server(unsigned short port, Model &model) : model(model) {
 }
 
 void Server::incomingConnection(qintptr handle) {
+
     auto nuovoSocket = new ClientSocket(this);
     if (!nuovoSocket->setSocketDescriptor(handle)) {
         nuovoSocket->deleteLater();
@@ -37,12 +41,13 @@ void Server::incomingConnection(qintptr handle) {
     }
     nuovoSocket->setClientID(handle);
 
-    connect(
+    /*connect(
             nuovoSocket,
             &QTcpSocket::stateChanged,
             this,
             &Server::onSocketStateChanged
-    );
+    );*/
+
     connect(
             nuovoSocket,
             &ClientSocket::basicMessageReceived,
@@ -98,7 +103,6 @@ void Server::incomingConnection(qintptr handle) {
             &Server::onProcessCrdtMessage
             );
 
-
     nuovoSocket->setClientID(handle);
 
 
@@ -110,14 +114,38 @@ void Server::incomingConnection(qintptr handle) {
     qDebug() << "ho mandato\n";
 }
 
-void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
-    if(state == QAbstractSocket::ClosingState){
-        auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
-        BasicMessage msg(sender->getClientID());
+/*void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
 
+    switch (state) {
+        case QAbstractSocket::UnconnectedState:
+            qDebug() << "The socket is not connected." << "\n";
+            break;
+        case QAbstractSocket::HostLookupState:
+            qDebug() << "The socket is performing a hostname lookup." << "\n";
+            break;
+        case QAbstractSocket::ConnectedState:
+            qDebug() << "A connection is established." << "\n";
+            break;
+        case QAbstractSocket::ConnectingState:
+            qDebug() << "The socket has started establishing a connection." << "\n";
+            break;
+        case QAbstractSocket::BoundState:
+            qDebug() << "The socket is bound to an address and port." << "\n";
+            break;
+        case QAbstractSocket::ClosingState:
+        {qDebug() << "The socket is about to close." << "\n";
+            auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
+            BasicMessage msg(sender->getClientID());
+            break;}
+
+        case QAbstractSocket::ListeningState:
+            qDebug() << "The socket is listening." << "\n";
+            break;
+        default:
+            qDebug() << "Unknown State." << "\n";
     }
 
-}
+}*/
 
 void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
     //robe super basic
@@ -129,7 +157,6 @@ void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
 
 void Server::onProcessCrdtMessage(_int code, CrdtMessage crdtMessage) {
     //logica crdt
-
 }
 
 void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
@@ -385,3 +412,10 @@ void Server::onInvitationReceived(_int code, InvitationMessage invitationMessage
         break;
     }
 }
+
+/*void Server::onClosePendingSocket(qint32 clientID, ClientSocket *cs){
+    if(clientID==cs->getClientID()){
+       qDebug() << cs->getClientID() << "ciao2!";
+       cs->deleteLater();
+    }
+}*/
