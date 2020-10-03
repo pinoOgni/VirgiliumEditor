@@ -24,14 +24,6 @@ public:
 
     ~TextEditor();
 
-    /*struct User {
-        QString name;
-        QString surname;
-        _int siteId;
-        QColor assignedColor;
-        _int lastCursorPos;
-    };*/
-
 private:
     Ui::TextEditor *ui{};
     QString find;
@@ -62,7 +54,6 @@ private:
     void changeBackground(_int position, const QColor &color);
 
     void loadRequest(const QString &fileName, User user);
-    //void loadActiveUsers(User user);
 
 private slots:
 
@@ -111,8 +102,6 @@ private slots:
 
     void save();
 
-signals:
-    //void want2Close();
 };
 
 #endif //TEXTEDITOR_H

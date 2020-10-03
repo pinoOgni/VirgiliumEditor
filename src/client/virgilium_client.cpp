@@ -52,13 +52,10 @@ void virgilium_client::process(const CrdtMessage &m) {
                 ;//throw wrongpositionException();
         }*/
 
-
         for (i = 0; i < this->_symbols.size(); i++)
             if (s <= this->_symbols[i]) break; // ho trovato il mio i;
         auto it = this->_symbols.begin() + i;
         this->_symbols.insert(it, s);
-
-        //qDebug() << "PROVA: " << m.getSymbol() << "\n";
 
         emit insert_into_window(i, s.getLetter(), s.getFont());
     } else {

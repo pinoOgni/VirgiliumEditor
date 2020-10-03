@@ -20,6 +20,7 @@ TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fil
     this->setWindowTitle("Virgilium");
     this->fileName = fileName;
     this->currentUser = std::move(user);
+    qDebug() << "TEST100 " << fileName;
 
     ui->textEdit->setStyleSheet("QTextEdit { padding-left:150; padding-right:150;}");
 

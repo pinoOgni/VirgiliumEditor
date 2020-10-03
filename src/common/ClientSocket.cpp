@@ -20,8 +20,8 @@ void ClientSocket::onReadyRead() {
             StorageMessage storageMessage;
             //this->in.startTransaction();
             this->in >> storageMessage;
-            if(this->in.commitTransaction())
-            emit storageMessageReceivedLoad(storageMessage);
+            if (this->in.commitTransaction())
+                    emit storageMessageReceivedLoad(storageMessage);
         }
         break;
         case LOAD_REQUEST:
@@ -29,10 +29,12 @@ void ClientSocket::onReadyRead() {
             StorageMessage storageMessage;
             //this->in.startTransaction();
             this->in >> storageMessage;
-            if(this->in.commitTransaction())
-            emit storageMessageReceived(code, storageMessage);
+            if (this->in.commitTransaction()) {
+                emit storageMessageReceived(code, storageMessage);
+            } else {
+                qDebug() << "PROVA ALE SAVE";
+            }
             qDebug() << "cliensocket, save, load request, code " << code << " path" << storageMessage.getFileName();
-
         }
         break;
         case CLIENT_CONNECTED: {
@@ -199,10 +201,13 @@ void ClientSocket::onReadyRead() {
 
         case SYMBOL_INSERT_OR_ERASE: {
             CrdtMessage crdtMessage;
-           // this->in.startTransaction();
+            // this->in.startTransaction();
             this->in >> crdtMessage;
-           if( this->in.commitTransaction())
-            emit crdtMessageReceived(code,crdtMessage);
+            if (this->in.commitTransaction()) {
+                emit crdtMessageReceived(code, crdtMessage);
+            } else {
+                qDebug() << "PROVA ALE CRDT";
+            }
         }
     }
 
@@ -327,6 +332,8 @@ void ClientSocket::sendStorage(_int code, StorageMessage &storageMessage) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
 
+    qDebug() << "TEST3";
+
     out << code;
     out << storageMessage;
     this->write(arrBlock);
@@ -345,6 +352,8 @@ void ClientSocket::send(_int code, InvitationMessage invitationMessage) {
 void ClientSocket::send(_int code, CrdtMessage crdtMessage) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
+
+    qDebug() << "TEST3";
 
     out << code;
     out << crdtMessage;

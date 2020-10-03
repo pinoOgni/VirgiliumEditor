@@ -55,18 +55,17 @@ void renameOrDelete::on_delete_2_clicked() {
 
 void renameOrDelete::on_rename_clicked() {
     qDebug() << "on_rename_clicked";
-    renameFile *newRenameFile = new renameFile(this);
+    auto *newRenameFile = new renameFile(this);
+    newRenameFile->setAttribute(Qt::WA_DeleteOnClose);
     connect(this, SIGNAL(sendData_2(ClientStuff * , QString, QString)), newRenameFile,
             SLOT(receiveData_2(ClientStuff * , QString, QString)));
     emit sendData_2(client, email, filename);
 
-
     //close the qdialog renamefile, send a signal to secondwindow
-    connect(newRenameFile, &renameFile::Want2Close3, this, &renameOrDelete::Want2Close2);
+    //connect(newRenameFile, &renameFile::Want2Close3, this, &renameOrDelete::Want2Close2);
 
     newRenameFile->show();
     this->close();
-
 }
 
 void renameOrDelete::on_cancel_clicked() {
