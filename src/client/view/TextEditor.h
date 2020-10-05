@@ -46,6 +46,8 @@ private:
     void changeBackground(_int position, const QColor &color);
     void loadRequest(const QString &fileName, User user);
 
+    void insertOneChar(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId);
+
 private slots:
 
     void on_actionExit_triggered();

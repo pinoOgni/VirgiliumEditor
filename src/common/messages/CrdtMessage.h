@@ -11,7 +11,7 @@
 class CrdtMessage : public BasicMessage {
     Symbol s;
     QString action;
-    boolean mode;
+    bool mode;
     QString fileName;
 public:
     CrdtMessage();

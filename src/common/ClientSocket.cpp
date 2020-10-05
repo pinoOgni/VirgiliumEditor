@@ -42,15 +42,13 @@ void ClientSocket::onReadyRead() {
     this->in.startTransaction();
     _int code;
     this->in >> code;
-    qDebug() << "ClientSocket onreadyRead " << code;
-    /*if(!this->in.commitTransaction()) {
-        qDebug()<<"qualcosa e' andato storto con il clientID"<<this->clientID;
-        return;
-    }*/
+    qDebug() << "ClientSocket onReadyRead " << code;
+
     switch (code) {
         case UPDATE_ACTIVE_USERS: {
             ActiveUserMessage activeUserMessage;
             this->in >> activeUserMessage;
+
             if (this->in.commitTransaction())
                     emit activeUserMessageReceived(code, activeUserMessage);
         }
@@ -58,6 +56,7 @@ void ClientSocket::onReadyRead() {
         case LOAD_RESPONSE: {
             StorageMessage storageMessage;
             this->in >> storageMessage;
+
             if (this->in.commitTransaction())
                     emit storageMessageReceivedLoad(code, storageMessage);
         }
@@ -65,25 +64,17 @@ void ClientSocket::onReadyRead() {
         case LOAD_REQUEST: {
             StorageMessage storageMessage;
             this->in >> storageMessage;
+
             if (this->in.commitTransaction())
                     emit storageMessageReceived(code, storageMessage);
-            qDebug() << "cliensocket, save, load request, code " << code << " path" << storageMessage.getFileName();
         }
             break;
-            /*case SAVE: {
-                StorageMessage storageMessage;
-                this->in >> storageMessage;
-                if (this->in.commitTransaction())
-                    emit storageMessageReceived(code, storageMessage);
-                qDebug() << "cliensocket, save, load request, code " << code << " path" << storageMessage.getFileName();
-            }
-            break;*/
         case CLIENT_CONNECTED: {
             BasicMessage bm;
             this->in >> bm;
+
             if (this->in.commitTransaction())
                     emit basicMessageReceived(code, bm);
-            qDebug() << "Qui arrivo popopo";
         }
             break;
         case LOGIN:
@@ -95,19 +86,17 @@ void ClientSocket::onReadyRead() {
         case GET_ALL_DATA: {
             UserMessage um;
             this->in >> um;
-            auto res = this->in.commitTransaction();
-            qDebug() << "popoipoi" << um.getUser().printMessage();
-            if (!res) return;
-            emit userMessageReceived(code, um);
-            qDebug() << "code " << code << " res " << res;
+
+            if (this->in.commitTransaction())
+                    emit userMessageReceived(code, um);
         }
             break;
         case LOGIN_KO:
         case LOGIN_OK:
         case SIGNUP_OK:
         case SIGNUP_KO: {
-            qDebug() << "ciao ale " << code;
-            emit loginSignupReceived(code);
+            if (this->in.commitTransaction())
+                    emit loginSignupReceived(code);
         }
             break;
         case GET_FILES_OWNER_OK:
@@ -161,9 +150,9 @@ void ClientSocket::onReadyRead() {
         case RENAME_FILE:
         case DELETE_FILE:
         case NEW_FILE: {
-            qDebug() << "code " << code;
             FileManagementMessage fileManagementMessage;
             this->in >> fileManagementMessage;
+
             if (this->in.commitTransaction())
                     emit fileManagementMessageReceived(code, fileManagementMessage);
         }
@@ -174,21 +163,22 @@ void ClientSocket::onReadyRead() {
         case DELETE_FILE_KO:
         case NEW_FILE_OK:
         case NEW_FILE_KO: {
-            this->in.commitTransaction();
-            emit fileManagementMessageResponse(code);
+            if (this->in.commitTransaction())
+                    emit fileManagementMessageResponse(code);
         }
             break;
         case CHANGE_PASSWORD: {
             ChangePasswordMessage changePasswordMessage;
             this->in >> changePasswordMessage;
+
             if (this->in.commitTransaction())
                     emit changePasswordMessageReceived(code, changePasswordMessage);
         }
             break;
         case CHANGE_PASSWORD_OK:
         case CHANGE_PASSWORD_KO: {
-            this->in.commitTransaction();
-            emit changePasswordMessageResponse(code);
+            if (this->in.commitTransaction())
+                    emit changePasswordMessageResponse(code);
         }
             break;
         case CREATE_INVITE:
@@ -197,6 +187,7 @@ void ClientSocket::onReadyRead() {
         case UNSUBSCRIBE: {
             UserManagementMessage userManagementMessage;
             this->in >> userManagementMessage;
+
             if (this->in.commitTransaction())
                     emit userManagementMessageReceived(code, userManagementMessage);
         }
@@ -205,6 +196,7 @@ void ClientSocket::onReadyRead() {
         case REQUEST_TO_COLLABORATE: {
             InvitationMessage invitationMessage;
             this->in >> invitationMessage;
+
             if (this->in.commitTransaction())
                     emit invitationReceived(code, invitationMessage);
         }
@@ -215,19 +207,19 @@ void ClientSocket::onReadyRead() {
         case REMOVE_COLLABORATOR_KO:
         case UNSUBSCRIBE_OK:
         case UNSUBSCRIBE_KO: {
-            this->in.commitTransaction();
-            emit userManagementMessageResponse(code);
+            if (this->in.commitTransaction())
+                    emit userManagementMessageResponse(code);
         }
             break;
         case LOGOUT: {
-            this->in.commitTransaction();
-            emit logoutReceived(LOGOUT);
+            if (this->in.commitTransaction())
+                    emit logoutReceived(LOGOUT);
         }
             break;
         case REQUEST_TO_COLLABORATE_OK:
         case REQUEST_TO_COLLABORATE_KO: {
-            this->in.commitTransaction();
-            emit requestToCollaborateReceived(code);
+            if (this->in.commitTransaction())
+                    emit requestToCollaborateReceived(code);
         }
             break;
         case CURSOR_CHANGED:
@@ -238,8 +230,9 @@ void ClientSocket::onReadyRead() {
             if (this->in.commitTransaction())
                     emit crdtMessageReceived(code, crdtMessage);
         }
+            break;
         default: {
-
+            qDebug() << "Default case in ReadyRead";
         }
     }
 

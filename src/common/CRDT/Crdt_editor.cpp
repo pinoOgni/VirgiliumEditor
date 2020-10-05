@@ -3,14 +3,11 @@
 //
 
 #include "Crdt_editor.h"
-#include "Symbol.h"
-#include <algorithm>
-#include <iostream>
 #include <utility>
 #include <common/messages/StorageMessage.h>
 
-Crdt_editor::Crdt_editor(QWidget *parent, ClientSocket *receivedSocket, QString fileName) : fileName(
-        std::move(fileName)) {
+Crdt_editor::Crdt_editor(QWidget *parent, ClientSocket *receivedSocket, QString fileName) :
+        fileName(std::move(fileName)) {
     this->socket = receivedSocket;
     this->_counter = 0;
 
@@ -24,11 +21,9 @@ Crdt_editor::Crdt_editor(QWidget *parent, ClientSocket *receivedSocket, QString 
 
 Crdt_editor::Crdt_editor() = default;
 
-Crdt_editor::~Crdt_editor() {
-    //delete(this->server);
-}
+Crdt_editor::~Crdt_editor() = default;
 
-void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
+void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) { //TODO sistemare puntatore con cancellazione
     auto s = m.getSymbol();
     _int i;
 
@@ -63,7 +58,7 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
     }
 }
 
-QVector<Symbol> Crdt_editor::serverProcess(QVector<Symbol> symbols, CrdtMessage crdtMessage) {
+QVector<Symbol> Crdt_editor::serverProcess(QVector<Symbol> symbols, const CrdtMessage &crdtMessage) {
     this->_symbols = std::move(symbols);
     this->clientProcess(0, crdtMessage);
     return this->_symbols;
@@ -184,13 +179,13 @@ void Crdt_editor::set_site_id(qint64 siteId) {
     qDebug() << "Il mio site ID e' : " << this->_siteId << "\n";
 }
 
-void Crdt_editor::loadRequest(const QString &fileName, User user) {
+void Crdt_editor::loadRequest(const QString &name, User user) {
     user.setSiteId(this->_siteId);
     user.setLastCursorPos(0);
 
     QList<User> users = {user};
     QVector<Symbol> symbols;
-    StorageMessage storageMessage(this->_siteId, symbols, fileName, users);
+    StorageMessage storageMessage(this->_siteId, symbols, name, users);
     this->socket->send(LOAD_REQUEST, storageMessage);
 }
 
@@ -199,7 +194,6 @@ void Crdt_editor::loadResponse(_int code, StorageMessage storageMessage) {
         this->_symbols.push_back(symbol);
 
     QList<User> users;
-    qDebug() << storageMessage.getActiveUsers().size();
     for (User u : storageMessage.getActiveUsers()) {
         u.setAssignedColor(QColor(QRandomGenerator::global()->bounded(64, 192),
                                   QRandomGenerator::global()->bounded(64, 192),
@@ -210,11 +204,18 @@ void Crdt_editor::loadResponse(_int code, StorageMessage storageMessage) {
     emit load_response(code, storageMessage.getSymbols(), users);
 }
 
-void Crdt_editor::deleteFromActive(const User &user, const QString &fileName) {
-    UserMessage userMessage(this->_siteId, user, fileName);
+void Crdt_editor::deleteFromActive(const User &user, const QString &name) {
+    UserMessage userMessage(this->_siteId, user, name);
     this->socket->send(DELETE_ACTIVE, userMessage);
 }
 
 void Crdt_editor::activeUserChanged(_int code, ActiveUserMessage activeUserMessage) {
-    emit change_active_users(activeUserMessage.getActiveUsers());
+    QList<User> users;
+    for (User u : activeUserMessage.getActiveUsers()) {
+        u.setAssignedColor(QColor(QRandomGenerator::global()->bounded(64, 192),
+                                  QRandomGenerator::global()->bounded(64, 192),
+                                  QRandomGenerator::global()->bounded(64, 192)));
+        users.push_back(u);
+    }
+    emit change_active_users(users);
 }

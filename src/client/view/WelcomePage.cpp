@@ -162,7 +162,6 @@ void WelcomePage::on_password_iscriviti_returnPressed()
 
 void WelcomePage::loginDB(QString email, QString password) {
     User u = User(email, password);
-    qDebug() << "TEST client " << this->client->getSocket()->getClientID();
     u.setSiteId(this->client->getSocket()->getClientID());
     UserMessage um = UserMessage(client->getSocket()->getClientID(), u);
     client->getSocket()->send(LOGIN, um);

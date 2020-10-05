@@ -119,7 +119,7 @@ void TextEditor::loadRequest(const QString &f, User user) {
 void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, QList<User> users) {
     if (code == LOAD_RESPONSE) {
         for (const Symbol &symbol : symbols)
-            this->insert_text(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
+            insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
     }
 
     changeActiveUser(std::move(users));
@@ -386,18 +386,15 @@ void TextEditor::changeCursorPosition(_int position, _int siteId) {
     for (User &user : this->activeUsers) {
         if (user.getSiteId() == siteId) {
             u = user;
-            qDebug() << "NEL FOR " << u.getLastCursorPos();
             user.setLastCursorPos(position);
         }
     }
 
-    qDebug() << "FUORI DAL FOR " << u.getLastCursorPos();
     ui->textEdit->document()->blockSignals(true);
 
     /* If the last position of the cursor was 0, there wasn't any cursor show on the editor of the
      * other clients, so it is not necessary to delete the previous cursor */
     if (u.getLastCursorPos() != 0) {
-        qDebug() << "NON DEVE ENTRARE";
         changeBackground(u.getLastCursorPos(), Qt::white);
     }
 
@@ -426,6 +423,11 @@ void TextEditor::changeBackground(_int position, const QColor &color) {
  * inside the editor of the other clients. In fact, it accepts the char, the position where
  * it must be inserted and the font of the char. */
 void TextEditor::insert_text(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId) {
+    insertOneChar(pos, character, font, siteId);
+    this->changeCursorPosition(pos + 1, siteId);
+}
+
+void TextEditor::insertOneChar(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId) {
     QTextCursor cursor(ui->textEdit->textCursor());
     int originalPosition = cursor.position();
     cursor.setPosition(pos);
@@ -483,8 +485,6 @@ void TextEditor::insert_text(_int pos, const QString &character, const Symbol::C
     cursor.setPosition(originalPosition);
 
     ui->textEdit->document()->blockSignals(false);
-    qDebug() << "PROVA100 " << pos;
-    this->changeCursorPosition(pos + 1, siteId);
 }
 
 /* This slot is called when remove_from_window signal is emitted, it has to delete the char

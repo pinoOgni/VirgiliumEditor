@@ -4,7 +4,7 @@
 
 #include "BasicMessage.h"
 #include <QDataStream>
-BasicMessage::BasicMessage(qintptr sender): sender(sender) {
+BasicMessage::BasicMessage(_int sender) : sender(sender) {
 
 }
 
@@ -26,6 +26,6 @@ qintptr BasicMessage::getSender() {
     return this->sender;
 }
 
-void BasicMessage::setSender(qintptr sender) {
+void BasicMessage::setSender(_int sender) {
     BasicMessage::sender = sender;
 }

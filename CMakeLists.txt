@@ -36,7 +36,8 @@ add_executable(VirgiliumServer src/serverMain.cpp src/common/constants.h
         src/server/model/Model.h src/server/model/Model.cpp
         src/common/messages/StorageMessage.cpp src/common/messages/StorageMessage.h
         src/common/messages/InvitationMessage.cpp src/common/messages/InvitationMessage.h
-        src/common/messages/ActiveUserMessage.cpp src/common/messages/ActiveUserMessage.h)
+        src/common/messages/ActiveUserMessage.cpp src/common/messages/ActiveUserMessage.h
+        src/common/CRDT/Crdt_editor.h src/common/CRDT/Crdt_editor.cpp)
 
 
 
@@ -64,7 +65,6 @@ add_executable(VirgiliumClient ${PROJECT_RESOURCE} src/clientMain.cpp src/common
         src/client/view/renameordelete.h src/client/view/renameordelete.cpp src/client/view/renameordelete.ui
         src/client/view/unsubscribefile.h src/client/view/unsubscribefile.cpp src/client/view/unsubscribefile.ui
         src/client/clientstuff.h src/client/clientstuff.cpp
-
         src/common/CRDT/Crdt_editor.h src/common/CRDT/Crdt_editor.cpp
         src/client/view/TextEditor.h src/client/view/TextEditor.cpp src/client/view/TextEditor.ui
         src/common/messages/StorageMessage.cpp src/common/messages/StorageMessage.h

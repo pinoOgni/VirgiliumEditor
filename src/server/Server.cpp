@@ -31,12 +31,13 @@ Server::Server(unsigned short port, Model &model) : model(model) {
     //if(!QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append("/VIRGILIUM_STORAGE")).exists())
 }
 
-void Server::incomingConnection(qintptr handle) {
+void Server::incomingConnection(_int handle) {
     auto newSocket = new ClientSocket(this);
     if (!newSocket->setSocketDescriptor(handle)) {
         newSocket->deleteLater();
         return;
     }
+    qDebug() << "HO IL SITEID " << handle;
     newSocket->setClientID(handle);
 
     /*connect(
@@ -118,8 +119,7 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
         /* It is a kind of dispatch messages */
         QList<User> users = activeUsersForDocument[crdtMessage.getFileName()];
         for (auto &user : users) {
-            if (message.getSymbol().getSiteId() != user.getSiteId()) {
-
+            if (message.getSender() != user.getSiteId()) {
                 message.setMode(true);
                 ClientSocket *socket = this->model.getLoggedUser(user);
                 if (message.getAction() == "CURSOR_CHANGED")
@@ -400,7 +400,7 @@ void Server::onInvitationReceived(_int code, InvitationMessage invitationMessage
     }
 }
 
-/*void Server::onClosePendingSocket(qint32 clientID, ClientSocket *cs){
+/*void Server::onClosePendingSocket(_int clientID, ClientSocket *cs){
     if(clientID==cs->getClientID()){
        qDebug() << cs->getClientID() << "ciao2!";
        cs->deleteLater();

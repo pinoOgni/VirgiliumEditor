@@ -4,6 +4,7 @@
 
 #ifndef VIRGILIUM_USER_H
 #define VIRGILIUM_USER_H
+
 #include <string>
 #include <QObject>
 #include <QDataStream>
@@ -14,26 +15,26 @@
 class User {
     QString email;
     QString password;
-    QString firstname;
-    QString lastname;
+    QString firstName;
+    QString lastName;
     _int siteId;
     _int lastCursorPos;
     QColor assignedColor;
 
 public:
-    User();
-
-    User(QString email, QString password, QString firstname, QString lastname);
+    User(QString email, QString password, QString firstName, QString lastName);
 
     User(QString email, QString password);
 
     User(QString email);
 
+    User();
+
     void writeStream(QDataStream &out);
 
-    friend QDataStream &operator<<(QDataStream &stream, const User &myclass);
+    friend QDataStream &operator<<(QDataStream &stream, const User &myClass);
 
-    friend QDataStream &operator>>(QDataStream &stream, User &myclass);
+    friend QDataStream &operator>>(QDataStream &stream, User &myClass);
 
     bool operator==(const User &other);
 
@@ -54,11 +55,8 @@ public:
     _int getLastCursorPos();
 
     QColor getAssignedColor() const;
-
     void setSiteId(_int siteId);
-
     void setLastCursorPos(_int pos);
-
     void setAssignedColor(QColor color);
 };
 

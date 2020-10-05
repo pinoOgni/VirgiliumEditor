@@ -37,12 +37,9 @@ Q_OBJECT
 
     ClientSocket *socket{};
     QString fileName;
-    _int _siteId{};
+    _int _siteId;
     QVector<Symbol> _symbols;
-    _int _counter{};
-
-    QVector<_int> getPosition(QVector<_int> prec, QVector<_int> succ);
-
+    _int _counter;
     boolean sendCursor = true;
 
 public:
@@ -75,7 +72,9 @@ public:
 
     void deleteFromActive(const User &user, const QString &fileName);
 
-    QVector<Symbol> serverProcess(QVector<Symbol> symbols, CrdtMessage crdtMessage);
+    QVector<Symbol> serverProcess(QVector<Symbol> symbols, const CrdtMessage &crdtMessage);
+
+    QVector<_int> getPosition(QVector<_int> prec, QVector<_int> succ);
 
 public slots:
 
@@ -92,11 +91,8 @@ signals:
     void insert_into_window(_int pos, QString character, Symbol::CharFormat font, _int siteId);
 
     void remove_into_window(_int pos);
-
     void change_cursor_position(_int position, _int siteId);
-
     void load_response(_int code, QVector<Symbol> symbols, QList<User> users);
-
     void change_active_users(QList<User> users);
 
 };

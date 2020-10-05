@@ -5,32 +5,23 @@
 #include "User.h"
 #include <utility>
 
-User::User(
-        QString email,
-        QString password,
-        QString firstname,
-        QString lastname) :
-        email(std::move(email)),
-        password(std::move(password)),
-        firstname(std::move(firstname)),
-        lastname(std::move(lastname)) {};
+User::User(QString email, QString password, QString firstName, QString lastName) :
+        email(std::move(email)), password(std::move(password)), firstName(std::move(firstName)),
+        lastName(std::move(lastName)) {};
 
-User::User(
-        QString email,
-        QString password) :
-        email(std::move(email)),
-        password(std::move(password)) {};
+User::User(QString email, QString password) :
+        email(std::move(email)), password(std::move(password)) {};
 
-User::User(
-        QString email) :
-        email(std::move(email)) {};
+User::User(QString email) : email(std::move(email)) {};
 
-//scrive sullo stream (this client è il mittente)
+User::User() {};
+
+// write on stream (this client è il mittente)
 QDataStream &operator<<(QDataStream &stream, const User &myclass) {
     stream << myclass.email;
     stream << myclass.password;
-    stream << myclass.firstname;
-    stream << myclass.lastname;
+    stream << myclass.firstName;
+    stream << myclass.lastName;
     stream << myclass.siteId;
     stream << myclass.lastCursorPos;
     stream << myclass.assignedColor;
@@ -38,12 +29,12 @@ QDataStream &operator<<(QDataStream &stream, const User &myclass) {
     return stream;
 }
 
-//legge dallo stream (this client è il ricevente)
+// read from stream (this client è il ricevente)
 QDataStream &operator>>(QDataStream &stream, User &myclass) {
     stream >> myclass.email;
     stream >> myclass.password;
-    stream >> myclass.firstname;
-    stream >> myclass.lastname;
+    stream >> myclass.firstName;
+    stream >> myclass.lastName;
     stream >> myclass.siteId;
     stream >> myclass.lastCursorPos;
     stream >> myclass.assignedColor;
@@ -59,10 +50,8 @@ bool User::operator<(const User &other) const {
     return this->siteId < other.siteId;
 }
 
-User::User() {}
-
 QString User::printMessage() {
-    return this->firstname + " " + this->lastname + " " + this->email + " " + this->password;
+    return this->firstName + " " + this->lastName + " " + this->email + " " + this->password;
 }
 
 QString User::getEmail() {
@@ -74,11 +63,11 @@ QString User::getPassword() {
 }
 
 QString User::getFirstName() const {
-    return this->firstname;
+    return this->firstName;
 }
 
 QString User::getLastName() const {
-    return this->lastname;
+    return this->lastName;
 }
 
 _int User::getSiteId() const {

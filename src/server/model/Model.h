@@ -22,7 +22,7 @@
 class Model {
 
     //std::multimap<ServerDocument *, ClientSocket *> fileToClients;
-    std::map<qint32, ClientSocket *> clientToUser;
+    std::map<_int, ClientSocket *> clientToUser;
     std::map<QString, QList<User>> activeClientsForDocument;
     std::map<QString, QVector<Symbol>> symbolsForDocument;
     std::atomic<quint32> IDSeed;

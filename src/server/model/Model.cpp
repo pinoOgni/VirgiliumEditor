@@ -9,7 +9,7 @@ Model::Model() : IDSeed(1) {
 }
 
 void Model::insertLoggedUser(ClientSocket *socket, const User &user) {
-    clientToUser.insert(std::pair<qint32, ClientSocket *>(user.getSiteId(), socket));
+    clientToUser.insert(std::pair<_int, ClientSocket *>(user.getSiteId(), socket));
 }
 
 void Model::removeLoggedUser(ClientSocket *socket) {
@@ -21,7 +21,7 @@ void Model::removeLoggedUser(ClientSocket *socket) {
 }
 
 ClientSocket *Model::getLoggedUser(User &user) {
-    auto it = std::find_if(clientToUser.begin(), clientToUser.end(), [user](std::pair<qint32, ClientSocket *> pair) {
+    auto it = std::find_if(clientToUser.begin(), clientToUser.end(), [user](std::pair<_int, ClientSocket *> pair) {
         return pair.first == user.getSiteId();
     });
     if (it == clientToUser.end()) {
