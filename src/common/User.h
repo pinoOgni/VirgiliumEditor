@@ -12,7 +12,6 @@
 #include "constants.h"
 
 class User {
-
     QString email;
     QString password;
     QString firstname;
@@ -36,7 +35,9 @@ public:
 
     friend QDataStream &operator>>(QDataStream &stream, User &myclass);
 
-    bool operator==(User other);
+    bool operator==(const User &other);
+
+    bool operator<(const User &other) const;
 
     QString printMessage();
 
@@ -48,7 +49,7 @@ public:
 
     QString getLastName() const;
 
-    _int getSiteId();
+    _int getSiteId() const;
 
     _int getLastCursorPos();
 

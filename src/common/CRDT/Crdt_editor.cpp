@@ -2,49 +2,37 @@
 // Created by alex on 07/12/19.
 //
 
-#include "virgilium_client.h"
-#include "../common/CRDT/Symbol.h"
+#include "Crdt_editor.h"
+#include "Symbol.h"
 #include <algorithm>
 #include <iostream>
 #include <utility>
 #include <common/messages/StorageMessage.h>
 
-virgilium_client::virgilium_client(QWidget *parent, ClientSocket *receivedSocket) : QDialog(parent) {
+Crdt_editor::Crdt_editor(QWidget *parent, ClientSocket *receivedSocket, QString fileName) : fileName(
+        std::move(fileName)) {
     this->socket = receivedSocket;
     this->_counter = 0;
 
-    connect(this->socket, &ClientSocket::storageMessageReceivedLoad, this, &virgilium_client::loadResponse);
-    //connect(this->socket, &ClientSocket::basicMessageReceived, this,&virgilium_client::site_id_assignment);
-    //connect(this,&virgilium_client::site_id_assignment,this->server,&server_virgilium::site_id_assignment);
-    this->_siteId=this->socket->getClientID();
-    qDebug()<<"Il mio siteID è: " << this->_siteId;
+    connect(this->socket, &ClientSocket::storageMessageReceivedLoad, this, &Crdt_editor::loadResponse);
+    connect(this->socket, &ClientSocket::crdtMessageReceived, this, &Crdt_editor::clientProcess);
+    connect(this->socket, &ClientSocket::activeUserMessageReceived, this, &Crdt_editor::activeUserChanged);
+
+    this->_siteId = this->socket->getClientID();
+    qDebug() << "Il mio siteID è: " << this->_siteId;
 }
 
-virgilium_client::~virgilium_client() {
+Crdt_editor::Crdt_editor() = default;
+
+Crdt_editor::~Crdt_editor() {
     //delete(this->server);
 }
 
-_int virgilium_client::get_id() const {
-    return this->_siteId;
-}
-
-QString virgilium_client::to_string() {
-    QString buffer;
-    std::for_each(this->_symbols.begin(), this->_symbols.end(), [&buffer](Symbol s) {
-        buffer.push_back(s.getLetter());
-    });
-    return buffer;
-}
-
-//TODO
-void virgilium_client::process(const CrdtMessage &m) {
-
-    // "ERASE" "INSERT"
+void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
     auto s = m.getSymbol();
-    _int i, index;
-    bool flagUguale = false;
-    if (m.getAction() == "INSERT") {
+    _int i;
 
+    if (m.getAction() == "INSERT") {
         auto nuovaPos = m.getSymbol().getPosition();
         /*for (_int i = 0; i < this->_symbols.size(); i++) {
             if (this->_symbols[i].getPosition() == nuovaPos)
@@ -53,32 +41,38 @@ void virgilium_client::process(const CrdtMessage &m) {
         }*/
 
         for (i = 0; i < this->_symbols.size(); i++)
-            if (s <= this->_symbols[i]) break; // ho trovato il mio i;
+            if (s <= this->_symbols[i]) break; // position found
         auto it = this->_symbols.begin() + i;
         this->_symbols.insert(it, s);
 
-        emit insert_into_window(i, s.getLetter(), s.getFont());
-    } else {
-        for (i = 0; i < this->_symbols.size(); i++) //scorro ogni simbolo all'interno del documento
+        if (m.getMode())
+                emit insert_into_window(i, s.getLetter(), s.getFont(), s.getSiteId());
+    } else if (m.getAction() == "ERASE") {
+        for (i = 0; i < this->_symbols.size(); i++)
             if (s == this->_symbols[i]) break;
+
+        if (this->_symbols.begin() + i == this->_symbols.end())
+            return;
         auto it = this->_symbols.begin() + i;
         this->_symbols.erase(it);
-        /*this->_symbols.erase(std::remove_if(this->_symbols.begin(),this->_symbols.end(), [&s](symbol s1){ return s==s1; }));*/
-        emit remove_into_window(i);
-    }
 
-    return;
+        if (m.getMode())
+                emit remove_into_window(i);
+    } else if (m.getAction() == "CURSOR_CHANGED") {
+        emit change_cursor_position(m.getSymbol().getPosition().at(1), m.getSymbol().getSiteId());
+    }
 }
 
-/* Aggiunto per cursore */
-void virgilium_client::changeCursorPosition(const CrdtMessage &m) {
-    emit change_cursor_position(m.getSymbol().getPosition().at(1), m.getFrom());
+QVector<Symbol> Crdt_editor::serverProcess(QVector<Symbol> symbols, CrdtMessage crdtMessage) {
+    this->_symbols = std::move(symbols);
+    this->clientProcess(0, crdtMessage);
+    return this->_symbols;
 }
 
 //gli interi prev e next sono quelli che andranno a contenere quelli che sono gli elementi passati alla funzione
 //i due vettori vengono controllati parallelemante
 //_max gli si assegna il la dimensione maggiore tra i due vettori
-QVector<_int> virgilium_client::getPosition(QVector<_int> prec, QVector<_int> succ) {
+QVector<_int> Crdt_editor::getPosition(QVector<_int> prec, QVector<_int> succ) {
     QVector<_int> nuovaPos;
     _int i, prev, next, _max = (prec.size() > succ.size()) ? prec.size() : succ.size();
     for (i = 0; i < _max; i++) {
@@ -108,9 +102,7 @@ QVector<_int> virgilium_client::getPosition(QVector<_int> prec, QVector<_int> su
                     }
                 }
                 nuovaPos.push_back(prev);
-
             }
-
         }
     }
     if (i == _max) {
@@ -120,28 +112,33 @@ QVector<_int> virgilium_client::getPosition(QVector<_int> prec, QVector<_int> su
 }
 
 /* This method is used to send to other clients the new position of my cursor. */
-void virgilium_client::changeCursor(_int position) {
-    QVector <_int> pos = {position - 1, position};
+void Crdt_editor::changeCursor(_int position) {
+    QVector<_int> pos = {position - 1, position};
     Symbol::CharFormat font = Symbol::CharFormat();
     Symbol s("", this->_siteId, this->_counter, pos, font);
-    CrdtMessage m(0, s, this->_siteId, "CURSOR_CHANGED");
-    //this->socket->sendCrdt(CURSOR_CHANGED, m);
+    CrdtMessage m(this->_siteId, s, false, "CURSOR_CHANGED", this->fileName);
+    if (sendCursor)
+        this->socket->send(CURSOR_CHANGED, m);
+
+    sendCursor = true;
 }
 
 /* This method is used to say to other clients that a char is deleted. */
-void virgilium_client::localErase(_int index) {
+void Crdt_editor::localErase(_int index) {
+    sendCursor = false;
     auto s = this->_symbols[index];
     auto it = this->_symbols.begin() + index;
     this->_symbols.erase(it);
-    CrdtMessage m(0, s, this->_siteId, "ERASE");
-    this->socket->send(SYMBOL_INSERT_OR_ERASE,m);
+    CrdtMessage m(this->_siteId, s, false, "ERASE", this->fileName);
+    this->socket->send(SYMBOL_INSERT_OR_ERASE, m);
 }
 
 /* This method is used to say to other clients that a char is inserted. */
-void virgilium_client::localInsert(_int index, QString value, Symbol::CharFormat font) {
-    QVector <_int> prec; //= this->_symbols[index-1];
-    QVector <_int> nuovaPos;
-    QVector <_int> succ; //auto succ //= this-> _symbols[index];
+void Crdt_editor::localInsert(_int index, QString value, Symbol::CharFormat font) {
+    sendCursor = false;
+    QVector<_int> prec; //= this->_symbols[index-1];
+    QVector<_int> nuovaPos;
+    QVector<_int> succ; //auto succ //= this-> _symbols[index];
 
     if (this->_symbols.empty() && index == 0) {
         //primo elemento inserito
@@ -176,32 +173,33 @@ void virgilium_client::localInsert(_int index, QString value, Symbol::CharFormat
     Symbol newSymbol(std::move(value), this->_siteId, this->_counter++, nuovaPos, std::move(font));
     auto it = this->_symbols.begin() + index;
     this->_symbols.insert(it, newSymbol);
-    CrdtMessage m(0, newSymbol, this->_siteId, "INSERT");
+    CrdtMessage m(this->_siteId, newSymbol, false, "INSERT", this->fileName);
     //m.printMessage();
-    this->socket->send(SYMBOL_INSERT_OR_ERASE,m); //TODO da cambiare per bene
+    this->socket->send(SYMBOL_INSERT_OR_ERASE, m);
 }
 
 
-void virgilium_client::set_site_id(qint64 siteId) {
+void Crdt_editor::set_site_id(qint64 siteId) {
     this->_siteId = siteId;
     qDebug() << "Il mio site ID e' : " << this->_siteId << "\n";
 }
 
-void virgilium_client::loadRequest(const QString &fileName, User user) {
+void Crdt_editor::loadRequest(const QString &fileName, User user) {
     user.setSiteId(this->_siteId);
     user.setLastCursorPos(0);
 
     QList<User> users = {user};
     QVector<Symbol> symbols;
     StorageMessage storageMessage(this->_siteId, symbols, fileName, users);
-    this->socket->sendStorage(LOAD_REQUEST, storageMessage);
+    this->socket->send(LOAD_REQUEST, storageMessage);
 }
 
-void virgilium_client::loadResponse(StorageMessage storageMessage) {
+void Crdt_editor::loadResponse(_int code, StorageMessage storageMessage) {
     for (const Symbol &symbol : storageMessage.getSymbols())
         this->_symbols.push_back(symbol);
 
     QList<User> users;
+    qDebug() << storageMessage.getActiveUsers().size();
     for (User u : storageMessage.getActiveUsers()) {
         u.setAssignedColor(QColor(QRandomGenerator::global()->bounded(64, 192),
                                   QRandomGenerator::global()->bounded(64, 192),
@@ -209,21 +207,14 @@ void virgilium_client::loadResponse(StorageMessage storageMessage) {
         users.push_back(u);
     }
 
-    emit load_response(storageMessage.getSymbols(), users);
+    emit load_response(code, storageMessage.getSymbols(), users);
 }
 
-void virgilium_client::save(QString fileName) {
-    QVector<Symbol> symbols;
-    for (const auto &_symbol : this->_symbols) {
-        symbols.push_back(_symbol);
-    }
-    QList<User> users;
-    StorageMessage storageMessage(this->_siteId, symbols, std::move(fileName), users);
-    this->socket->sendStorage(SAVE, storageMessage);
-}
-
-void virgilium_client::deleteFromActive(const User &user, const QString &fileName) {
+void Crdt_editor::deleteFromActive(const User &user, const QString &fileName) {
     UserMessage userMessage(this->_siteId, user, fileName);
     this->socket->send(DELETE_ACTIVE, userMessage);
 }
 
+void Crdt_editor::activeUserChanged(_int code, ActiveUserMessage activeUserMessage) {
+    emit change_active_users(activeUserMessage.getActiveUsers());
+}

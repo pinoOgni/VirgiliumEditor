@@ -10,23 +10,29 @@
 
 class CrdtMessage : public BasicMessage {
     Symbol s;
-    _int from{};
     QString action;
+    boolean mode;
+    QString fileName;
 public:
     CrdtMessage();
 
-    CrdtMessage(quintptr sender, Symbol s, _int from, QString action);
-
-    _int getFrom() const;
+    CrdtMessage(quintptr sender, Symbol s, boolean mode, QString action, QString fileName);
 
     Symbol getSymbol() const;
 
     QString getAction() const;
 
+    boolean getMode() const;
+
+    void setMode(boolean mode);
+
+    QString getFileName() const;
+
     void printMessage();
 
     friend QDataStream &operator<<(QDataStream &stream, const CrdtMessage &myclass);
-    friend QDataStream &operator >>(QDataStream &stream, CrdtMessage &myclass);
+
+    friend QDataStream &operator>>(QDataStream &stream, CrdtMessage &myclass);
 };
 
 #endif //VIRGILIUM_CRDTMESSAGE_H

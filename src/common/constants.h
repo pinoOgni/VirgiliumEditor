@@ -28,7 +28,7 @@
 #define CURSOR_CHANGED 11
 #define LOAD_REQUEST 12
 #define LOAD_RESPONSE 13
-#define SAVE 14
+#define UPDATE_ACTIVE_USERS 14
 #define DELETE_ACTIVE 15
 
 //list of constants for interactions with the database

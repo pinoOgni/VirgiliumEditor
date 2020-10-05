@@ -3,41 +3,37 @@
 //
 
 #include "User.h"
-
 #include <utility>
+
 User::User(
         QString email,
         QString password,
         QString firstname,
-        QString lastname):
+        QString lastname) :
         email(std::move(email)),
         password(std::move(password)),
         firstname(std::move(firstname)),
-        lastname(std::move(lastname)){};
+        lastname(std::move(lastname)) {};
 
 User::User(
         QString email,
-        QString password):
+        QString password) :
         email(std::move(email)),
         password(std::move(password)) {};
 
-
 User::User(
-        QString email):
+        QString email) :
         email(std::move(email)) {};
-
-
-
 
 //scrive sullo stream (this client è il mittente)
 QDataStream &operator<<(QDataStream &stream, const User &myclass) {
-   // QString print =  myclass.email + " " + myclass.password + " " + myclass.firstname + " " + myclass.lastname;
-    //std::cout << print.toUtf8().constData();
-
     stream << myclass.email;
     stream << myclass.password;
     stream << myclass.firstname;
     stream << myclass.lastname;
+    stream << myclass.siteId;
+    stream << myclass.lastCursorPos;
+    stream << myclass.assignedColor;
 
     return stream;
 }
@@ -48,11 +44,19 @@ QDataStream &operator>>(QDataStream &stream, User &myclass) {
     stream >> myclass.password;
     stream >> myclass.firstname;
     stream >> myclass.lastname;
+    stream >> myclass.siteId;
+    stream >> myclass.lastCursorPos;
+    stream >> myclass.assignedColor;
+
     return stream;
 }
 
-bool User::operator==(User other) {
-    return this->getEmail() == other.getEmail();
+bool User::operator==(const User &other) {
+    return this->email == other.email;
+}
+
+bool User::operator<(const User &other) const {
+    return this->siteId < other.siteId;
 }
 
 User::User() {}
@@ -77,7 +81,7 @@ QString User::getLastName() const {
     return this->lastname;
 }
 
-_int User::getSiteId() {
+_int User::getSiteId() const {
     return this->siteId;
 }
 
@@ -100,4 +104,3 @@ void User::setLastCursorPos(_int pos) {
 void User::setAssignedColor(QColor color) {
     this->assignedColor = std::move(color);
 }
-

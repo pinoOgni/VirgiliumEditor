@@ -7,25 +7,24 @@
 #include <common/messages/CrdtMessage.h>
 #include <QtGui/QTextDocument>
 #include <QTextCodec>
+#include <common/messages/ActiveUserMessage.h>
 #include "Server.h"
 
 //ADD quint16 port è un unsigned short
 Server::Server(unsigned short port, Model &model) : model(model) {
-
 
     if (!listen(QHostAddress::LocalHost, port)) {
         qDebug() << "Error: server is not listening" << "\n";
         exit(-1);
     }
 
-    qDebug() << "Server is listening on address:" << this->serverAddress().toString() << ":" << this->serverPort() << "\n";
-
-    //ale fai occhio
-    //connect(this, &Server::processFilesMessage, this, &Server::onProcessFileMessage);
+    qDebug() << "Server is listening on address:" << this->serverAddress().toString() << ":" << this->serverPort()
+             << "\n";
 
     //TODO PROVA PINO
-    if(TESTDB==true) {
-        QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).removeRecursively();
+    if (TESTDB == true) {
+        QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(
+                VIRGILIUM_STORAGE)).removeRecursively();
         QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).mkdir("VIRGILIUM_STORAGE");
     }
 
@@ -33,84 +32,35 @@ Server::Server(unsigned short port, Model &model) : model(model) {
 }
 
 void Server::incomingConnection(qintptr handle) {
-
-    auto nuovoSocket = new ClientSocket(this);
-    if (!nuovoSocket->setSocketDescriptor(handle)) {
-        nuovoSocket->deleteLater();
+    auto newSocket = new ClientSocket(this);
+    if (!newSocket->setSocketDescriptor(handle)) {
+        newSocket->deleteLater();
         return;
     }
-    nuovoSocket->setClientID(handle);
+    newSocket->setClientID(handle);
 
     /*connect(
-            nuovoSocket,
+            newSocket,
             &QTcpSocket::stateChanged,
             this,
             &Server::onSocketStateChanged
     );*/
+    connect(newSocket, &ClientSocket::basicMessageReceived, this, &Server::onProcessBasicMessage);
+    connect(newSocket, &ClientSocket::userMessageReceived, this, &Server::onProcessUserMessage);
+    connect(newSocket, &ClientSocket::fileManagementMessageReceived, this, &Server::onFileManagementMessageReceived);
+    connect(newSocket, &ClientSocket::changePasswordMessageReceived, this, &Server::onChangePasswordMessageReceived);
+    connect(newSocket, &ClientSocket::userManagementMessageReceived, this, &Server::onUserManagementMessageReceived);
+    connect(newSocket, &ClientSocket::logoutReceived, this, &Server::onLogoutReceived);
+    connect(newSocket, &ClientSocket::invitationReceived, this, &Server::onInvitationReceived);
+    connect(newSocket, &ClientSocket::storageMessageReceived, this, &Server::onProcessStorageMessage);
+    connect(newSocket, &ClientSocket::crdtMessageReceived, this, &Server::onProcessCrdtMessage);
 
-    connect(
-            nuovoSocket,
-            &ClientSocket::basicMessageReceived,
-            this,
-            &Server::onProcessBasicMessage
-    );
-    connect(
-            nuovoSocket,
-            &ClientSocket::userMessageReceived,
-            this,
-            &Server::onProcessUserMessage
-    );
-    connect(
-            nuovoSocket,
-            &ClientSocket::fileManagementMessageReceived,
-            this,
-            &Server::onFileManagementMessageReceived
-    );
-    connect(
-            nuovoSocket,
-            &ClientSocket::changePasswordMessageReceived,
-            this,
-            &Server::onChangePasswordMessageReceived
-    );
-    connect(
-            nuovoSocket,
-            &ClientSocket::userManagementMessageReceived,
-            this,
-            &Server::onUserManagementMessageReceived
-    );
-    connect(
-            nuovoSocket,
-            &ClientSocket::logoutReceived,
-            this,
-            &Server::onLogoutReceived
-    );
-    connect(
-            nuovoSocket,
-            &ClientSocket::invitationReceived,
-            this,
-            &Server::onInvitationReceived
-    );
+    newSocket->setClientID(handle);
 
-    connect(
-            nuovoSocket,
-            &ClientSocket::storageMessageReceived,
-            this,
-            &Server::onProcessStorageMessage);
-    connect(
-            nuovoSocket,
-            &ClientSocket::crdtMessageReceived,
-            this,
-            &Server::onProcessCrdtMessage
-            );
-
-    nuovoSocket->setClientID(handle);
-
-
-    //adesso dire al nuovo client che si è connesso
+    //client is connected
     BasicMessage basicMessage(handle);
     qDebug() << "Sending: " << handle << "\n";
-    nuovoSocket->send(CLIENT_CONNECTED, basicMessage);
-
+    newSocket->send(CLIENT_CONNECTED, basicMessage);
     qDebug() << "ho mandato\n";
 }
 
@@ -155,52 +105,77 @@ void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
     }
 }
 
-void Server::onProcessCrdtMessage(_int code, CrdtMessage crdtMessage) {
-    //logica crdt
+void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
+    this->model.insertMessage(crdtMessage);
+
+    while (!this->model.getMessages().empty()) {
+        auto message = this->model.getMessages().dequeue();
+        auto activeUsersForDocument = this->model.getActiveClientsForDocument();
+        auto it = activeUsersForDocument.find(crdtMessage.getFileName());
+        if (it == activeUsersForDocument.end())
+            return;
+
+        /* It is a kind of dispatch messages */
+        QList<User> users = activeUsersForDocument[crdtMessage.getFileName()];
+        for (auto &user : users) {
+            if (message.getSymbol().getSiteId() != user.getSiteId()) {
+
+                message.setMode(true);
+                ClientSocket *socket = this->model.getLoggedUser(user);
+                if (message.getAction() == "CURSOR_CHANGED")
+                    socket->send(CURSOR_CHANGED, message);
+                else
+                    socket->send(SYMBOL_INSERT_OR_ERASE, message);
+            }
+        }
+
+        /* Now, the new symbol must be saved on file system */
+        if (crdtMessage.getAction() == "INSERT" || crdtMessage.getAction() == "ERASE")
+            this->model.save(crdtMessage);
+    }
 }
 
 void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
     qDebug() << "onProcessStorageMessage";
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
-    switch(code) {
+    switch (code) {
         case LOAD_REQUEST: {
-            /* get the list of symbols inside the document */
-            QFile file (QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).filePath(storageMessage.getFileName()));
-            if(!file.exists())
-                return;
-
-            qDebug() << "onprocessStoragemessage load request" << storageMessage.getFileName();
-            if (!file.open(QFile::ReadOnly))
-                return;
-
-            QVector<Symbol> symbols;
-            QDataStream in(&file);
-            in >> symbols;
-            file.close();
-
             /* get the list of users that are modifying the current document */
             QList<User> users = model.addActiveUser(storageMessage.getActiveUsers().at(0),
                                                     storageMessage.getFileName());
 
+            QVector<Symbol> symbols;
+            if (users.size() == 1) {
+                /* get the list of symbols inside the document */
+                QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(
+                        VIRGILIUM_STORAGE)).filePath(storageMessage.getFileName()));
+                if (!file.exists())
+                    return;
+
+                if (!file.open(QFile::ReadOnly))
+                    return;
+
+                QDataStream in(&file);
+                in >> symbols;
+                file.close();
+
+                this->model.insertSymbolsForDocument(storageMessage.getFileName(), symbols);
+            } else {
+                symbols = this->model.getSymbolsForDocument(storageMessage.getFileName());
+            }
+
             StorageMessage storageMessage1(0, symbols, storageMessage.getFileName(), users);
-            sender->sendStorage(LOAD_RESPONSE, storageMessage1);
-        }
-        break;
-        case SAVE: {
-            QRegExp tagExp("/");
-            QStringList dataList = storageMessage.getFileName().split(tagExp);
+            sender->send(LOAD_RESPONSE, storageMessage1);
 
-            QString filenamePath =  QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(dataList[0])+"/").filePath(dataList[1]);
-            qDebug() << "onprocessStoragemessage save" << filenamePath;
-            QFile file(filenamePath);
-            if (!file.open(QFile::WriteOnly))
-                return;
-
-            QDataStream out(&file);
-            out << storageMessage.getSymbols();
-            file.close();
+            for (auto &user : users) {
+                if (storageMessage.getActiveUsers().at(0).getSiteId() != user.getSiteId()) {
+                    ClientSocket *socket = this->model.getLoggedUser(user);
+                    ActiveUserMessage activeUserMessage(0, users);
+                    socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
+                }
+            }
         }
-        break;
+            break;
         default: {
 
         }
@@ -211,16 +186,15 @@ void Server::dispatch() {}
 
 
 void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
-   // qDebug() << userMessage.getUser().printMessage();
-   auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
+    auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     qDebug() << "userMessage onProcessUserMessage " << userMessage.getUser().printMessage();
 
-  switch (code) {
+    switch (code) {
         case LOGIN: {
-            qDebug()<<"popipopi qui arrivo";
+            qDebug() << "popipopi qui arrivo";
             if (Model::loginUser(userMessage.getUser())) {
                 sender->send(LOGIN_OK);
-                this->model.insertActiveUser(sender,userMessage.getUser());
+                this->model.insertLoggedUser(sender, userMessage.getUser());
                 qDebug() << "readClient L true";
             } else {
                 sender->send(LOGIN_KO);
@@ -291,14 +265,24 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
             sender->send(GET_ALL_DATA_OK, userMessageReturn, filesOwner, filesCollabs);
             qDebug() << "GET_ALL_DATA_OK ";
         }
-          break;
-      case DELETE_ACTIVE: {
-          this->model.removeActiveUser(userMessage.getUser(), userMessage.getFileName());
-      }
-      default: {
+            break;
+        case DELETE_ACTIVE: {
+            QList<User> users = this->model.removeActiveUser(userMessage.getUser(), userMessage.getFileName());
 
-      }
-  }
+            if (users.empty())
+                this->model.removeSymbolsForDocument(userMessage.getFileName());
+
+            ActiveUserMessage activeUserMessage(0, users);
+            for (auto &user : users) {
+                ClientSocket *socket = this->model.getLoggedUser(user);
+                socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
+            }
+        }
+            break;
+        default: {
+
+        }
+    }
 }
 
 
@@ -349,16 +333,18 @@ void Server::onChangePasswordMessageReceived(_int code, ChangePasswordMessage ch
 }
 
 void Server::onUserManagementMessageReceived(_int code, UserManagementMessage userManagementMessage) {
-    auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
-    switch(code) {
+    auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
+    switch (code) {
         case CREATE_INVITE: {
             qDebug() << "create_invite: " << userManagementMessage.getEmail_owner() << "\n";
             QString invitationCode = model.createUrlCollaborator(userManagementMessage);
-            InvitationMessage invitationMessage = InvitationMessage(sender->getClientID(),userManagementMessage.getEmail_owner(),invitationCode);
+            InvitationMessage invitationMessage = InvitationMessage(sender->getClientID(),
+                                                                    userManagementMessage.getEmail_owner(),
+                                                                    invitationCode);
             qDebug() << "CREATE INVITE SERVER ";
             sender->send(INVITE_CREATED, invitationMessage);
         }
-        break;
+            break;
         case ADD_COLLABORATOR: {
             qDebug() << "add_collaborator: " << userManagementMessage.getEmail_owner() << "\n";
             if (model.addCollaborator(userManagementMessage))
@@ -387,29 +373,30 @@ void Server::onUserManagementMessageReceived(_int code, UserManagementMessage us
 }
 
 void Server::onLogoutReceived(_int code) {
-    auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
+    auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
+
     switch (code) {
-       case LOGOUT: {
-           qDebug() << "close connection DB";
+        case LOGOUT: {
+            qDebug() << "close connection DB";
             model.closeConnectionDB();
-            this->model.removeUserFromEditor(sender);
-            this->model.removeActiveUser(sender);
+            //this->model.removeUserFromEditor(sender);
+            this->model.removeLoggedUser(sender);
         }
-        break;
+            break;
     }
 }
 
 void Server::onInvitationReceived(_int code, InvitationMessage invitationMessage) {
-    auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
-    switch(code) {
+    auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
+    switch (code) {
         case REQUEST_TO_COLLABORATE: {
             qDebug() << "onInvitationReceived";
-            if(model.requestToCollaborate(invitationMessage))
+            if (model.requestToCollaborate(invitationMessage))
                 sender->send(REQUEST_TO_COLLABORATE_OK);
             else
                 sender->send(REQUEST_TO_COLLABORATE_KO);
         }
-        break;
+            break;
     }
 }
 

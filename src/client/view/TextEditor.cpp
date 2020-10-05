@@ -20,7 +20,6 @@ TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fil
     this->setWindowTitle("Virgilium");
     this->fileName = fileName;
     this->currentUser = std::move(user);
-    qDebug() << "TEST100 " << fileName;
 
     ui->textEdit->setStyleSheet("QTextEdit { padding-left:150; padding-right:150;}");
 
@@ -90,14 +89,15 @@ TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fil
     drawColorButton();
 
     /* client instance is created and connections for editor management are inserted  */
-    this->client = new virgilium_client(nullptr, socket);
-    QObject::connect(this->client, &virgilium_client::insert_into_window, this, &TextEditor::insert_text);
-    QObject::connect(this->client, &virgilium_client::remove_into_window, this, &TextEditor::delete_text);
-    QObject::connect(this->client, &virgilium_client::change_cursor_position, this, &TextEditor::changeCursorPosition);
+    this->client = new Crdt_editor(nullptr, socket, this->fileName);
+    QObject::connect(this->client, &Crdt_editor::insert_into_window, this, &TextEditor::insert_text);
+    QObject::connect(this->client, &Crdt_editor::remove_into_window, this, &TextEditor::delete_text);
+    QObject::connect(this->client, &Crdt_editor::change_cursor_position, this, &TextEditor::changeCursorPosition);
     QObject::connect(ui->textEdit->document(), SIGNAL(contentsChange(int, int, int)), this,
                      SLOT(change(int, int, int)));
     QObject::connect(ui->textEdit, SIGNAL(cursorPositionChanged()), this, SLOT(cursorMoved()));
-    QObject::connect(this->client, &virgilium_client::load_response, this, &TextEditor::loadResponse);
+    QObject::connect(this->client, &Crdt_editor::load_response, this, &TextEditor::loadResponse);
+    QObject::connect(this->client, &Crdt_editor::change_active_users, this, &TextEditor::changeActiveUser);
 
     this->loadRequest(this->fileName, this->currentUser);
 }
@@ -116,11 +116,19 @@ void TextEditor::loadRequest(const QString &f, User user) {
 
 /* This slot is used to get the response of the server. It contains the list
  * of symbols and the list of users. */
-void TextEditor::loadResponse(const QVector<Symbol> &symbols, QList<User> users) {
-    for (const Symbol &symbol : symbols)
-        this->insert_text(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont());
+void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, QList<User> users) {
+    if (code == LOAD_RESPONSE) {
+        for (const Symbol &symbol : symbols)
+            this->insert_text(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
+    }
 
+    changeActiveUser(std::move(users));
+}
+
+/* This slot is used to change the actual active users */
+void TextEditor::changeActiveUser(QList<User> users) {
     this->activeUsers = std::move(users);
+    this->comboUsers->clear();
     auto *model = dynamic_cast< QStandardItemModel * >( comboUsers->model());
     for (int i = 0; i < this->activeUsers.size(); i++) {
         QString str = this->activeUsers.at(i).getFirstName() + " " + this->activeUsers.at(i).getLastName();
@@ -129,11 +137,6 @@ void TextEditor::loadResponse(const QVector<Symbol> &symbols, QList<User> users)
         auto *item = model->item(i);
         item->setSelectable(false);
     }
-}
-
-/* This method is used to save the current document. */
-void TextEditor::save() {
-    this->client->save(this->fileName);
 }
 
 /* This function is used just to draw the font size comboBox, and within it the corresponding slot is called */
@@ -337,7 +340,6 @@ void TextEditor::changeIndentSpacing(int num) {
 }
 
 void TextEditor::on_actionExport_PDF_triggered() {
-    qDebug() << "on_actionExport_PDF_triggered";
     QFileDialog fileDialog(this, tr("Export PDF"));
     fileDialog.setAcceptMode(QFileDialog::AcceptSave);
     fileDialog.setMimeTypeFilters(QStringList("application/pdf"));
@@ -384,16 +386,20 @@ void TextEditor::changeCursorPosition(_int position, _int siteId) {
     for (User &user : this->activeUsers) {
         if (user.getSiteId() == siteId) {
             u = user;
+            qDebug() << "NEL FOR " << u.getLastCursorPos();
             user.setLastCursorPos(position);
         }
     }
 
+    qDebug() << "FUORI DAL FOR " << u.getLastCursorPos();
     ui->textEdit->document()->blockSignals(true);
 
     /* If the last position of the cursor was 0, there wasn't any cursor show on the editor of the
      * other clients, so it is not necessary to delete the previous cursor */
-    if (u.getLastCursorPos() != 0)
+    if (u.getLastCursorPos() != 0) {
+        qDebug() << "NON DEVE ENTRARE";
         changeBackground(u.getLastCursorPos(), Qt::white);
+    }
 
     /* When the previous cursor position is deleted, the new one is shown on the editor if the new
      * position is different than 0. */
@@ -419,7 +425,7 @@ void TextEditor::changeBackground(_int position, const QColor &color) {
 /* This slot is called when insert_into_window signal is emitted, it has to insert the new char
  * inside the editor of the other clients. In fact, it accepts the char, the position where
  * it must be inserted and the font of the char. */
-void TextEditor::insert_text(_int pos, const QString &character, const Symbol::CharFormat &font) {
+void TextEditor::insert_text(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId) {
     QTextCursor cursor(ui->textEdit->textCursor());
     int originalPosition = cursor.position();
     cursor.setPosition(pos);
@@ -477,6 +483,8 @@ void TextEditor::insert_text(_int pos, const QString &character, const Symbol::C
     cursor.setPosition(originalPosition);
 
     ui->textEdit->document()->blockSignals(false);
+    qDebug() << "PROVA100 " << pos;
+    this->changeCursorPosition(pos + 1, siteId);
 }
 
 /* This slot is called when remove_from_window signal is emitted, it has to delete the char
@@ -573,7 +581,7 @@ void TextEditor::change(int pos, int del, int add) {
                     this->client->localInsert(pos, "X", charData);
                     this->client->localErase(pos);
                 }
-                this->save();
+                //this->save();
                 return;
             }
         }
@@ -590,13 +598,13 @@ void TextEditor::change(int pos, int del, int add) {
                 this->client->localErase(i);
             }
             multipleInsert(pos, added);
-            this->save();
+            //this->save();
             return;
         }
         multipleErase(pos, del);
         multipleInsert(pos, added);
     }
-    this->save();
+    //this->save();
 }
 
 /* This function is invoked when it is necessary to add more than one char. */
