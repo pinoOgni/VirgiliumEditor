@@ -19,7 +19,7 @@
 #include "../common/messages/UserManagementMessage.h"
 #include "constants.h"
 
-class ClientSocket: public QTcpSocket {
+class ClientSocket : public QTcpSocket {
 Q_OBJECT
 private:
 
@@ -103,13 +103,22 @@ signals:
     void fileManagementMessageReceived(_int code, FileManagementMessage fileManagementMessage);
 
     void fileManagementMessageResponse(_int code);
-    void allDataReceived(_int code, UserMessage userMessage, _int row1, std::vector<FilesMessage> filesOwner, _int row2, std::vector<FilesMessage> filesCollabs);
+
+    void allDataReceived(_int code, UserMessage userMessage, _int row1, std::vector<FilesMessage> filesOwner, _int row2,
+                         std::vector<FilesMessage> filesCollabs);
+
     void changePasswordMessageReceived(_int code, ChangePasswordMessage changePasswordMessage);
+
     void changePasswordMessageResponse(_int code);
+
     void userManagementMessageReceived(_int code, UserManagementMessage userManagementMessage);
+
     void userManagementMessageResponse(_int code);
+
     void invitationReceived(_int code, InvitationMessage invitationMessage);
+
     void requestToCollaborateReceived(_int code);
+
     void logoutReceived(_int code); //pino close connection when client "logout"
     void crdtMessageReceived(_int code, CrdtMessage crdtMessage);
 

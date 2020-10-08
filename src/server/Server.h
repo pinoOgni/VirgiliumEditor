@@ -35,16 +35,23 @@ private slots:
     void onProcessStorageMessage(_int code, StorageMessage storageMessage);
 
     void onFileManagementMessageReceived(_int code, FileManagementMessage fileManagementMessage);
+
     void onChangePasswordMessageReceived(_int code, ChangePasswordMessage changePasswordMessage);
+
     void onUserManagementMessageReceived(_int code, UserManagementMessage userManagementMessage);
-    //void onProcessFileMessage(_int code, FilesMessage fileMessage);
+
     void onInvitationReceived(_int code, InvitationMessage invitationMessage);
+
     void onLogoutReceived(_int code); //pino close connection  DB user "logout"
 
 signals:
-    void processBasicMessage(_int code,BasicMessage basicMessage);
+
+    void processBasicMessage(_int code, BasicMessage basicMessage);
+
     void processCrdtMessage(_int code, CrdtMessage crdtMessage);
+
     void processUserMessage(_int code, UserMessage userMessage);
+
     void processFilesMessage(_int code, FilesMessage filesMessage);
 };
 

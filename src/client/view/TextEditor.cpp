@@ -175,7 +175,24 @@ void TextEditor::drawFontComboBox() {
                      [=](const QString &text) {
                          QTextCursor cursor(ui->textEdit->textCursor());
                          if (!cursor.hasSelection()) {
-                             ui->textEdit->setFont(text); //TODO si potrebbe risolvere con QDialog
+                             auto *qd = new QDialog;
+                             qd->setWindowTitle("Change font");
+                             auto *vl = new QVBoxLayout;
+                             qd->setLayout(vl);
+
+                             auto label = new QLabel("Please, select the text that you want to change.");
+                             auto *ok = new QPushButton("Ok");
+
+                             vl->addWidget(label);
+                             vl->addWidget(ok);
+
+                             QObject::connect(ok, &QPushButton::clicked,
+                                              [qd]() {
+                                                  qd->close();
+                                              });
+
+                             qd->show();
+                             //ui->textEdit->setFont(text); //TODO si potrebbe risolvere con QDialog
                          } else {
                              ui->textEdit->setCurrentFont(text);
                          }
@@ -490,7 +507,7 @@ void TextEditor::insertOneChar(_int pos, const QString &character, const Symbol:
 /* This slot is called when remove_from_window signal is emitted, it has to delete the char
  * from the editor of the other clients. In fact, it accepts the position of the char that
  * must be deleted. */
-void TextEditor::delete_text(_int pos) {
+void TextEditor::delete_text(_int pos, _int siteId) {
     /* The cursor is moved in the position where there is the char that must be deleted. */
     QTextCursor cursor(ui->textEdit->textCursor());
     int originalPosition = cursor.position();
@@ -508,6 +525,8 @@ void TextEditor::delete_text(_int pos) {
         cursor.setPosition(originalPosition - 1);
     else
         cursor.setPosition(originalPosition);
+
+    this->changeCursorPosition(pos, siteId);
 }
 
 /* This slot is called every time that the cursorPositionChanged() signal is emitted. It is only used
@@ -536,10 +555,12 @@ void TextEditor::change(int pos, int del, int add) {
     charData.font = result;
 
     if (add != 0 && del == 0) { /* insert chars */
-
         QString added = ui->textEdit->toPlainText().mid(pos, add);
         if (add == 1) {
-            this->client->localInsert(pos, added, charData);
+            QVector<_int> positions = {pos};
+            QVector<QString> chars = {added};
+            QVector<Symbol::CharFormat> fonts = {charData};
+            this->client->localInsert(positions, chars, fonts);
             changeBackground(pos + 1, Qt::white);
         } else {
             multipleInsert(pos, added);
@@ -547,19 +568,22 @@ void TextEditor::change(int pos, int del, int add) {
 
     } else if (add == 0 && del != 0) { /* delete chars */
 
-        if (del == 1)
-            this->client->localErase(pos);
-        else
+        if (del == 1) {
+            QVector<_int> positions = {pos};
+            this->client->localErase(positions);
+        } else {
             multipleErase(pos, del);
+        }
 
     } else { /* Some chars are deleted and some other else are inserted. */
+        ui->textEdit->undo();
+        QString removed = ui->textEdit->toPlainText().mid(pos, add);
+        ui->textEdit->redo();
+        QString added = ui->textEdit->toPlainText().mid(pos, add);
+
         if (add == del) {
             /* The for loop is used to check if some chars are changed or if the slot is called only because
              * the format of one or more chars is changed. */
-            ui->textEdit->undo();
-            QString removed = ui->textEdit->toPlainText().mid(pos, add);
-            ui->textEdit->redo();
-            QString added = ui->textEdit->toPlainText().mid(pos, add);
             bool equal = true;
             for (int i = 0; i < added.size(); i++) {
                 if (added[i] != removed[i]) {
@@ -572,43 +596,47 @@ void TextEditor::change(int pos, int del, int add) {
                 /* Check if alignment or indentation are changed. */
                 if (alignment == QString::number(textBlockFormat.alignment()) &&
                     indentation == QString::number(textBlockFormat.indent())) {
-                    multipleErase(pos, del);
+                    multipleErase(pos, removed.size());
                     multipleInsert(pos, added);
                 } else {
                     alignment = QString::number(textBlockFormat.alignment());
                     indentation = QString::number(textBlockFormat.indent());
 
-                    this->client->localInsert(pos, "X", charData);
-                    this->client->localErase(pos);
+                    QVector<_int> positions = {pos};
+                    QVector<QString> chars = {"X"};
+                    QVector<Symbol::CharFormat> fonts = {charData};
+                    this->client->localInsert(positions, chars, fonts);
+                    this->client->localErase(positions);
                 }
-                //this->save();
                 return;
             }
         }
 
-        /* If we arrive here, it means that some chars must be deleted and some other else
+        /* If we arrive here, it means that some chars must be deleted and some other
          * must be inserted. */
         int originalPos = cursor.position();
         cursor.movePosition(QTextCursor::End);
         int maxPos = cursor.position();
         cursor.setPosition(originalPos);
-        QString added = ui->textEdit->toPlainText().mid(pos, add);
         if (del == maxPos + 1) {
+            QVector<_int> positions;
             for (int i = pos + del - 2; i >= pos; i--) {
-                this->client->localErase(i);
+                positions.push_back(i);
             }
+            this->client->localErase(positions);
             multipleInsert(pos, added);
-            //this->save();
             return;
         }
-        multipleErase(pos, del);
+        multipleErase(pos, removed.size());
         multipleInsert(pos, added);
     }
-    //this->save();
 }
 
 /* This function is invoked when it is necessary to add more than one char. */
 void TextEditor::multipleInsert(int pos, const QString &added) {
+    QVector<_int> positions;
+    QVector<QString> chars;
+    QVector<Symbol::CharFormat> fonts;
     for (QString c : added) {
         QTextCursor cursor(ui->textEdit->textCursor());
         cursor.setPosition(pos + 1, QTextCursor::MoveAnchor);
@@ -622,14 +650,26 @@ void TextEditor::multipleInsert(int pos, const QString &added) {
         Symbol::CharFormat charData;
         charData.foreground = textCharFormat.foreground().color();
         charData.font = result;
-        this->client->localInsert(pos, c, charData);
+
+        cursor.setPosition(pos, QTextCursor::MoveAnchor);
+        cursor.setPosition(pos + 1, QTextCursor::KeepAnchor);
+        textCharFormat.setBackground(Qt::white);
+        cursor.setCharFormat(textCharFormat);
+
+        positions.push_back(pos);
+        chars.push_back(c);
+        fonts.push_back(charData);
         pos++;
     }
+
+    this->client->localInsert(positions, chars, fonts);
 }
 
 /* This function is invoked when it is necessary to remove more than one char. */
 void TextEditor::multipleErase(int pos, int del) {
+    QVector<_int> positions;
     for (int i = pos + del - 1; i >= pos; i--) {
-        this->client->localErase(i);
+        positions.push_back(i);
     }
+    this->client->localErase(positions);
 }

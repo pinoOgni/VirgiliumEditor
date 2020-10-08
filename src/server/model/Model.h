@@ -78,10 +78,15 @@ public:
     bool newFile(FileManagementMessage fileManagementMessage);
 
     bool changePassword(ChangePasswordMessage changePasswordMessage);
+
     bool addCollaborator(UserManagementMessage userManagementMessage);
+
     bool removeCollaborator(UserManagementMessage userManagementMessage);
+
     bool unsubscribe(UserManagementMessage userManagementMessage);
+
     void closeConnectionDB();
+
     QString createUrlCollaborator(UserManagementMessage userManagementMessage);
 
     bool requestToCollaborate(InvitationMessage invitationMessage);

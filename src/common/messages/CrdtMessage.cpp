@@ -9,15 +9,15 @@
 
 CrdtMessage::CrdtMessage() : BasicMessage(sender) {}
 
-CrdtMessage::CrdtMessage(quintptr sender, Symbol s, boolean mode, QString action, QString fileName) :
+CrdtMessage::CrdtMessage(quintptr sender, QVector<Symbol> symbols, boolean mode, QString action, QString fileName) :
         BasicMessage(sender),
-        s(std::move(s)),
+        symbols(std::move(symbols)),
         mode(mode),
-        fileName(fileName),
+        fileName(std::move(fileName)),
         action(std::move(action)) {}
 
-Symbol CrdtMessage::getSymbol() const {
-    return this->s;
+QVector<Symbol> CrdtMessage::getSymbols() const {
+    return this->symbols;
 }
 
 QString CrdtMessage::getAction() const {
@@ -28,33 +28,26 @@ boolean CrdtMessage::getMode() const {
     return this->mode;
 }
 
-void CrdtMessage::setMode(boolean mode) {
-    this->mode = mode;
+void CrdtMessage::setMode(boolean m) {
+    this->mode = m;
 }
 
 QString CrdtMessage::getFileName() const {
     return this->fileName;
 }
 
-void CrdtMessage::printMessage() {
-    //std::cout<<"messaggio inviato da: "<<this->mode<<"action=\""<<this->action.toStdString()<<"\""<<std::endl;
-    std::cout << "symbol:\n";
-    this->s.printSymbol();
-}
-
 QDataStream &operator<<(QDataStream &stream, const CrdtMessage &myClass) {
     stream << myClass.sender;
-    stream << myClass.s;
+    stream << myClass.symbols;
     stream << myClass.mode;
     stream << myClass.action;
     stream << myClass.fileName;
-    //stream << myclass.letter;
     return stream;
 }
 
 QDataStream &operator>>(QDataStream &stream, CrdtMessage &myclass) {
     stream >> myclass.sender;
-    stream >> myclass.s;
+    stream >> myclass.symbols;
     stream >> myclass.mode;
     stream >> myclass.action;
     stream >> myclass.fileName;

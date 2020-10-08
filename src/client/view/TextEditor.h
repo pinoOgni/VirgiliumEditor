@@ -20,6 +20,7 @@ Q_OBJECT
 
 public:
     TextEditor(QWidget *parent, ClientSocket *socket, const QString &fileName, User user);
+
     ~TextEditor();
 
 private:
@@ -38,12 +39,19 @@ private:
     QComboBox *comboUsers;
 
     void drawFontComboBox();
+
     void drawFontSizeComboBox();
+
     void changeIndentSpacing(int num);
+
     void drawColorButton();
+
     void multipleInsert(int pos, const QString &added);
+
     void multipleErase(int pos, int del);
+
     void changeBackground(_int position, const QColor &color);
+
     void loadRequest(const QString &fileName, User user);
 
     void insertOneChar(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId);
@@ -51,19 +59,33 @@ private:
 private slots:
 
     void on_actionExit_triggered();
+
     void on_actionCopy_triggered();
+
     void on_actionPaste_triggered();
+
     void on_actionCut_triggered();
+
     void on_actionUndo_triggered();
+
     void on_actionRedo_triggered();
+
     void on_actionSelect_all_triggered();
+
     void on_actionUnderline_triggered();
+
     void on_actionBold_triggered();
+
     void on_actionItalic_triggered();
+
     void on_actionFind_and_replace_triggered();
+
     void on_actionIncrease_indent_triggered();
+
     void on_actionDecrease_indent_triggered();
+
     void on_actionExport_PDF_triggered();
+
     void on_actionRight_alignment_triggered();
 
     void on_actionLeft_alignment_triggered();
@@ -78,7 +100,7 @@ private slots:
 
     void insert_text(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId);
 
-    void delete_text(_int pos);
+    void delete_text(_int pos, _int siteId);
 
     void change(int pos, int del, int add);
 

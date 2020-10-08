@@ -49,32 +49,32 @@ void ClientSocket::onReadyRead() {
             ActiveUserMessage activeUserMessage;
             this->in >> activeUserMessage;
 
-            if (this->in.commitTransaction())
-                    emit activeUserMessageReceived(code, activeUserMessage);
+            if (!this->in.commitTransaction()) return;
+            emit activeUserMessageReceived(code, activeUserMessage);
         }
             break;
         case LOAD_RESPONSE: {
             StorageMessage storageMessage;
             this->in >> storageMessage;
 
-            if (this->in.commitTransaction())
-                    emit storageMessageReceivedLoad(code, storageMessage);
+            if (!this->in.commitTransaction()) return;
+            emit storageMessageReceivedLoad(code, storageMessage);
         }
             break;
         case LOAD_REQUEST: {
             StorageMessage storageMessage;
             this->in >> storageMessage;
 
-            if (this->in.commitTransaction())
-                    emit storageMessageReceived(code, storageMessage);
+            if (!this->in.commitTransaction()) return;
+            emit storageMessageReceived(code, storageMessage);
         }
             break;
         case CLIENT_CONNECTED: {
             BasicMessage bm;
             this->in >> bm;
 
-            if (this->in.commitTransaction())
-                    emit basicMessageReceived(code, bm);
+            if (!this->in.commitTransaction()) return;
+            emit basicMessageReceived(code, bm);
         }
             break;
         case LOGIN:
@@ -87,16 +87,16 @@ void ClientSocket::onReadyRead() {
             UserMessage um;
             this->in >> um;
 
-            if (this->in.commitTransaction())
-                    emit userMessageReceived(code, um);
+            if (!this->in.commitTransaction()) return;
+            emit userMessageReceived(code, um);
         }
             break;
         case LOGIN_KO:
         case LOGIN_OK:
         case SIGNUP_OK:
         case SIGNUP_KO: {
-            if (this->in.commitTransaction())
-                    emit loginSignupReceived(code);
+            if (!this->in.commitTransaction()) return;
+            emit loginSignupReceived(code);
         }
             break;
         case GET_FILES_OWNER_OK:
@@ -111,8 +111,8 @@ void ClientSocket::onReadyRead() {
                 in >> temp;
                 filesMessage.push_back(temp);
             }
-            if (this->in.commitTransaction())
-                    emit filesMessageReceived(code, filesMessage);
+            if (!this->in.commitTransaction()) return;
+            emit filesMessageReceived(code, filesMessage);
         }
             break;
         case GET_ALL_DATA_OK: {
@@ -143,8 +143,8 @@ void ClientSocket::onReadyRead() {
             qDebug() << "GET_ALL_DATA row2 " << row2;
             for (auto item: filesCollabs)
                 item.printUserInfo();
-            if (this->in.commitTransaction())
-                    emit allDataReceived(code, um, row1, filesOwner, row2, filesCollabs);
+            if (!this->in.commitTransaction()) return;
+            emit allDataReceived(code, um, row1, filesOwner, row2, filesCollabs);
         }
             break;
         case RENAME_FILE:
@@ -153,8 +153,8 @@ void ClientSocket::onReadyRead() {
             FileManagementMessage fileManagementMessage;
             this->in >> fileManagementMessage;
 
-            if (this->in.commitTransaction())
-                    emit fileManagementMessageReceived(code, fileManagementMessage);
+            if (!this->in.commitTransaction()) return;
+            emit fileManagementMessageReceived(code, fileManagementMessage);
         }
             break;
         case RENAME_FILE_OK:
@@ -163,22 +163,22 @@ void ClientSocket::onReadyRead() {
         case DELETE_FILE_KO:
         case NEW_FILE_OK:
         case NEW_FILE_KO: {
-            if (this->in.commitTransaction())
-                    emit fileManagementMessageResponse(code);
+            if (!this->in.commitTransaction()) return;
+            emit fileManagementMessageResponse(code);
         }
             break;
         case CHANGE_PASSWORD: {
             ChangePasswordMessage changePasswordMessage;
             this->in >> changePasswordMessage;
 
-            if (this->in.commitTransaction())
-                    emit changePasswordMessageReceived(code, changePasswordMessage);
+            if (!this->in.commitTransaction()) return;
+            emit changePasswordMessageReceived(code, changePasswordMessage);
         }
             break;
         case CHANGE_PASSWORD_OK:
         case CHANGE_PASSWORD_KO: {
-            if (this->in.commitTransaction())
-                    emit changePasswordMessageResponse(code);
+            if (!this->in.commitTransaction()) return;
+            emit changePasswordMessageResponse(code);
         }
             break;
         case CREATE_INVITE:
@@ -188,8 +188,8 @@ void ClientSocket::onReadyRead() {
             UserManagementMessage userManagementMessage;
             this->in >> userManagementMessage;
 
-            if (this->in.commitTransaction())
-                    emit userManagementMessageReceived(code, userManagementMessage);
+            if (!this->in.commitTransaction()) return;
+            emit userManagementMessageReceived(code, userManagementMessage);
         }
             break;
         case INVITE_CREATED:
@@ -197,8 +197,8 @@ void ClientSocket::onReadyRead() {
             InvitationMessage invitationMessage;
             this->in >> invitationMessage;
 
-            if (this->in.commitTransaction())
-                    emit invitationReceived(code, invitationMessage);
+            if (!this->in.commitTransaction()) return;
+            emit invitationReceived(code, invitationMessage);
         }
             break;
         case ADD_COLLABORATOR_OK:
@@ -207,19 +207,19 @@ void ClientSocket::onReadyRead() {
         case REMOVE_COLLABORATOR_KO:
         case UNSUBSCRIBE_OK:
         case UNSUBSCRIBE_KO: {
-            if (this->in.commitTransaction())
-                    emit userManagementMessageResponse(code);
+            if (!this->in.commitTransaction()) return;
+            emit userManagementMessageResponse(code);
         }
             break;
         case LOGOUT: {
-            if (this->in.commitTransaction())
-                    emit logoutReceived(LOGOUT);
+            if (!this->in.commitTransaction()) return;
+            emit logoutReceived(LOGOUT);
         }
             break;
         case REQUEST_TO_COLLABORATE_OK:
         case REQUEST_TO_COLLABORATE_KO: {
-            if (this->in.commitTransaction())
-                    emit requestToCollaborateReceived(code);
+            if (!this->in.commitTransaction()) return;
+            emit requestToCollaborateReceived(code);
         }
             break;
         case CURSOR_CHANGED:
@@ -227,8 +227,8 @@ void ClientSocket::onReadyRead() {
             CrdtMessage crdtMessage;
             this->in >> crdtMessage;
 
-            if (this->in.commitTransaction())
-                    emit crdtMessageReceived(code, crdtMessage);
+            if (!this->in.commitTransaction()) return;
+            emit crdtMessageReceived(code, crdtMessage);
         }
             break;
         default: {
@@ -236,6 +236,12 @@ void ClientSocket::onReadyRead() {
         }
     }
 
+    if (in.atEnd()) {
+        qDebug() << "ho letto tutto";
+    } else {
+        qDebug() << "c'è altra roba";
+        emit readyRead();
+    }
 }
 
 void ClientSocket::onSocketStateChanged(QTcpSocket::SocketState state) {
