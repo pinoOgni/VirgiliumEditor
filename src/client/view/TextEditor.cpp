@@ -1,24 +1,25 @@
 #include "TextEditor.h"
-#include "ui_TextEditor.h"
+#include "../../../cmake-build-debug/VirgiliumClient_autogen/include/ui_TextEditor.h"
 
 #include <QComboBox>
 #include <QFontComboBox>
 #include <QLineEdit>
 #include <QLabel>
-#include <iostream>
 #include <QTextList>
 #include <QToolButton>
 #include <QColorDialog>
 #include <QPrinter>
+#include <utility>
 #include <client/clientstuff.h>
 
-TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fileName) : QMainWindow(parent),
-                                                                                         ui(new Ui::TextEditor) {
+TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fileName, User user) : QMainWindow(parent),
+                                                                                                    ui(new Ui::TextEditor) {
     ui->setupUi(this);
     this->setCentralWidget(ui->textEdit);
     this->setMinimumSize(900, 550);
     this->setWindowTitle("Virgilium");
     this->fileName = fileName;
+    this->currentUser = std::move(user);
 
     ui->textEdit->setStyleSheet("QTextEdit { padding-left:150; padding-right:150;}");
 
@@ -52,25 +53,17 @@ TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fil
     btnLayout->setAlignment(Qt::AlignLeft);
     buttonsLayout->setLayout(btnLayout);
 
-    QRegExp tagExp("/");
-    QStringList dataList = fileName.split(tagExp);
-    auto *userPage = new QPushButton(
-            dataList[1]); //TODO forse possiamo pure togliere il bottone se la pagina di dietro rimane aperta
-    userPage->setMaximumWidth(100);
-    userPage->setStyleSheet("background: #F0F0F0;");
-    buttonsLayout->layout()->addWidget(userPage);
+    //QRegExp tagExp("/");
+    //QStringList dataList = fileName.split(tagExp);
+    //auto *userPage = new QPushButton(dataList[0]); //TODO forse possiamo pure togliere
+    //userPage->setMaximumWidth(100);
+    //userPage->setStyleSheet("background: #F0F0F0;");
+    //buttonsLayout->layout()->addWidget(userPage);
 
-    auto *comboUsers = new QComboBox();
+    comboUsers = new QComboBox();
     comboUsers->setObjectName("comboUsers");
     comboUsers->setEditable(false);
-    const QList<QString> userList = {"Actual active users", "Simone D'Amilo",
-                                     "Ajeje Brazov"}; //take list of users from database
-    auto *model = dynamic_cast< QStandardItemModel * >( comboUsers->model());
-    for (const QString &user : userList) {
-        comboUsers->addItem(user);
-        auto *item = model->item(userList.indexOf(user), 0);
-        item->setSelectable(false);
-    }
+    comboUsers->setFixedWidth(250);
     buttonsLayout->layout()->addWidget(comboUsers);
 
     internalLayoutHeader->layout()->addWidget(buttonsLayout);
@@ -94,58 +87,56 @@ TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fil
     /* Font comboBox and color menu */
     drawFontComboBox();
     drawColorButton();
-    //drawHighlighterButton();
 
     /* client instance is created and connections for editor management are inserted  */
-    this->client = new virgilium_client(nullptr, socket);
-    QObject::connect(this->client, &virgilium_client::insert_into_window, this, &TextEditor::insert_text);
-    QObject::connect(this->client, &virgilium_client::remove_into_window, this, &TextEditor::delete_text);
-    QObject::connect(this->client, &virgilium_client::change_cursor_position, this, &TextEditor::changeCursorPosition);
+    this->client = new Crdt_editor(nullptr, socket, this->fileName);
+    QObject::connect(this->client, &Crdt_editor::insert_into_window, this, &TextEditor::insert_text);
+    QObject::connect(this->client, &Crdt_editor::remove_into_window, this, &TextEditor::delete_text);
+    QObject::connect(this->client, &Crdt_editor::change_cursor_position, this, &TextEditor::changeCursorPosition);
     QObject::connect(ui->textEdit->document(), SIGNAL(contentsChange(int, int, int)), this,
                      SLOT(change(int, int, int)));
     QObject::connect(ui->textEdit, SIGNAL(cursorPositionChanged()), this, SLOT(cursorMoved()));
-    QObject::connect(this->client, &virgilium_client::load_response, this, &TextEditor::loadResponse);
+    QObject::connect(this->client, &Crdt_editor::load_response, this, &TextEditor::loadResponse);
+    QObject::connect(this->client, &Crdt_editor::change_active_users, this, &TextEditor::changeActiveUser);
 
-    //l'intera struttura deve essere mantenuta dal server.
-    User user;
-    user.name = "Simone"; //preso dal db
-    user.surname = "DAmilo"; //preso dal db
-    user.siteId = 21; //assegnato dal sistema
-    user.assignedColor = Qt::red; //assegnato in modo casuale
-    user.lastCursorPos = 0; //inizialmente sempre a 0
-    User user2;
-    user2.name = "Simone";
-    user2.surname = "DAmilo";
-    user2.siteId = 22;
-    user2.assignedColor = Qt::yellow;
-    user2.lastCursorPos = 0;
-    User user3;
-    user3.name = "Simone";
-    user3.surname = "DAmilo";
-    user3.siteId = 6;
-    user3.assignedColor = Qt::blue;
-    user3.lastCursorPos = 0;
-    users = {user, user2, user3};
-
-    this->loadRequest(this->fileName);
-}
-
-void TextEditor::loadRequest(const QString &f) {
-    this->client->loadRequest(this->fileName);
-}
-
-void TextEditor::loadResponse(const QVector<Symbol> &symbols) {
-    for (const Symbol &symbol : symbols)
-        this->insert_text(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont());
-}
-
-void TextEditor::save() {
-    this->client->save(this->fileName); //TODO sistemare il salvataggio sul desktop
+    this->loadRequest(this->fileName, this->currentUser);
 }
 
 TextEditor::~TextEditor() {
-    //ALE CONTROLLA QUA
+    this->client->deleteFromActive(this->currentUser, this->fileName);
+    delete client;
     delete ui;
+}
+
+/* This function is used to load the current document from server and the list
+ * of all users that are now modifying the document. */
+void TextEditor::loadRequest(const QString &f, User user) {
+    this->client->loadRequest(this->fileName, std::move(user));
+}
+
+/* This slot is used to get the response of the server. It contains the list
+ * of symbols and the list of users. */
+void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, QList<User> users) {
+    if (code == LOAD_RESPONSE) {
+        for (const Symbol &symbol : symbols)
+            insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
+    }
+
+    changeActiveUser(std::move(users));
+}
+
+/* This slot is used to change the actual active users */
+void TextEditor::changeActiveUser(QList<User> users) {
+    this->activeUsers = std::move(users);
+    this->comboUsers->clear();
+    auto *model = dynamic_cast< QStandardItemModel * >( comboUsers->model());
+    for (int i = 0; i < this->activeUsers.size(); i++) {
+        QString str = this->activeUsers.at(i).getFirstName() + " " + this->activeUsers.at(i).getLastName();
+        comboUsers->addItem(str);
+        comboUsers->setItemData(i, QBrush(this->activeUsers.at(i).getAssignedColor()), Qt::TextColorRole);
+        auto *item = model->item(i);
+        item->setSelectable(false);
+    }
 }
 
 /* This function is used just to draw the font size comboBox, and within it the corresponding slot is called */
@@ -184,7 +175,24 @@ void TextEditor::drawFontComboBox() {
                      [=](const QString &text) {
                          QTextCursor cursor(ui->textEdit->textCursor());
                          if (!cursor.hasSelection()) {
-                             ui->textEdit->setFont(text); //TODO si potrebbe risolvere con QDialog
+                             auto *qd = new QDialog;
+                             qd->setWindowTitle("Change font");
+                             auto *vl = new QVBoxLayout;
+                             qd->setLayout(vl);
+
+                             auto label = new QLabel("Please, select the text that you want to change.");
+                             auto *ok = new QPushButton("Ok");
+
+                             vl->addWidget(label);
+                             vl->addWidget(ok);
+
+                             QObject::connect(ok, &QPushButton::clicked,
+                                              [qd]() {
+                                                  qd->close();
+                                              });
+
+                             qd->show();
+                             //ui->textEdit->setFont(text); //TODO si potrebbe risolvere con QDialog
                          } else {
                              ui->textEdit->setCurrentFont(text);
                          }
@@ -243,8 +251,7 @@ void TextEditor::changeColorSlot() {
 }
 
 void TextEditor::on_actionExit_triggered() {
-    QApplication::quit();
-    //this->deleteLater();
+    this->close();
 }
 
 void TextEditor::on_actionCopy_triggered() {
@@ -290,6 +297,7 @@ void TextEditor::on_actionItalic_triggered() {
 void TextEditor::on_actionFind_and_replace_triggered() {
     /* A dialog is created in order to take find and replace value */
     auto *qd = new QDialog;
+    qd->setWindowTitle("Find and replace");
     auto *vl = new QVBoxLayout;
     qd->setLayout(vl);
     auto *labelFind = new QLabel("Find");
@@ -349,7 +357,6 @@ void TextEditor::changeIndentSpacing(int num) {
 }
 
 void TextEditor::on_actionExport_PDF_triggered() {
-    qDebug() << "on_actionExport_PDF_triggered";
     QFileDialog fileDialog(this, tr("Export PDF"));
     fileDialog.setAcceptMode(QFileDialog::AcceptSave);
     fileDialog.setMimeTypeFilters(QStringList("application/pdf"));
@@ -392,11 +399,11 @@ void TextEditor::on_actionJustify_triggered() {
  * position of the cursor is shown inside the other client editors. */
 void TextEditor::changeCursorPosition(_int position, _int siteId) {
     /* The user that perform the action is searched */
-    User currentUser;
-    for (User &user : users) {
-        if (user.siteId == siteId) {
-            currentUser = user;
-            user.lastCursorPos = position;
+    User u;
+    for (User &user : this->activeUsers) {
+        if (user.getSiteId() == siteId) {
+            u = user;
+            user.setLastCursorPos(position);
         }
     }
 
@@ -404,13 +411,14 @@ void TextEditor::changeCursorPosition(_int position, _int siteId) {
 
     /* If the last position of the cursor was 0, there wasn't any cursor show on the editor of the
      * other clients, so it is not necessary to delete the previous cursor */
-    if (currentUser.lastCursorPos != 0)
-        changeBackground(currentUser.lastCursorPos, Qt::white);
+    if (u.getLastCursorPos() != 0) {
+        changeBackground(u.getLastCursorPos(), Qt::white);
+    }
 
     /* When the previous cursor position is deleted, the new one is shown on the editor if the new
      * position is different than 0. */
     if (position != 0)
-        changeBackground(position, currentUser.assignedColor);
+        changeBackground(position, u.getAssignedColor());
 
     ui->textEdit->document()->blockSignals(false);
 }
@@ -431,7 +439,12 @@ void TextEditor::changeBackground(_int position, const QColor &color) {
 /* This slot is called when insert_into_window signal is emitted, it has to insert the new char
  * inside the editor of the other clients. In fact, it accepts the char, the position where
  * it must be inserted and the font of the char. */
-void TextEditor::insert_text(_int pos, const QString &character, const Symbol::CharFormat &font) {
+void TextEditor::insert_text(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId) {
+    insertOneChar(pos, character, font, siteId);
+    this->changeCursorPosition(pos + 1, siteId);
+}
+
+void TextEditor::insertOneChar(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId) {
     QTextCursor cursor(ui->textEdit->textCursor());
     int originalPosition = cursor.position();
     cursor.setPosition(pos);
@@ -494,7 +507,7 @@ void TextEditor::insert_text(_int pos, const QString &character, const Symbol::C
 /* This slot is called when remove_from_window signal is emitted, it has to delete the char
  * from the editor of the other clients. In fact, it accepts the position of the char that
  * must be deleted. */
-void TextEditor::delete_text(_int pos) {
+void TextEditor::delete_text(_int pos, _int siteId) {
     /* The cursor is moved in the position where there is the char that must be deleted. */
     QTextCursor cursor(ui->textEdit->textCursor());
     int originalPosition = cursor.position();
@@ -512,6 +525,8 @@ void TextEditor::delete_text(_int pos) {
         cursor.setPosition(originalPosition - 1);
     else
         cursor.setPosition(originalPosition);
+
+    this->changeCursorPosition(pos, siteId);
 }
 
 /* This slot is called every time that the cursorPositionChanged() signal is emitted. It is only used
@@ -540,10 +555,12 @@ void TextEditor::change(int pos, int del, int add) {
     charData.font = result;
 
     if (add != 0 && del == 0) { /* insert chars */
-
         QString added = ui->textEdit->toPlainText().mid(pos, add);
         if (add == 1) {
-            this->client->localInsert(pos, added, charData);
+            QVector<_int> positions = {pos};
+            QVector<QString> chars = {added};
+            QVector<Symbol::CharFormat> fonts = {charData};
+            this->client->localInsert(positions, chars, fonts);
             changeBackground(pos + 1, Qt::white);
         } else {
             multipleInsert(pos, added);
@@ -551,19 +568,22 @@ void TextEditor::change(int pos, int del, int add) {
 
     } else if (add == 0 && del != 0) { /* delete chars */
 
-        if (del == 1)
-            this->client->localErase(pos);
-        else
+        if (del == 1) {
+            QVector<_int> positions = {pos};
+            this->client->localErase(positions);
+        } else {
             multipleErase(pos, del);
+        }
 
     } else { /* Some chars are deleted and some other else are inserted. */
+        ui->textEdit->undo();
+        QString removed = ui->textEdit->toPlainText().mid(pos, add);
+        ui->textEdit->redo();
+        QString added = ui->textEdit->toPlainText().mid(pos, add);
+
         if (add == del) {
             /* The for loop is used to check if some chars are changed or if the slot is called only because
              * the format of one or more chars is changed. */
-            ui->textEdit->undo();
-            QString removed = ui->textEdit->toPlainText().mid(pos, add);
-            ui->textEdit->redo();
-            QString added = ui->textEdit->toPlainText().mid(pos, add);
             bool equal = true;
             for (int i = 0; i < added.size(); i++) {
                 if (added[i] != removed[i]) {
@@ -576,44 +596,47 @@ void TextEditor::change(int pos, int del, int add) {
                 /* Check if alignment or indentation are changed. */
                 if (alignment == QString::number(textBlockFormat.alignment()) &&
                     indentation == QString::number(textBlockFormat.indent())) {
-                    multipleErase(pos, del);
+                    multipleErase(pos, removed.size());
                     multipleInsert(pos, added);
                 } else {
                     alignment = QString::number(textBlockFormat.alignment());
                     indentation = QString::number(textBlockFormat.indent());
 
-                    /* Prova pezza */
-                    this->client->localInsert(pos, "X", charData);
-                    this->client->localErase(pos);
+                    QVector<_int> positions = {pos};
+                    QVector<QString> chars = {"X"};
+                    QVector<Symbol::CharFormat> fonts = {charData};
+                    this->client->localInsert(positions, chars, fonts);
+                    this->client->localErase(positions);
                 }
-                this->save();
                 return;
             }
         }
 
-        /* If we arrive here, it means that some chars must be deleted and some other else
+        /* If we arrive here, it means that some chars must be deleted and some other
          * must be inserted. */
         int originalPos = cursor.position();
         cursor.movePosition(QTextCursor::End);
         int maxPos = cursor.position();
         cursor.setPosition(originalPos);
-        QString added = ui->textEdit->toPlainText().mid(pos, add);
         if (del == maxPos + 1) {
+            QVector<_int> positions;
             for (int i = pos + del - 2; i >= pos; i--) {
-                this->client->localErase(i);
+                positions.push_back(i);
             }
+            this->client->localErase(positions);
             multipleInsert(pos, added);
-            this->save();
             return;
         }
-        multipleErase(pos, del);
+        multipleErase(pos, removed.size());
         multipleInsert(pos, added);
     }
-    this->save();
 }
 
 /* This function is invoked when it is necessary to add more than one char. */
 void TextEditor::multipleInsert(int pos, const QString &added) {
+    QVector<_int> positions;
+    QVector<QString> chars;
+    QVector<Symbol::CharFormat> fonts;
     for (QString c : added) {
         QTextCursor cursor(ui->textEdit->textCursor());
         cursor.setPosition(pos + 1, QTextCursor::MoveAnchor);
@@ -627,155 +650,26 @@ void TextEditor::multipleInsert(int pos, const QString &added) {
         Symbol::CharFormat charData;
         charData.foreground = textCharFormat.foreground().color();
         charData.font = result;
-        this->client->localInsert(pos, c, charData);
+
+        cursor.setPosition(pos, QTextCursor::MoveAnchor);
+        cursor.setPosition(pos + 1, QTextCursor::KeepAnchor);
+        textCharFormat.setBackground(Qt::white);
+        cursor.setCharFormat(textCharFormat);
+
+        positions.push_back(pos);
+        chars.push_back(c);
+        fonts.push_back(charData);
         pos++;
     }
+
+    this->client->localInsert(positions, chars, fonts);
 }
 
 /* This function is invoked when it is necessary to remove more than one char. */
 void TextEditor::multipleErase(int pos, int del) {
+    QVector<_int> positions;
     for (int i = pos + del - 1; i >= pos; i--) {
-        this->client->localErase(i);
+        positions.push_back(i);
     }
+    this->client->localErase(positions);
 }
-
-
-
-/*
-void MainWindow::on_actionSave_as_triggered() {
-    QString filename = QFileDialog::getSaveFileName(this, "Save as..");
-    QFile file(filename);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, "Warning", "Cannot save file : " + file.errorString());
-        return;
-    }
-    currentFile = filename;
-    setWindowTitle(filename);
-    QTextStream out(&file);
-    QString text = ui->textEdit->document()->toHtml();
-    //QString text = ui->textEdit->toPlainText();
-    out << text;
-    file.close();
-}*/
-
-/* void MainWindow::on_actionOpen_triggered() {
-    openFile = true;
-    QFileDialog fileDialog(this, tr("Open File..."));
-    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
-    fileDialog.setFileMode(QFileDialog::ExistingFile);
-    fileDialog.setMimeTypeFilters(QStringList() << "text/html");
-    if (fileDialog.exec() != QDialog::Accepted)
-        return;
-    const QString fn = fileDialog.selectedFiles().first();
-    if (load(fn))
-        statusBar()->showMessage(tr("Opened \"%1\"").arg(QDir::toNativeSeparators(fn)));
-    else
-        statusBar()->showMessage(tr("Could not open \"%1\"").arg(QDir::toNativeSeparators(fn)));
-}*/
-
-/*bool MainWindow::load(const QString &f) {
-    if (!QFile::exists(f))
-        return false;
-    QFile file(f);
-    if (!file.open(QFile::ReadOnly))
-        return false;
-
-    QByteArray data = file.readAll();
-    QTextCodec *codec = Qt::codecForHtml(data);
-    QString str = codec->toUnicode(data);
-    //if (Qt::mightBeRichText(str)) {
-    QUrl baseUrl = (f.front() == QLatin1Char(':') ? QUrl(f) : QUrl::fromLocalFile(f)).adjusted(QUrl::RemoveFilename);
-    ui->textEdit->document()->setBaseUrl(baseUrl);
-    ui->textEdit->setHtml(str);
-    openFile = false;
-    //}
-
-    //setCurrentFileName(f);
-    return true;
-}*/
-
-/* This function is used just to draw the button of highlighter, and within it the corresponding slot is called */
-/*void MainWindow::drawHighlighterButton() {
-    *//* A grid layout is set to the menu *//*
-    auto *menu = new QMenu(this);
-    auto *gl = new QGridLayout();
-    menu->setLayout(gl);
-
-    const QSize btnSize = QSize(15, 15);        *//* size of each button *//*
-
-    *//* In the for I create, insert and connect the 10 buttons *//*
-    QList<QString> colors = {"white", "green", "cyan", "blue", "red", "magenta", "gray", "darkBlue", "yellow", "black"};
-    for (int i = 0; i < 10; i++) {
-        auto *b = new QPushButton();
-        b->setFixedSize(btnSize);
-        QString buttonStyle = "QPushButton{background-color:" + colors[i] + ";}";
-        b->setStyleSheet(buttonStyle);
-        if (i < 5) {
-            gl->addWidget(b, 0, i, 1, 1);
-        } else {
-            gl->addWidget(b, 1, i - 5, 1, 1);
-        }
-        QObject::connect(b, &QPushButton::clicked, [this, i]() { MainWindow::highlightSlot(i + 1); });
-    }
-
-    *//* Button on the toolbar is set *//*
-    auto *act0 = new QAction(this);
-    QIcon icon0;
-    icon0.addFile(QString::fromUtf8(":/Icons/highlighter.png"), QSize(), QIcon::Normal, QIcon::On);
-    act0->setIcon(icon0);
-
-    *//* Menu is inserted in the button, which is added to the toolbar *//*
-    auto *toolButton = new QToolButton(this);
-    toolButton->setMenu(menu);
-    toolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    toolButton->setDefaultAction(act0);
-    QObject::connect(toolButton, &QToolButton::clicked, [this]() { MainWindow::highlightSlot(1); });
-    ui->toolBar->addWidget(toolButton);
-}*/
-
-/* QUESTA DEVE ESSERE ELIMINATA SE SI LASCIA IL CURSORE CON L'EVIDENZIATORE */
-/*void MainWindow::highlightSlot(int color) {
-    QTextCharFormat fmt = ui->textEdit->currentCharFormat();
-    *//* Depending on the value passed from drawHighlighterButton function, fmt is set *//*
-    switch (color) {
-        case 1:
-            fmt.setBackground(Qt::white);
-            break;
-        case 2:
-            fmt.setBackground(Qt::green);
-            break;
-        case 3:
-            fmt.setBackground(Qt::cyan);
-            break;
-        case 4:
-            fmt.setBackground(Qt::blue);
-            break;
-        case 5:
-            fmt.setBackground(Qt::red);
-            break;
-        case 6:
-            fmt.setBackground(Qt::magenta);
-            break;
-        case 7:
-            fmt.setBackground(Qt::gray);
-            break;
-        case 8:
-            fmt.setBackground(Qt::darkBlue);
-            break;
-        case 9:
-            fmt.setBackground(Qt::yellow);
-            break;
-        case 10:
-            fmt.setBackground(Qt::black);
-            break;
-        default:
-            break;
-    }
-
-    *//* Now, that the fmt variable is ready, text is changed by using cursor and hasSelection method that returns
-    true is some text is selected *//*
-    QTextCursor cursor(ui->textEdit->textCursor());
-    if (cursor.hasSelection()) {
-        cursor.setCharFormat(fmt);
-    }
-}*/

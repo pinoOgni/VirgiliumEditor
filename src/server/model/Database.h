@@ -72,7 +72,7 @@ public:
       */
      bool signinDB(User);
      /*
-      * lo User ritornato è fatto da email, firstname, lastname
+      * lo User ritornato è fatto da email, firstName, lastName
       * da far visualizzare nella pagina personale dell'utente
       * @return User
       */

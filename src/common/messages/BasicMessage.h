@@ -10,15 +10,19 @@
 
 class BasicMessage {
 protected:
-    qintptr sender;
+    _int sender;
 public:
-    void setSender(qintptr sender);
+    void setSender(_int sender);
 
 public:
-     explicit BasicMessage(qintptr sender);
-     BasicMessage();
-    friend QDataStream &operator <<(QDataStream &stream, const BasicMessage &myclass);
-    friend QDataStream &operator >>(QDataStream &stream, BasicMessage &myclass);
+    explicit BasicMessage(_int sender);
+
+    BasicMessage();
+
+    friend QDataStream &operator<<(QDataStream &stream, const BasicMessage &myclass);
+
+    friend QDataStream &operator>>(QDataStream &stream, BasicMessage &myclass);
+
     qintptr getSender();
 
 };

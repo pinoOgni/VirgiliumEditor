@@ -4,8 +4,7 @@
 
 #include <QtCore/QRegularExpression>
 #include "WelcomePage.h"
-#include "ui_WelcomePage.h"
-
+#include "../../../cmake-build-debug/VirgiliumClient_autogen/include/ui_WelcomePage.h"
 
 
 WelcomePage::WelcomePage(QWidget *parent) :
@@ -41,20 +40,18 @@ void WelcomePage::loggedIn(const bool logged) {
         QString email = ui->email_accedi->text();
 
         personalPage = new PersonalPage;
-        connect(this,SIGNAL(sendData(QString,ClientStuff*)),personalPage,SLOT(receiveData(QString,ClientStuff*)));
-
-        emit sendData(email,client);
+        personalPage->setAttribute(Qt::WA_DeleteOnClose);
+        connect(this, SIGNAL(sendData(QString, ClientStuff * )), personalPage,
+                SLOT(receiveData(QString, ClientStuff * )));
+        emit sendData(email, client);
 
         ui->email_accedi->setText("");
         ui->password_accedi->setText("");
 
-        connect(personalPage,&PersonalPage::Want2Close,this,&WelcomePage::show);
-
         close();
         personalPage->show();
-    }
-    else {
-        QMessageBox::warning(this,"Login","Incorrect email or password, please try again");
+    } else {
+        QMessageBox::warning(this, "Login", "Incorrect email or password, please try again");
     }
 }
 
@@ -164,9 +161,10 @@ void WelcomePage::on_password_iscriviti_returnPressed()
 
 
 void WelcomePage::loginDB(QString email, QString password) {
-    User u = User(email,password);
-    UserMessage um = UserMessage(client->getSocket()->getClientID(),u);
-    client->getSocket()->send(LOGIN,um);
+    User u = User(email, password);
+    u.setSiteId(this->client->getSocket()->getClientID());
+    UserMessage um = UserMessage(client->getSocket()->getClientID(), u);
+    client->getSocket()->send(LOGIN, um);
 }
 
 void WelcomePage::signinDB(QString email, QString password, QString firstname, QString lastname) {

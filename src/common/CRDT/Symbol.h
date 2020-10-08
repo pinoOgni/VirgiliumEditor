@@ -24,21 +24,32 @@ public:
     } font;
 
     Symbol();
-    Symbol(QString letter, _int _siteId,_int _counterId, QVector<_int> pos,CharFormat font);
+
+    Symbol(QString letter, _int _siteId, _int _counterId, QVector<_int> pos, const CharFormat &font);
+
     QString getLetter() const;
+
     _int getSiteId() const;
+
     _int getCounterId() const;
+
     QVector<_int> getPosition() const;
-    bool operator==(const Symbol& b);
-    bool operator<(const Symbol& b);
-    bool operator<=(const Symbol& b);
-    void writeStream(QTextStream& out);
+
+    bool operator==(const Symbol &b);
+
+    bool operator<(const Symbol &b);
+
+    bool operator<=(const Symbol &b);
+
+    void writeStream(QTextStream &out);
+
     CharFormat getFont() const;
+
     void printSymbol();
 
-    friend QDataStream &operator <<(QDataStream &stream, const Symbol &myClass);
-    friend QDataStream &operator >>(QDataStream &stream, Symbol &myClass);
-};
+    friend QDataStream &operator<<(QDataStream &stream, const Symbol &myClass);
 
+    friend QDataStream &operator>>(QDataStream &stream, Symbol &myClass);
+};
 
 #endif //VIRGILIUM_SYMBOL_H

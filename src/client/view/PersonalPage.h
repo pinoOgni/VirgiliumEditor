@@ -56,21 +56,26 @@ private slots:
     void getAllData2(UserMessage& , _int,std::vector<FilesMessage>&,_int,std::vector<FilesMessage>&);
 
     void on_tableWidget_2_cellDoubleClicked(int row, int column);
+
     void on_requestToCollaborate_clicked();
 
     void on_invitationCode_returnPressed();
 
 signals:
+
     void Want2Close();
-    void sendData(ClientStuff *,QString); //send client and password to changepassworddialog
+
+    void sendData(ClientStuff *, QString); //send client and password to changepassworddialog
 
     //send client, email and filename to deleteOrRename dialog
-    void sendData_2(ClientStuff *,QString,QString);
-    void sendData_3(ClientStuff *,QString,QString,QString);
+    void sendData_2(ClientStuff *, QString, QString, User);
+
+    void sendData_3(ClientStuff *, QString, QString, QString, User);
 
 
 private:
     Ui::PersonalPage *ui;
+    User currentUser;
     QString email;
     //I dunno
     QTimer *timer;
