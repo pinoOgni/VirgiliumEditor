@@ -9,7 +9,7 @@
 
 CrdtMessage::CrdtMessage() : BasicMessage(sender) {}
 
-CrdtMessage::CrdtMessage(quintptr sender, QVector<Symbol> symbols, boolean mode, QString action, QString fileName) :
+CrdtMessage::CrdtMessage(quintptr sender, QVector<Symbol> symbols, bool mode, QString action, QString fileName) :
         BasicMessage(sender),
         symbols(std::move(symbols)),
         mode(mode),
@@ -24,11 +24,11 @@ QString CrdtMessage::getAction() const {
     return this->action;
 }
 
-boolean CrdtMessage::getMode() const {
+bool CrdtMessage::getMode() const {
     return this->mode;
 }
 
-void CrdtMessage::setMode(boolean m) {
+void CrdtMessage::setMode(bool m) {
     this->mode = m;
 }
 

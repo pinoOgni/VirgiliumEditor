@@ -43,6 +43,7 @@ void WelcomePage::loggedIn(const bool logged) {
         personalPage->setAttribute(Qt::WA_DeleteOnClose);
         connect(this, SIGNAL(sendData(QString, ClientStuff * )), personalPage,
                 SLOT(receiveData(QString, ClientStuff * )));
+        connect(personalPage, &PersonalPage::Want2Close, this, &WelcomePage::show);
         emit sendData(email, client);
 
         ui->email_accedi->setText("");

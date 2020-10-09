@@ -37,15 +37,9 @@ void Server::incomingConnection(_int handle) {
         newSocket->deleteLater();
         return;
     }
-    qDebug() << "HO IL SITEID " << handle;
+
     newSocket->setClientID(handle);
 
-    /*connect(
-            newSocket,
-            &QTcpSocket::stateChanged,
-            this,
-            &Server::onSocketStateChanged
-    );*/
     connect(newSocket, &ClientSocket::basicMessageReceived, this, &Server::onProcessBasicMessage);
     connect(newSocket, &ClientSocket::userMessageReceived, this, &Server::onProcessUserMessage);
     connect(newSocket, &ClientSocket::fileManagementMessageReceived, this, &Server::onFileManagementMessageReceived);
@@ -55,6 +49,7 @@ void Server::incomingConnection(_int handle) {
     connect(newSocket, &ClientSocket::invitationReceived, this, &Server::onInvitationReceived);
     connect(newSocket, &ClientSocket::storageMessageReceived, this, &Server::onProcessStorageMessage);
     connect(newSocket, &ClientSocket::crdtMessageReceived, this, &Server::onProcessCrdtMessage);
+    connect(newSocket, &ClientSocket::stateChanged, this, &Server::onSocketStateChanged);
 
     newSocket->setClientID(handle);
 
@@ -65,7 +60,7 @@ void Server::incomingConnection(_int handle) {
     qDebug() << "ho mandato\n";
 }
 
-/*void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
+void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
 
     switch (state) {
         case QAbstractSocket::UnconnectedState:
@@ -83,20 +78,20 @@ void Server::incomingConnection(_int handle) {
         case QAbstractSocket::BoundState:
             qDebug() << "The socket is bound to an address and port." << "\n";
             break;
-        case QAbstractSocket::ClosingState:
-        {qDebug() << "The socket is about to close." << "\n";
-            auto sender = dynamic_cast<ClientSocket*>(QObject::sender());
-            BasicMessage msg(sender->getClientID());
-            break;}
-
+        case QAbstractSocket::ClosingState: {
+            qDebug() << "The socket is about to close." << "\n";
+            auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
+            this->model.removeLoggedUser(sender);
+            this->model.removeActiveUser(sender->getClientID());
+            break;
+        }
         case QAbstractSocket::ListeningState:
             qDebug() << "The socket is listening." << "\n";
             break;
         default:
             qDebug() << "Unknown State." << "\n";
     }
-
-}*/
+}
 
 void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
     //robe super basic
@@ -122,6 +117,7 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
             if (message.getSender() != user.getSiteId()) {
                 message.setMode(true);
                 ClientSocket *socket = this->model.getLoggedUser(user);
+                if (socket == nullptr) return;
                 if (message.getAction() == "CURSOR_CHANGED")
                     socket->send(CURSOR_CHANGED, message);
                 else
@@ -146,19 +142,7 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
 
             QVector<Symbol> symbols;
             if (users.size() == 1) {
-                /* get the list of symbols inside the document */
-                QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(
-                        VIRGILIUM_STORAGE)).filePath(storageMessage.getFileName()));
-                if (!file.exists())
-                    return;
-
-                if (!file.open(QFile::ReadOnly))
-                    return;
-
-                QDataStream in(&file);
-                in >> symbols;
-                file.close();
-
+                symbols = this->model.getFileFromFileSystem(storageMessage.getFileName());
                 this->model.insertSymbolsForDocument(storageMessage.getFileName(), symbols);
             } else {
                 symbols = this->model.getSymbolsForDocument(storageMessage.getFileName());
@@ -171,6 +155,7 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
                 if (storageMessage.getActiveUsers().at(0).getSiteId() != user.getSiteId()) {
                     ClientSocket *socket = this->model.getLoggedUser(user);
                     ActiveUserMessage activeUserMessage(0, users);
+                    if (socket == nullptr) return;
                     socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
                 }
             }
@@ -269,12 +254,15 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
         case DELETE_ACTIVE: {
             QList<User> users = this->model.removeActiveUser(userMessage.getUser(), userMessage.getFileName());
 
-            if (users.empty())
+            if (users.empty()) {
                 this->model.removeSymbolsForDocument(userMessage.getFileName());
+                return;
+            }
 
             ActiveUserMessage activeUserMessage(0, users);
             for (auto &user : users) {
                 ClientSocket *socket = this->model.getLoggedUser(user);
+                if (socket == nullptr) return;
                 socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
             }
         }

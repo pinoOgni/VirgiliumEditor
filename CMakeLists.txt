@@ -37,7 +37,8 @@ add_executable(VirgiliumServer src/serverMain.cpp src/common/constants.h
         src/common/messages/StorageMessage.cpp src/common/messages/StorageMessage.h
         src/common/messages/InvitationMessage.cpp src/common/messages/InvitationMessage.h
         src/common/messages/ActiveUserMessage.cpp src/common/messages/ActiveUserMessage.h
-        src/common/CRDT/Crdt_editor.h src/common/CRDT/Crdt_editor.cpp)
+        src/common/CRDT/Crdt_editor.h src/common/CRDT/Crdt_editor.cpp
+        src/server/model/SaveFileService.cpp src/server/model/SaveFileService.h)
 
 
 

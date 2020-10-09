@@ -9,7 +9,7 @@
 //connected non serve perché non si fa la connecttohost
 ClientSocket::ClientSocket(QObject *parent) : QTcpSocket(parent), clientID(-1), in(this) {
 
-    connect(this, &QTcpSocket::stateChanged, this, &ClientSocket::onSocketStateChanged);
+    //connect(this, &QTcpSocket::stateChanged, this, &ClientSocket::onSocketStateChanged);
     connect(this, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error), this, &ClientSocket::onDisplayError);
     connect(this, &QTcpSocket::disconnected, this, &ClientSocket::onDisconnectedSocketServer);
     connect(this, &QTcpSocket::bytesWritten, this, &ClientSocket::onBytesWritten);
@@ -21,7 +21,7 @@ ClientSocket::ClientSocket(QObject *parent) : QTcpSocket(parent), clientID(-1), 
 //socket lato client
 ClientSocket::ClientSocket(const QString &hostName, quint16 port, QObject *parent) : QTcpSocket(parent), clientID(-1),
                                                                                      in(this) {
-    connect(this, &QTcpSocket::stateChanged, this, &ClientSocket::onSocketStateChanged);
+    //connect(this, &QTcpSocket::stateChanged, this, &ClientSocket::onSocketStateChanged);
     connect(this, &QTcpSocket::connected, this, &ClientSocket::onConnected);
     connect(this, &QTcpSocket::disconnected, this, &ClientSocket::onDisconnected);
     connect(this, &QTcpSocket::bytesWritten, this, &ClientSocket::onBytesWritten);
@@ -244,7 +244,7 @@ void ClientSocket::onReadyRead() {
     }
 }
 
-void ClientSocket::onSocketStateChanged(QTcpSocket::SocketState state) {
+/*void ClientSocket::onSocketStateChanged(QTcpSocket::SocketState state) {
     switch (state) {
         case QAbstractSocket::ListeningState:
             qDebug() << "The socket is listening.";
@@ -274,7 +274,7 @@ void ClientSocket::onSocketStateChanged(QTcpSocket::SocketState state) {
         default:
             qDebug() << "Unknown State.";
     }
-}
+}*/
 
 //solo per debug
 void ClientSocket::onConnected() {
