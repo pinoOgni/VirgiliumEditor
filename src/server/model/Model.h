@@ -22,13 +22,16 @@
 class Model {
 
     //std::multimap<ServerDocument *, ClientSocket *> fileToClients;
+
     std::map<_int, ClientSocket *> clientToUser;
     std::map<QString, QList<User>> activeClientsForDocument;
+    QMutex symbolsForDocumentMutex;
     std::map<QString, QVector<Symbol>> symbolsForDocument;
     std::atomic<quint32> IDSeed;
     QQueue<CrdtMessage> messages;
+    QMutex editorMutex;
     Crdt_editor *editor;
-
+    QMutex fileMutex;
 public:
     Model();
 
@@ -43,6 +46,8 @@ public:
     QList<User> addActiveUser(const User &user, const QString &fileName);
 
     QList<User> removeActiveUser(const User &user, const QString &fileName);
+
+    void removeActiveUser(_int siteId);
 
     std::map<QString, QList<User>> &getActiveClientsForDocument();
 
@@ -93,6 +98,11 @@ public:
 
     void save(CrdtMessage crdtMessage);
 
+    QVector<Symbol> performServerProcess(QVector<Symbol> symbols, CrdtMessage crdtMessage);
+
+    void updateSymbolsForDocument(QString filename, QVector<Symbol> toBeSaved);
+
+    QVector<Symbol> getFileFromFileSystem(QString filename);
 };
 
 #endif // VIRGILIUM_MODEL_H

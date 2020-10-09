@@ -55,7 +55,7 @@ void PersonalPage::on_logout_clicked() {
     disconnect(timer, SIGNAL(timeout()), this, SLOT(time_label()));
     client->getSocket()->send(LOGOUT);
     this->close();
-    //emit Want2Close();
+    emit Want2Close();
 }
 
 void PersonalPage::receiveData(QString string, ClientStuff *client) {

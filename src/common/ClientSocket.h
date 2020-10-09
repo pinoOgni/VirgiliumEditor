@@ -74,7 +74,7 @@ private slots:
 
     void onReadyRead();
 
-    void onSocketStateChanged(QTcpSocket::SocketState state);
+    //void onSocketStateChanged(QTcpSocket::SocketState state);
 
     void onConnected();
 

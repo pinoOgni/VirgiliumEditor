@@ -40,7 +40,7 @@ Q_OBJECT
     _int _siteId;
     QVector<Symbol> _symbols;
     _int _counter;
-    boolean sendCursor = true;
+    bool sendCursor = true;
 
 public:
     Crdt_editor(QWidget *parent, ClientSocket *receivedSocket, QString fileName);

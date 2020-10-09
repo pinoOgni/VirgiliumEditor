@@ -411,9 +411,11 @@ void TextEditor::changeCursorPosition(_int position, _int siteId) {
 
     /* If the last position of the cursor was 0, there wasn't any cursor show on the editor of the
      * other clients, so it is not necessary to delete the previous cursor */
+    qDebug() << "BEFORE CURSOR";
     if (u.getLastCursorPos() != 0) {
         changeBackground(u.getLastCursorPos(), Qt::white);
     }
+    qDebug() << "AFTER CURSOR";
 
     /* When the previous cursor position is deleted, the new one is shown on the editor if the new
      * position is different than 0. */
