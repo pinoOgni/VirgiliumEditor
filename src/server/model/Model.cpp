@@ -73,6 +73,7 @@ QList<User> Model::removeActiveUser(const User &user, const QString &fileName) {
 }
 
 void Model::removeActiveUser(_int siteId) {
+    qDebug() << "CRASH";
     QString filename;
     for (auto &it : this->activeClientsForDocument) {
         for (auto it1 = it.second.begin(); it1 != it.second.end(); it1++) {

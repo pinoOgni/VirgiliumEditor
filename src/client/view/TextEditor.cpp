@@ -399,6 +399,9 @@ void TextEditor::on_actionJustify_triggered() {
  * position of the cursor is shown inside the other client editors. */
 void TextEditor::changeCursorPosition(_int position, _int siteId) {
     /* The user that perform the action is searched */
+    QTextCursor cursor(ui->textEdit->textCursor());
+    if (position >= cursor.document()->characterCount())
+        position = cursor.document()->characterCount() - 1;
     User u;
     for (User &user : this->activeUsers) {
         if (user.getSiteId() == siteId) {
@@ -411,11 +414,8 @@ void TextEditor::changeCursorPosition(_int position, _int siteId) {
 
     /* If the last position of the cursor was 0, there wasn't any cursor show on the editor of the
      * other clients, so it is not necessary to delete the previous cursor */
-    qDebug() << "BEFORE CURSOR";
-    if (u.getLastCursorPos() != 0) {
+    if (u.getLastCursorPos() != 0)
         changeBackground(u.getLastCursorPos(), Qt::white);
-    }
-    qDebug() << "AFTER CURSOR";
 
     /* When the previous cursor position is deleted, the new one is shown on the editor if the new
      * position is different than 0. */
@@ -542,6 +542,8 @@ void TextEditor::cursorMoved() {
  * emitted when one or more chars are inserted or deleted. So, this function is used to get all
  * necessary information and send it to the server. */
 void TextEditor::change(int pos, int del, int add) {
+
+    qDebug() << "POS: " << pos << " DEL: " << del << " ADD: " << add;
     /* Here, the format of the char is taken. */
     QTextCursor cursor(ui->textEdit->textCursor());
     cursor.setPosition(cursor.selectionEnd(), QTextCursor::MoveAnchor);

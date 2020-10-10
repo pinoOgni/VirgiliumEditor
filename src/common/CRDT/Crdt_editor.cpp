@@ -106,7 +106,6 @@ QVector<_int> Crdt_editor::getPosition(QVector<_int> prec, QVector<_int> succ) {
 
 /* This method is used to send to other clients the new position of my cursor. */
 void Crdt_editor::changeCursor(_int position) {
-    qDebug() << "CURSOR";
     QVector<_int> pos = {position - 1, position};
     Symbol::CharFormat font = Symbol::CharFormat();
     Symbol s("", this->_siteId, this->_counter, pos, font);
@@ -134,7 +133,6 @@ void Crdt_editor::localErase(const QVector<_int> &indexes) {
 
 /* This method is used to say to other clients that a char is inserted. */
 void Crdt_editor::localInsert(QVector<_int> indexes, QVector<QString> values, QVector<Symbol::CharFormat> fonts) {
-    qDebug() << "INSERT";
     sendCursor = false;
     QVector<_int> prev;
     QVector<_int> newPos;
