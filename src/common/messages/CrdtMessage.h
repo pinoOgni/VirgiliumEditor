@@ -16,15 +16,15 @@ class CrdtMessage : public BasicMessage {
 public:
     CrdtMessage();
 
-    CrdtMessage(quintptr sender, Symbol s, boolean mode, QString action, QString fileName);
+    CrdtMessage(quintptr sender, Symbol s, bool mode, QString action, QString fileName);
 
     Symbol getSymbol() const;
 
     QString getAction() const;
 
-    boolean getMode() const;
+    bool getMode() const;
 
-    void setMode(boolean mode);
+    void setMode(bool mode);
 
     QString getFileName() const;
 
