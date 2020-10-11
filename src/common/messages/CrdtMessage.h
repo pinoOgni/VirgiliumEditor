@@ -9,25 +9,26 @@
 #include "BasicMessage.h"
 
 class CrdtMessage : public BasicMessage {
-    QVector<Symbol> symbols;
-    //Symbol s;
+    Symbol s;
     QString action;
     bool mode;
     QString fileName;
 public:
     CrdtMessage();
 
-    CrdtMessage(quintptr sender, QVector<Symbol> symbols, bool mode, QString action, QString fileName);
+    CrdtMessage(quintptr sender, Symbol s, boolean mode, QString action, QString fileName);
 
-    QVector<Symbol> getSymbols() const;
+    Symbol getSymbol() const;
 
     QString getAction() const;
 
-    bool getMode() const;
+    boolean getMode() const;
 
-    void setMode(bool mode);
+    void setMode(boolean mode);
 
     QString getFileName() const;
+
+    void printMessage();
 
     friend QDataStream &operator<<(QDataStream &stream, const CrdtMessage &myclass);
 

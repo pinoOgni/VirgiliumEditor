@@ -112,6 +112,8 @@ private slots:
 
     void changeActiveUser(QList<User> activeUsers);
 
+    void changeBlockFormat(const QString &font);
+
 };
 
 #endif //TEXTEDITOR_H

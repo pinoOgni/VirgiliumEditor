@@ -126,7 +126,8 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
         }
 
         /* Now, the new symbol must be saved on file system */
-        if (crdtMessage.getAction() == "INSERT" || crdtMessage.getAction() == "ERASE")
+        if (crdtMessage.getAction() == "INSERT" || crdtMessage.getAction() == "ERASE" ||
+            crdtMessage.getAction() == "CHANGE_BLOCK_FORMAT")
             this->model.save(crdtMessage);
     }
 }
