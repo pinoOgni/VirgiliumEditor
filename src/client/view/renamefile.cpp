@@ -22,6 +22,12 @@ void renameFile::on_pushButton_clicked()
     QString password = ui->password->text();
     QString newFilename = ui->newFilename->text();
 
+    //every time the user push on "rename" I connect a signal
+    connect(client, &ClientStuff::isFileRenamed,this,&renameFile::isFileRenamed);
+
+    if(QString::compare(oldFilename,newFilename)==0) {
+        QMessageBox::warning(this,"Error","Old filename is equal to new filename");
+    } else {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     FileManagementMessage fileManagementMessage =
@@ -31,9 +37,8 @@ void renameFile::on_pushButton_clicked()
                                   QCryptographicHash::hash(password.toUtf8(),QCryptographicHash::Sha224));
 
     client->getSocket()->send(RENAME_FILE,fileManagementMessage);
-    qDebug() << "rename file push button clicked " << fileManagementMessage.getEmail();
-
-
+        qDebug() << "rename file push button clicked " << fileManagementMessage.getEmail();
+    }
 }
 
 
@@ -60,9 +65,6 @@ void renameFile::receiveData_2(ClientStuff *client,QString email,QString oldFile
     displayText.append(oldFilename).append(" ' file!");
     ui->label->setText(displayText);
     qDebug() << "receiveData_2 renamefile email" << email << oldFilename;
-
-    //every time the user push on "rename" I connect a signal
-    connect(client, &ClientStuff::isFileRenamed,this,&renameFile::isFileRenamed);
 }
 
 void renameFile::isFileRenamed(bool res) {

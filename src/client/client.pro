@@ -40,6 +40,7 @@ SOURCES += \
     ../common/messages/UserMessage.cpp \
     ../common/CRDT/Symbol.cpp \
     ../common/ClientSocket.cpp \
+    ../common/CRDT/Crdt_editor.cpp
 
 
 HEADERS += \
