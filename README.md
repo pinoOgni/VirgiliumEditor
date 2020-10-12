@@ -8,6 +8,7 @@ Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte e
 ## Welcome page
 
 * Possibilità di loggarsi con email e password dell'utente
+
 * Possibilità di registrarsi, digitando nome, cognome, email e password
 
 ## Personal page
@@ -20,7 +21,7 @@ Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte e
         * Cancellare il file, previo inserimento della password
         * Aprire il text editor. Quando si chiude il text editor viene aggiornato l'ultimo accesso.
     * Cliccando sulla lista dei collaboratori è possibile svolgere 2 azioni:
-        * Aggiungere un collaboratore, creando un invito (previo inserimento della password) il quale sarà poi mandato attraverso terze parti all'utente che si vuole aggiungere come collaboratore e che se vorrà accetterà di collaborare.
+        * Aggiungere un collaboratore, creando un invito (previo inserimento della password) il quale sarà poi mandato attraverso terze parti all'utente che si vuole aggiungere come collaboratore e che se vorrà accetterà di collaborare. Il codice ha validità di 24 ore.
         * Rimuovere un collaboratore, previo inserimento della password
 
 * Nella seconda tabella vengono mostrati i file a cui l'utente loggato collabora. Le colonne della tabella sono: nome del file, proprietario, lista dei collaboratori e ultimo accesso al file da parte dell'utente
@@ -28,12 +29,16 @@ Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte e
         * Disinscriversi come collaboratore di un file
         * Aprire il text editor. Quando si chiude il text editor viene aggiornato l'ultimo accesso.
 
-* Nella parte centrale in basso, c'è la possibilità di inserire un invito (codice) ricevuto per terze parti da un altro utente e quindi di accettare la collaborazione ad un determinato file.
+* Nella parte centrale in basso, c'è la possibilità di inserire un invito (codice) ricevuto per terze parti da un altro utente e quindi di accettare la collaborazione ad un determinato file. Il codice ha validità di 24 ore.
 
 * In basso a destra c'è il bottone di logout. Premendo, si ritorna alla welcome page.
+
 * In alto a destra è possibile creare un nuovo file. E' possibile creare file con lo stesso nome, il nome verra automaticamente modificato aggiungendo un "_" ed un numero nel caso di omonimia, per esempio "filename_2"
-* In alto a sinitra è possibile:   
-    * cambiare tema: default, light mode, dark mode   
+
+* In alto a sinitra è possibile:
+    
+    * cambiare tema: default, light mode, dark mode
+    
     * cambiare password
     
 
@@ -92,6 +97,6 @@ Sono state create un certo numero di classi "message" che vengono scambiate tra 
 
 # TODO Pino
 
-* l'invito ha una scadenza di 24 ore
 * informare della rinominazione del file tutti gli utenti loggatti
+
 * prima di cancellare il file controllare che nessun utente sia collegato a quel file
