@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1242</width>
-    <height>730</height>
+    <width>1330</width>
+    <height>801</height>
    </rect>
   </property>
   <property name="mouseTracking">
@@ -20,8 +20,8 @@
    <widget class="QLabel" name="label_orario">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>610</y>
+      <x>20</x>
+      <y>700</y>
       <width>201</width>
       <height>41</height>
      </rect>
@@ -33,8 +33,8 @@
    <widget class="QSplitter" name="splitter">
     <property name="geometry">
      <rect>
-      <x>900</x>
-      <y>10</y>
+      <x>1020</x>
+      <y>20</y>
       <width>301</width>
       <height>31</height>
      </rect>
@@ -56,8 +56,8 @@
    <widget class="QPushButton" name="logout">
     <property name="geometry">
      <rect>
-      <x>1010</x>
-      <y>570</y>
+      <x>1120</x>
+      <y>680</y>
       <width>161</width>
       <height>51</height>
      </rect>
@@ -66,56 +66,21 @@
      <string>Logout</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_orario_2">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>640</y>
-      <width>181</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>40</y>
-      <width>671</width>
-      <height>561</height>
+      <x>40</x>
+      <y>10</y>
+      <width>951</width>
+      <height>651</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="1" column="0">
-      <widget class="QTableWidget" name="tableWidget">
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>253</height>
-        </size>
-       </property>
-       <column>
-        <property name="text">
-         <string>Filename</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Last access</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Collaborators</string>
-        </property>
-       </column>
-      </widget>
-     </item>
      <item row="2" column="0">
       <widget class="QTableWidget" name="tableWidget_2">
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>230</number>
+       </attribute>
        <column>
         <property name="text">
          <string>Filename</string>
@@ -184,13 +149,41 @@
        </item>
       </layout>
      </item>
+     <item row="1" column="0">
+      <widget class="QTableWidget" name="tableWidget">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>253</height>
+        </size>
+       </property>
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>230</number>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>Filename</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Last access</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Collaborators</string>
+        </property>
+       </column>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QLineEdit" name="invitationCode">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>610</y>
+      <x>320</x>
+      <y>700</y>
       <width>501</width>
       <height>31</height>
      </rect>
@@ -202,8 +195,8 @@
    <widget class="QPushButton" name="requestToCollaborate">
     <property name="geometry">
      <rect>
-      <x>720</x>
-      <y>610</y>
+      <x>830</x>
+      <y>700</y>
       <width>164</width>
       <height>31</height>
      </rect>
@@ -219,7 +212,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1242</width>
+     <width>1330</width>
      <height>22</height>
     </rect>
    </property>

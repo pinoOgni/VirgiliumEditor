@@ -456,6 +456,8 @@ std::vector<FilesMessage>  Database::getUserFiles(User user) {
 
 
 bool Database::renameFileDB(FileManagementMessage fileManagementMessage) {
+    QString filenameTemp;
+    bool renamed=false;
     if(db.open()) {
         QSqlDatabase::database().transaction();
         QSqlQuery qry;
@@ -471,17 +473,68 @@ bool Database::renameFileDB(FileManagementMessage fileManagementMessage) {
 
             QSqlDatabase::database().transaction();
 
-            qry.prepare("UPDATE files SET filename = :newFilename WHERE email_owner = :email_owner AND filename = :oldFilename");
-            qry.bindValue(":email_owner", fileManagementMessage.getEmail());
-            qry.bindValue(":oldFilename",fileManagementMessage.getOldfilename());
-            qry.bindValue(":newFilename",fileManagementMessage.getFilename());
+            QSqlQuery qry;
+            qDebug() << "correct opened db";
+            QSqlDatabase::database().transaction();
+            bool go=true;
+            qint8 n=1;
+            filenameTemp = fileManagementMessage.getFilename(); //newFilename
+            qDebug() << "filename " << fileManagementMessage.getFilename() << "  filenameTemp " << filenameTemp;
+            while (go) {
+                qry.prepare("SELECT filename FROM files WHERE email_owner = :email_owner AND filename = :filenameTemp");
+                qry.bindValue(":email_owner", fileManagementMessage.getEmail());
+                qry.bindValue(":filenameTemp", filenameTemp);
+                if(!qry.exec()) {
+                    qDebug() << "error select filename";
+                }
+                qry.first();
+                QString filenameDB = qry.value(0).toString();
 
-            if(!qry.exec()) {
-                return false;
-                qDebug() << "what?? " << fileManagementMessage.getEmail() << " " << fileManagementMessage.getOldfilename() << " " << fileManagementMessage.getFilename();
+                if(filenameDB.isNull()) {
+                    //interrupt while loop
+                    go = false;
+
+                    qry.prepare("UPDATE files SET filename = :newFilename WHERE email_owner = :email_owner AND filename = :oldFilename");
+                    qry.bindValue(":email_owner", fileManagementMessage.getEmail());
+                    qry.bindValue(":oldFilename",fileManagementMessage.getOldfilename());
+                    qry.bindValue(":newFilename",filenameTemp);
+
+                    if(!qry.exec()) {
+                        qDebug() << "what?? " << fileManagementMessage.getEmail() << " " << fileManagementMessage.getOldfilename() << " " << fileManagementMessage.getFilename();
+                        return false;
+                    } else {
+                        qDebug() << "renamed true, filenameTemp " << filenameTemp;
+                        renamed=true;
+                    }
+                }
+                else {
+                    filenameTemp = fileManagementMessage.getFilename();
+                    filenameTemp = filenameTemp.append("_").append(QString::number(n));
+                    n++;
+                    qDebug() << "filename " << fileManagementMessage.getFilename() << "  filenameTemp " << filenameTemp;
+                }
             }
+
             QSqlDatabase::database().commit();
             db.close();
+
+            if(renamed) {
+                //TODO PINO rename file in the file system
+                QString filenamePath;
+                filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(fileManagementMessage.getOldfilename());
+
+                qDebug() << "rename file db" << filenamePath;
+
+
+                QFile file (filenamePath);
+                QString newFilenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(filenameTemp);
+                qDebug() << "rename file db" << newFilenamePath;
+
+                file.rename(newFilenamePath);
+
+                return true;
+            } else
+                return false;
         }
         else {
             db.close();
@@ -547,33 +600,36 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
 
             //delete rows in user_files: i.e. delete collaborators, ALL COLLABORATORS
 
-            qry.prepare("DELETE FROM user_files WHERE user_files.id = :idToDelete");
-            qry.bindValue(":idToDelete",idToDelete);
-            if(!qry.exec()) {
-                qDebug() << "error while deleting rows from user_files table";
-                return false;
-            }
+           if(idToDelete!=0) {
+               qry.prepare("DELETE FROM user_files WHERE user_files.id = :idToDelete");
+               qry.bindValue(":idToDelete",idToDelete);
+               if(!qry.exec()) {
+                   qDebug() << "error while deleting rows from user_files table";
+                   return false;
+               }
 
+               //delete file in files table
+               //qry.prepare("DELETE FROM files  WHERE files.email_owner = :email AND files.filename = :filename");
+               //qry.bindValue(":email", fileManagementMessage.getEmail());
+               //qry.bindValue(":filename",fileManagementMessage.getFilename());
+               qry.prepare("DELETE FROM files  WHERE files.id = :idToDelete");
+               qry.bindValue(":idToDelete", idToDelete);
+               if(!qry.exec()) {
+                   qDebug() << "error while deleting file " << fileManagementMessage.getFilename() << "from files table";
+                   return false;
+               }
+               QSqlDatabase::database().commit();
+               db.close();
 
-            //delete file in files table
-            //TODO: delete the file from the file system
-
-
-
-            qry.prepare("DELETE FROM files  WHERE files.email_owner = :email AND files.filename = :filename");
-            qry.bindValue(":email", fileManagementMessage.getEmail());
-            qry.bindValue(":filename",fileManagementMessage.getFilename());
-            if(!qry.exec()) {
-                qDebug() << "error while deleting file " << fileManagementMessage.getFilename() << "from files table";
-                return false;
-            }
-            QSqlDatabase::database().commit();
-            db.close();
-
-            //TODO PINO delete file in the file system --> PROVA
-            QString filename = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(fileManagementMessage.getFilename());
-            QFile file (filename);
-            file.remove();
+               //TODO PINO delete file in the file system --> PROVA
+               QString filename = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(fileManagementMessage.getFilename());
+               QFile file (filename);
+               file.remove();
+           }
+           else {
+               db.close();
+               return false;
+           }
         }
         else {
             db.close();
@@ -593,6 +649,7 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
 bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
     //creation of new file: insert into files, control if there is a equal filename
     QString filenameTemp;
+    bool created=false;
     if(db.open()) {
         QSqlQuery qry;
         qDebug() << "correct opened db";
@@ -622,25 +679,9 @@ bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
 
                 if(!qry.exec()) {
                     qDebug() << "error retrieve last id inserted in files";
+                } else {
+                    created=true;
                 }
-
-                /*
-                qry.prepare("SELECT LAST_INSERT_ROWID();");
-                if(!qry.exec()) {
-                    qDebug() << "error retrieve last id inserted in files";
-                }
-                qry.first();
-                int id = qry.value(0).toInt();
-
-                qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
-                qry.bindValue(0,id);
-                qry.bindValue(1,email_owner);
-                QDateTime dateTime = dateTime.currentDateTime();
-                qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
-                if(!qry.exec()) {
-                    qDebug() << "error insert in files";
-                }
-                */
             }
             else {
                 filenameTemp = fileManagementMessage.getFilename();
@@ -652,19 +693,22 @@ bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
         QSqlDatabase::database().commit();
         db.close();
 
-         //TODO PINO create file in the file system
-        QString filenamePath;
-        if(!QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).exists())
-            QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).mkdir(fileManagementMessage.getEmail());
+        if(created) {
+            //TODO PINO create file in the file system
+            QString filenamePath;
+            if(!QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).exists())
+                QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).mkdir(fileManagementMessage.getEmail());
 
-        filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(filenameTemp);
+            filenamePath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(fileManagementMessage.getEmail())).filePath(filenameTemp);
 
-        qDebug() << "new file db" << filenamePath;
+            qDebug() << "new file db" << filenamePath;
 
-        QFile file (filenamePath);
-        file.open(QIODevice::WriteOnly | QIODevice::Text);
+            QFile file (filenamePath);
+            file.open(QIODevice::WriteOnly | QIODevice::Text);
 
-        return true;
+            return true;
+        } else
+            return false;
     }
     else {
         qDebug() << "error opened db";
@@ -706,82 +750,6 @@ bool Database::changePasswordDB(ChangePasswordMessage changePasswordMessage) {
         return false;
     }
 }
-
-
-
-
-/*
- * bool Database::addCollaboratorDB(UserManagementMessage userManagementMessage) {
-    if(db.open()) {
-        qDebug() << "correct opened db to control password";
-        QSqlDatabase::database().transaction();
-        QSqlQuery qry;
-        qry.prepare("SELECT password FROM users WHERE email = :email");
-        qry.bindValue(":email", userManagementMessage.getEmail_owner());
-        qry.exec();
-        qry.first();
-        QString psw = qry.value(0).toString();
-        qDebug() << "password " << psw;
-
-        qry.prepare("SELECT email FROM users WHERE email = :collaborator");
-        qry.bindValue(":collaborator", userManagementMessage.getEmail_collaborator());
-        qry.exec();
-        qry.first();
-        QString resUser = qry.value(0).toString();
-        qDebug() << "resCollaborator " << resUser;
-
-        qry.prepare("SELECT id FROM files WHERE filename =:filename");
-        qry.bindValue(":filename", userManagementMessage.getFilename());
-        qry.exec();
-        qry.first();
-        int id = qry.value(0).toInt();
-        qDebug() << "id filename " << id;
-
-
-        qry.prepare("SELECT email FROM user_files WHERE id =:id AND email =:email");
-        qry.bindValue(":id",id);
-        qry.bindValue(":email",userManagementMessage.getEmail_collaborator());
-        qry.exec();
-        qry.first();
-        QString isAlreadyCollaborator = qry.value(0).toString();
-        QSqlDatabase::database().commit();
-
-
-        qDebug() << "resUser " << resUser << "id " << id << "isAlreadyCollaborator" << isAlreadyCollaborator;
-        //if password is correct, the user that could be added as collaborator is in user table,
-        //the file is in the files table and the user that could be as collaborator is not alrdeady a collaborator
-        if(QString::compare(psw,userManagementMessage.getPassword())==0 && resUser.isEmpty()==false && id!=0 && isAlreadyCollaborator.isEmpty()) {
-            QSqlDatabase::database().transaction();
-
-            qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
-            qry.bindValue(0,id);
-            qry.bindValue(1,userManagementMessage.getEmail_collaborator());
-            qry.bindValue(2,"dd/MM/yyyy  hh:mm:ss");
-            if(!qry.exec()) {
-                qDebug() << "error insert in user_files";
-                QSqlDatabase::database().commit();
-                db.close();
-                return false;
-            } else {
-                QSqlDatabase::database().commit();
-                db.close();
-                return true;
-            }
-        }
-        else {
-            db.close();
-            return false;
-        }
-    }
-    else {
-        qDebug() << "error opened db";
-        return false;
-    }
-}
-
- */
-
-
 
 bool Database::requestToCollaborateDB(InvitationMessage invitationMessage) {
     if(db.open()) {

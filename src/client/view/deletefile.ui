@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>30</x>
@@ -38,6 +38,7 @@
       <property name="font">
        <font>
         <pointsize>16</pointsize>
+        <italic>true</italic>
        </font>
       </property>
       <property name="text">

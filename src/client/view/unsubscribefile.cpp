@@ -21,6 +21,9 @@ void unsubscribeFile::on_unsubscribe_clicked()
 {
     QString password = ui->password->text();
 
+    //every time the user push on "unsubscribe" I connect a signal
+    connect(client, &ClientStuff::isUnsubscribed,this,&unsubscribeFile::isUnsubscribed);
+
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     UserManagementMessage userManagementMessage =
@@ -66,7 +69,7 @@ unsubscribeFile::receiveData_2(ClientStuff *client, QString email, QString filen
     qDebug() << "receiveData_2 unsubscribeFile" << email << filename;
 
 
-    connect(client, &ClientStuff::isUnsubscribed,this,&unsubscribeFile::isUnsubscribed);
+
 }
 
 void unsubscribeFile::isUnsubscribed(bool res) {
