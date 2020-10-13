@@ -92,6 +92,7 @@ TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fil
     this->client = new Crdt_editor(nullptr, socket, this->fileName);
     QObject::connect(this->client, &Crdt_editor::insert_into_window, this, &TextEditor::insert_text);
     QObject::connect(this->client, &Crdt_editor::remove_into_window, this, &TextEditor::delete_text);
+    QObject::connect(this->client, &Crdt_editor::change_block_format, this, &TextEditor::changeBlockFormat);
     QObject::connect(this->client, &Crdt_editor::change_cursor_position, this, &TextEditor::changeCursorPosition);
     QObject::connect(ui->textEdit->document(), SIGNAL(contentsChange(int, int, int)), this,
                      SLOT(change(int, int, int)));
@@ -117,17 +118,39 @@ void TextEditor::loadRequest(const QString &f, User user) {
 /* This slot is used to get the response of the server. It contains the list
  * of symbols and the list of users. */
 void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, QList<User> users) {
+    if (!symbols.empty())
+        changeBlockFormat(symbols.at(0).getFont().font);
+
     if (code == LOAD_RESPONSE) {
         for (const Symbol &symbol : symbols)
             insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
     }
 
-    changeActiveUser(std::move(users));
+    changeActiveUser(users);
 }
 
 /* This slot is used to change the actual active users */
-void TextEditor::changeActiveUser(QList<User> users) {
-    this->activeUsers = std::move(users);
+void TextEditor::changeActiveUser(const QList<User> &users) {
+    if (users.size() > this->activeUsers.size()) { //TODO spostare questa cosa nel model
+        for (User user : users) {
+            if (!this->activeUsers.contains(user)) {
+                user.setAssignedColor(QColor(QRandomGenerator::global()->bounded(64, 192),
+                                             QRandomGenerator::global()->bounded(64, 192),
+                                             QRandomGenerator::global()->bounded(64, 192)));
+                user.setLastCursorPos(0);
+                this->activeUsers.push_back(user);
+            }
+        }
+    } else if (users.size() < this->activeUsers.size()) {
+        for (const User &user : this->activeUsers) {
+            if (!users.contains(user)) {
+                this->activeUsers.removeOne(user);
+                if (user.getLastCursorPos() != 0)
+                    changeBackground(user.getLastCursorPos(), Qt::white);
+            }
+        }
+    }
+
     this->comboUsers->clear();
     auto *model = dynamic_cast< QStandardItemModel * >( comboUsers->model());
     for (int i = 0; i < this->activeUsers.size(); i++) {
@@ -266,11 +289,11 @@ void TextEditor::on_actionCut_triggered() {
     ui->textEdit->cut();
 }
 
-void TextEditor::on_actionUndo_triggered() {
+void TextEditor::on_actionUndo_triggered() { //TODO fanno danno con il doppio client
     ui->textEdit->undo();
 }
 
-void TextEditor::on_actionRedo_triggered() {
+void TextEditor::on_actionRedo_triggered() { //TODO fanno danno con il doppio client
     ui->textEdit->redo();
 }
 
@@ -399,6 +422,9 @@ void TextEditor::on_actionJustify_triggered() {
  * position of the cursor is shown inside the other client editors. */
 void TextEditor::changeCursorPosition(_int position, _int siteId) {
     /* The user that perform the action is searched */
+    QTextCursor cursor(ui->textEdit->textCursor());
+    if (position >= cursor.document()->characterCount())
+        position = cursor.document()->characterCount() - 1;
     User u;
     for (User &user : this->activeUsers) {
         if (user.getSiteId() == siteId) {
@@ -407,27 +433,21 @@ void TextEditor::changeCursorPosition(_int position, _int siteId) {
         }
     }
 
-    ui->textEdit->document()->blockSignals(true);
-
     /* If the last position of the cursor was 0, there wasn't any cursor show on the editor of the
      * other clients, so it is not necessary to delete the previous cursor */
-    qDebug() << "BEFORE CURSOR";
-    if (u.getLastCursorPos() != 0) {
+    if (u.getLastCursorPos() != 0 && u.getLastCursorPos() <= cursor.document()->characterCount() - 1)
         changeBackground(u.getLastCursorPos(), Qt::white);
-    }
-    qDebug() << "AFTER CURSOR";
 
     /* When the previous cursor position is deleted, the new one is shown on the editor if the new
      * position is different than 0. */
     if (position != 0)
         changeBackground(position, u.getAssignedColor());
-
-    ui->textEdit->document()->blockSignals(false);
 }
 
 /* This function is used to change the background color by passing the position of the char that
  * must be changed and the color that must be applied. */
 void TextEditor::changeBackground(_int position, const QColor &color) {
+    ui->textEdit->document()->blockSignals(true);
     QTextCursor cursor(ui->textEdit->textCursor());
     cursor.setPosition(position, QTextCursor::MoveAnchor);
     QTextCharFormat textCharFormat = cursor.charFormat();
@@ -436,6 +456,7 @@ void TextEditor::changeBackground(_int position, const QColor &color) {
     cursor.setPosition(position - 1, QTextCursor::MoveAnchor);
     cursor.setPosition(position, QTextCursor::KeepAnchor);
     cursor.setCharFormat(textCharFormat);
+    ui->textEdit->document()->blockSignals(false);
 }
 
 /* This slot is called when insert_into_window signal is emitted, it has to insert the new char
@@ -469,40 +490,10 @@ void TextEditor::insertOneChar(_int pos, const QString &character, const Symbol:
     textCharFormat.setFont(insertedFont);
     textCharFormat.setForeground(font.foreground);
 
-    /* Here, alignment and indentation are set. */
-    ui->textEdit->document()->blockSignals(true);
-    if (alignment != QString::number(firstList.at(1).toInt()) ||
-        indentation != QString::number(firstList.at(2).toInt())) {
-        QTextBlockFormat textBlockFormat = cursor.block().blockFormat();
-        switch (firstList.at(1).toInt()) {
-            case 1:
-                textBlockFormat.setAlignment(Qt::AlignLeft);
-                this->on_actionLeft_alignment_triggered();
-                break;
-            case 2:
-                textBlockFormat.setAlignment(Qt::AlignRight);
-                this->on_actionRight_alignment_triggered();
-                break;
-            case 8:
-                textBlockFormat.setAlignment(Qt::AlignJustify);
-                this->on_actionJustify_triggered();
-                break;
-            case 132:
-                textBlockFormat.setAlignment(Qt::AlignHCenter);
-                this->on_actionCenter_alignment_triggered();
-                break;
-        }
-        textBlockFormat.setIndent(firstList.at(2).toInt());
-        cursor.setBlockFormat(textBlockFormat);
-
-        alignment = QString::number(textBlockFormat.alignment());
-        indentation = QString::number(textBlockFormat.indent());
-    }
-
     /* Here, there is the actual change of the char. */
+    ui->textEdit->document()->blockSignals(true);
     cursor.insertText(character, textCharFormat);
     cursor.setPosition(originalPosition);
-
     ui->textEdit->document()->blockSignals(false);
 }
 
@@ -531,6 +522,39 @@ void TextEditor::delete_text(_int pos, _int siteId) {
     this->changeCursorPosition(pos, siteId);
 }
 
+void TextEditor::changeBlockFormat(const QString &font) {
+    ui->textEdit->document()->blockSignals(true);
+    QRegExp tagExp("/");
+    QStringList firstList = font.split(tagExp);
+
+    QTextCursor cursor(ui->textEdit->textCursor());
+    QTextBlockFormat textBlockFormat = cursor.block().blockFormat();
+    switch (firstList.at(1).toInt()) {
+        case 1:
+            textBlockFormat.setAlignment(Qt::AlignLeft);
+            this->on_actionLeft_alignment_triggered();
+            break;
+        case 2:
+            textBlockFormat.setAlignment(Qt::AlignRight);
+            this->on_actionRight_alignment_triggered();
+            break;
+        case 8:
+            textBlockFormat.setAlignment(Qt::AlignJustify);
+            this->on_actionJustify_triggered();
+            break;
+        case 132:
+            textBlockFormat.setAlignment(Qt::AlignHCenter);
+            this->on_actionCenter_alignment_triggered();
+            break;
+    }
+    textBlockFormat.setIndent(firstList.at(2).toInt());
+    cursor.setBlockFormat(textBlockFormat);
+
+    alignment = QString::number(textBlockFormat.alignment());
+    indentation = QString::number(textBlockFormat.indent());
+    ui->textEdit->document()->blockSignals(false);
+}
+
 /* This slot is called every time that the cursorPositionChanged() signal is emitted. It is only used
  * to send the new position of the cursor of my editor to the other clients. */
 void TextEditor::cursorMoved() {
@@ -557,12 +581,10 @@ void TextEditor::change(int pos, int del, int add) {
     charData.font = result;
 
     if (add != 0 && del == 0) { /* insert chars */
+
         QString added = ui->textEdit->toPlainText().mid(pos, add);
         if (add == 1) {
-            QVector<_int> positions = {pos};
-            QVector<QString> chars = {added};
-            QVector<Symbol::CharFormat> fonts = {charData};
-            this->client->localInsert(positions, chars, fonts);
+            this->client->localInsert(pos, added, charData);
             changeBackground(pos + 1, Qt::white);
         } else {
             multipleInsert(pos, added);
@@ -570,22 +592,19 @@ void TextEditor::change(int pos, int del, int add) {
 
     } else if (add == 0 && del != 0) { /* delete chars */
 
-        if (del == 1) {
-            QVector<_int> positions = {pos};
-            this->client->localErase(positions);
-        } else {
+        if (del == 1)
+            this->client->localErase(pos);
+        else
             multipleErase(pos, del);
-        }
 
     } else { /* Some chars are deleted and some other else are inserted. */
-        ui->textEdit->undo();
-        QString removed = ui->textEdit->toPlainText().mid(pos, add);
-        ui->textEdit->redo();
-        QString added = ui->textEdit->toPlainText().mid(pos, add);
-
         if (add == del) {
             /* The for loop is used to check if some chars are changed or if the slot is called only because
              * the format of one or more chars is changed. */
+            ui->textEdit->undo();
+            QString removed = ui->textEdit->toPlainText().mid(pos, add);
+            ui->textEdit->redo();
+            QString added = ui->textEdit->toPlainText().mid(pos, add);
             bool equal = true;
             for (int i = 0; i < added.size(); i++) {
                 if (added[i] != removed[i]) {
@@ -598,47 +617,39 @@ void TextEditor::change(int pos, int del, int add) {
                 /* Check if alignment or indentation are changed. */
                 if (alignment == QString::number(textBlockFormat.alignment()) &&
                     indentation == QString::number(textBlockFormat.indent())) {
-                    multipleErase(pos, removed.size());
+                    multipleErase(pos, del); // or removed.size()?
                     multipleInsert(pos, added);
                 } else {
                     alignment = QString::number(textBlockFormat.alignment());
                     indentation = QString::number(textBlockFormat.indent());
 
-                    QVector<_int> positions = {pos};
-                    QVector<QString> chars = {"X"};
-                    QVector<Symbol::CharFormat> fonts = {charData};
-                    this->client->localInsert(positions, chars, fonts);
-                    this->client->localErase(positions);
+                    this->client->changeBlockFormat(charData);
                 }
                 return;
             }
         }
 
-        /* If we arrive here, it means that some chars must be deleted and some other
+        /* If we arrive here, it means that some chars must be deleted and some other else
          * must be inserted. */
         int originalPos = cursor.position();
         cursor.movePosition(QTextCursor::End);
         int maxPos = cursor.position();
         cursor.setPosition(originalPos);
+        QString added = ui->textEdit->toPlainText().mid(pos, add);
         if (del == maxPos + 1) {
-            QVector<_int> positions;
             for (int i = pos + del - 2; i >= pos; i--) {
-                positions.push_back(i);
+                this->client->localErase(i);
             }
-            this->client->localErase(positions);
             multipleInsert(pos, added);
             return;
         }
-        multipleErase(pos, removed.size());
+        multipleErase(pos, del); // or removed.size()?
         multipleInsert(pos, added);
     }
 }
 
 /* This function is invoked when it is necessary to add more than one char. */
 void TextEditor::multipleInsert(int pos, const QString &added) {
-    QVector<_int> positions;
-    QVector<QString> chars;
-    QVector<Symbol::CharFormat> fonts;
     for (QString c : added) {
         QTextCursor cursor(ui->textEdit->textCursor());
         cursor.setPosition(pos + 1, QTextCursor::MoveAnchor);
@@ -658,20 +669,14 @@ void TextEditor::multipleInsert(int pos, const QString &added) {
         textCharFormat.setBackground(Qt::white);
         cursor.setCharFormat(textCharFormat);
 
-        positions.push_back(pos);
-        chars.push_back(c);
-        fonts.push_back(charData);
+        this->client->localInsert(pos, c, charData);
         pos++;
     }
-
-    this->client->localInsert(positions, chars, fonts);
 }
 
 /* This function is invoked when it is necessary to remove more than one char. */
 void TextEditor::multipleErase(int pos, int del) {
-    QVector<_int> positions;
     for (int i = pos + del - 1; i >= pos; i--) {
-        positions.push_back(i);
+        this->client->localErase(i);
     }
-    this->client->localErase(positions);
 }

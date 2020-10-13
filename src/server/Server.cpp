@@ -12,7 +12,6 @@
 
 //ADD quint16 port è un unsigned short
 Server::Server(unsigned short port, Model &model) : model(model) {
-
     if (!listen(QHostAddress::LocalHost, port)) {
         qDebug() << "Error: server is not listening" << "\n";
         exit(-1);
@@ -27,8 +26,6 @@ Server::Server(unsigned short port, Model &model) : model(model) {
                 VIRGILIUM_STORAGE)).removeRecursively();
         QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).mkdir("VIRGILIUM_STORAGE");
     }
-
-    //if(!QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append("/VIRGILIUM_STORAGE")).exists())
 }
 
 void Server::incomingConnection(_int handle) {
@@ -57,11 +54,9 @@ void Server::incomingConnection(_int handle) {
     BasicMessage basicMessage(handle);
     qDebug() << "Sending: " << handle << "\n";
     newSocket->send(CLIENT_CONNECTED, basicMessage);
-    qDebug() << "ho mandato\n";
 }
 
 void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
-
     switch (state) {
         case QAbstractSocket::UnconnectedState:
             qDebug() << "The socket is not connected." << "\n";
@@ -126,17 +121,40 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
         }
 
         /* Now, the new symbol must be saved on file system */
-        if (crdtMessage.getAction() == "INSERT" || crdtMessage.getAction() == "ERASE")
+        if (code == SYMBOL_INSERT_OR_ERASE)
             this->model.save(crdtMessage);
     }
 }
 
 void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
-    qDebug() << "onProcessStorageMessage";
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
-    switch (code) {
+    if (code == LOAD_REQUEST) {
+        QList<User> users = model.addActiveUser(storageMessage.getActiveUsers().at(0),
+                                                storageMessage.getFileName());
+
+        QVector<Symbol> symbols;
+        if (users.size() == 1) {
+            symbols = this->model.getFileFromFileSystem(storageMessage.getFileName());
+            this->model.insertSymbolsForDocument(storageMessage.getFileName(), symbols);
+        } else {
+            symbols = this->model.getSymbolsForDocument(storageMessage.getFileName());
+        }
+
+        StorageMessage storageMessage1(0, symbols, storageMessage.getFileName(), users);
+        sender->send(LOAD_RESPONSE, storageMessage1);
+
+        for (auto &user : users) {
+            if (storageMessage.getActiveUsers().at(0).getSiteId() != user.getSiteId()) {
+                ClientSocket *socket = this->model.getLoggedUser(user);
+                ActiveUserMessage activeUserMessage(0, users);
+                if (socket == nullptr) return;
+                socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
+            }
+        }
+    }
+    /*switch (code) {
         case LOAD_REQUEST: {
-            /* get the list of users that are modifying the current document */
+            /* get the list of users that are modifying the current document *//*
             QList<User> users = model.addActiveUser(storageMessage.getActiveUsers().at(0),
                                                     storageMessage.getFileName());
 
@@ -164,11 +182,8 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
         default: {
 
         }
-    }
+    }*/
 }
-
-void Server::dispatch() {}
-
 
 void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
@@ -387,7 +402,6 @@ void Server::onUserManagementMessageReceived(_int code, UserManagementMessage us
 
 void Server::onLogoutReceived(_int code) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
-
     switch (code) {
         case LOGOUT: {
             qDebug() << "close connection DB";

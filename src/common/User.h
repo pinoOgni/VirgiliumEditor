@@ -52,11 +52,14 @@ public:
 
     _int getSiteId() const;
 
-    _int getLastCursorPos();
+    _int getLastCursorPos() const;
 
     QColor getAssignedColor() const;
+
     void setSiteId(_int siteId);
+
     void setLastCursorPos(_int pos);
+
     void setAssignedColor(QColor color);
 };
 

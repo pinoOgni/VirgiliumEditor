@@ -18,7 +18,8 @@ void Model::removeLoggedUser(ClientSocket *socket) {
     for (it; it != clientToUser.end(); it++)
         if (it->first == socket->getClientID()) break;
 
-    clientToUser.erase(it);
+    if (it != clientToUser.end())
+        clientToUser.erase(it);
 }
 
 ClientSocket *Model::getLoggedUser(User &user) {
@@ -31,12 +32,12 @@ ClientSocket *Model::getLoggedUser(User &user) {
 }
 
 void Model::insertSymbolsForDocument(const QString &fileName, const QVector<Symbol> &symbols) {
-    QMutexLocker(&this->symbolsForDocumentMutex);
+    QMutexLocker lock(&this->symbolsForDocumentMutex);
     symbolsForDocument.insert(std::pair<QString, QVector<Symbol>>(fileName, symbols));
 }
 
 void Model::removeSymbolsForDocument(const QString &fileName) {
-    QMutexLocker(&this->symbolsForDocumentMutex);
+    QMutexLocker lock(&this->symbolsForDocumentMutex);
     symbolsForDocument.erase(fileName);
 }
 
@@ -73,17 +74,18 @@ QList<User> Model::removeActiveUser(const User &user, const QString &fileName) {
 }
 
 void Model::removeActiveUser(_int siteId) {
-    QString filename;
+    QString filename = "";
     for (auto &it : this->activeClientsForDocument) {
         for (auto it1 = it.second.begin(); it1 != it.second.end(); it1++) {
             if (it1->getSiteId() == siteId) {
                 filename = it.first;
                 it.second.erase(it1);
+                break;
             }
         }
     }
 
-    if (activeClientsForDocument.at(filename).empty())
+    if (filename != "" && activeClientsForDocument.at(filename).empty())
         activeClientsForDocument.erase(filename);
 }
 
@@ -184,43 +186,27 @@ std::map<QString, QList<User>> &Model::getActiveClientsForDocument() {
 }
 
 void Model::save(CrdtMessage crdtMessage) {
-    /*QVector<Symbol> symbols = this->editor->serverProcess(this->getSymbolsForDocument(crdtMessage.getFileName()),
-                                                          crdtMessage);
+    auto symbols = this->getSymbolsForDocument(crdtMessage.getFileName());
+    auto toBeSaved = this->performServerProcess(symbols, crdtMessage);
+
+    QMutexLocker lockSymbols(&this->symbolsForDocumentMutex);
     auto it = symbolsForDocument.find(crdtMessage.getFileName());
     if (it != symbolsForDocument.end())
-        it->second = symbols;
+        it->second = toBeSaved;
+    lockSymbols.unlock();
 
-    QRegExp tagExp("/");
-    QStringList dataList = crdtMessage.getFileName().split(tagExp);
-
-    QString filenamePath = QDir(
-            QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(
-                    dataList[0]) + "/").filePath(dataList[1]);
-    QFile file(filenamePath);
-    if (!file.open(QFile::WriteOnly))
-        return;
-
-    QDataStream out(&file);
-    out << symbolsForDocument[crdtMessage.getFileName()];
-    file.close();*/
-    auto *saveFileService = new SaveFileService(*this, std::move(crdtMessage));
+    auto *saveFileService = new SaveFileService(*this, std::move(crdtMessage), toBeSaved);
     QThreadPool::globalInstance()->start(saveFileService);
-
 }
 
-QVector<Symbol> Model::performServerProcess(QVector<Symbol> symbols, CrdtMessage crdtMessage) {
+QVector<Symbol> Model::performServerProcess(QVector<Symbol> symbols, const CrdtMessage &crdtMessage) {
     QMutexLocker lock(&this->editorMutex);
     return this->editor->serverProcess(std::move(symbols),
                                        crdtMessage);
 }
 
-void Model::updateSymbolsForDocument(QString filename, QVector<Symbol> toBeSaved) {
-    QMutexLocker lockSymbols(&this->symbolsForDocumentMutex);
-    auto it = symbolsForDocument.find(filename);
-    if (it != symbolsForDocument.end())
-        it->second = toBeSaved;
-    lockSymbols.unlock();
-    QMutexLocker(&this->fileMutex);
+void Model::updateSymbolsForDocument(const QString &filename, const QVector<Symbol> &toBeSaved) {
+    QMutexLocker fileLock(&this->fileMutex);
 
     QRegExp tagExp("/");
     QStringList dataList = filename.split(tagExp);
@@ -237,9 +223,9 @@ void Model::updateSymbolsForDocument(QString filename, QVector<Symbol> toBeSaved
     file.close();
 }
 
-QVector<Symbol> Model::getFileFromFileSystem(QString filename) {
+QVector<Symbol> Model::getFileFromFileSystem(const QString &filename) {
     QVector<Symbol> symbols;
-    QMutexLocker(&this->fileMutex);
+    QMutexLocker fileLock(&this->fileMutex);
     QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(
             VIRGILIUM_STORAGE)).filePath(filename));
     if (!file.exists())

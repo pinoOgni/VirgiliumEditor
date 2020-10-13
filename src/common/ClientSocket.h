@@ -33,7 +33,8 @@ public:
     //socket lato client
     explicit ClientSocket(const QString &hostName, quint16 port, QObject *parent = nullptr);
 
-    ~ClientSocket() override { qDebug() << "ClientSocket ~"; };
+    //~ClientSocket() override { qDebug() << "ClientSocket ~"; };
+    ~ClientSocket();
 
     bool operator==(const ClientSocket &b);
 
@@ -62,7 +63,7 @@ public:
 
     void send(_int code, UserManagementMessage userManagementMessage);
 
-    void send(_int code, CrdtMessage crdtMessage);
+    void send(_int code, const CrdtMessage &crdtMessage);
 
     void send(_int code, const ActiveUserMessage &activeUserMessage);
 
