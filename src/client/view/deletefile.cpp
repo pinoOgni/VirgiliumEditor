@@ -27,12 +27,10 @@ void deleteFile::receiveData_2(ClientStuff *client,QString email,QString filenam
     this->client = client;
 
     QString displayText = "Are you sure to delete ' ";
-    displayText.append(filename).append(" ' file? No collaborator can access it anymore. ");
+    displayText.append(filename).append(" ' file? \n No collaborator can access it anymore. ");
     ui->label->setText(displayText);
     qDebug() << "receiveData_2 deletefile" << email << filename;
 
-    //every time the user push on "delete" I connect a signal
-    connect(client, &ClientStuff::isFileDeleted,this,&deleteFile::isFileDeleted);
 }
 
 
@@ -51,6 +49,10 @@ void deleteFile::keyPressEvent(QKeyEvent *e) {
 void deleteFile::on_pushButton_clicked()
 {
     QString password = ui->password->text();
+
+    //every time the user push on "delete" I connect a signal
+    connect(client, &ClientStuff::isFileDeleted,this,&deleteFile::isFileDeleted);
+
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     FileManagementMessage fileManagementMessage =

@@ -206,7 +206,7 @@ void PersonalPage::on_tableWidget_cellDoubleClicked(int row, int column) {
         qDebug() << "RENAME OR DELETE FILE";
 
         //close renameordelete and refresh table files
-        //connect(newRenameOrDelete, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
+        connect(newRenameOrDelete, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
     } else if (column == 1) {
         //TODO add something else?
     } else if (column == 2) {
@@ -221,7 +221,7 @@ void PersonalPage::on_tableWidget_cellDoubleClicked(int row, int column) {
         qDebug() << "ADD OR REMOVE COLLABORATOR";
 
         //QMessageBox::warning(this,"Attention","ADD OR REMOVE COLLABORATOR");
-        //connect(manageC, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
+        connect(manageC, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
     }
 }
 
@@ -328,7 +328,7 @@ void PersonalPage::on_tableWidget_2_cellDoubleClicked(int row, int column) {
     qDebug() << ui->tableWidget_2->item(row, 0)->text();
     qDebug() << "REMOVE MYSELF FROM A FILE";
 
-    //connect(unsubscribe, SIGNAL(Want2Close2()), this, SLOT(getUserFiles()));
+    connect(unsubscribe, SIGNAL(Want2Close2()), this, SLOT(getUserFiles()));
 }
 
 void PersonalPage::on_requestToCollaborate_clicked() {

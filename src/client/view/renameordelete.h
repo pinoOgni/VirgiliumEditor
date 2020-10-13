@@ -47,6 +47,8 @@ private slots:
 
     void on_openTextEditor_clicked();
 
+    void slotWant2Close2();
+
 signals:
     void sendDataToEditor(ClientSocket *);
 
