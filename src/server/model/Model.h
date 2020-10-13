@@ -103,6 +103,11 @@ public:
     void updateSymbolsForDocument(const QString &filename, const QVector<Symbol> &toBeSaved);
 
     QVector<Symbol> getFileFromFileSystem(const QString &filename);
+
+    //pino 12 ottobre
+    _int getIdFilename(QString email_owner, QString filename);
+    bool updateLastAcces(QString email, _int idFilename);
+
 };
 
 #endif // VIRGILIUM_MODEL_H

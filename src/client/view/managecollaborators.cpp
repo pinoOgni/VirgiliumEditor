@@ -41,7 +41,7 @@ void manageCollaborators::on_add_clicked()
 
 void manageCollaborators::isInviteCreated(InvitationMessage invitationMessage) {
     if(!invitationMessage.getInvitationCode().isEmpty()) {
-        QMessageBox::information(this,"Invite created",invitationMessage.getInvitationCode());
+        QMessageBox::information(this,"Invite created: it expires in 60 minutes",invitationMessage.getInvitationCode());
         this->close();
     } else {
         QMessageBox::information(this,"Error","Errore while creating invite");

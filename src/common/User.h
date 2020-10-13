@@ -42,9 +42,9 @@ public:
 
     QString printMessage();
 
-    QString getEmail();
+    QString getEmail() const;
 
-    QString getPassword();
+    QString getPassword() const;
 
     QString getFirstName() const;
 
