@@ -23,7 +23,7 @@ public:
 
     friend QDataStream &operator>>(QDataStream &stream, BasicMessage &myclass);
 
-    qintptr getSender();
+    _int getSender() const;
 
 };
 

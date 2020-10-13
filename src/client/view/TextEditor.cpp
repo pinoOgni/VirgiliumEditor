@@ -126,12 +126,31 @@ void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, QList<U
             insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
     }
 
-    changeActiveUser(std::move(users));
+    changeActiveUser(users);
 }
 
 /* This slot is used to change the actual active users */
-void TextEditor::changeActiveUser(QList<User> users) {
-    this->activeUsers = std::move(users);
+void TextEditor::changeActiveUser(const QList<User> &users) {
+    if (users.size() > this->activeUsers.size()) { //TODO spostare questa cosa nel model
+        for (User user : users) {
+            if (!this->activeUsers.contains(user)) {
+                user.setAssignedColor(QColor(QRandomGenerator::global()->bounded(64, 192),
+                                             QRandomGenerator::global()->bounded(64, 192),
+                                             QRandomGenerator::global()->bounded(64, 192)));
+                user.setLastCursorPos(0);
+                this->activeUsers.push_back(user);
+            }
+        }
+    } else if (users.size() < this->activeUsers.size()) {
+        for (const User &user : this->activeUsers) {
+            if (!users.contains(user)) {
+                this->activeUsers.removeOne(user);
+                if (user.getLastCursorPos() != 0)
+                    changeBackground(user.getLastCursorPos(), Qt::white);
+            }
+        }
+    }
+
     this->comboUsers->clear();
     auto *model = dynamic_cast< QStandardItemModel * >( comboUsers->model());
     for (int i = 0; i < this->activeUsers.size(); i++) {
@@ -414,24 +433,21 @@ void TextEditor::changeCursorPosition(_int position, _int siteId) {
         }
     }
 
-    ui->textEdit->document()->blockSignals(true);
-
     /* If the last position of the cursor was 0, there wasn't any cursor show on the editor of the
      * other clients, so it is not necessary to delete the previous cursor */
-    if (u.getLastCursorPos() != 0)
+    if (u.getLastCursorPos() != 0 && u.getLastCursorPos() <= cursor.document()->characterCount() - 1)
         changeBackground(u.getLastCursorPos(), Qt::white);
 
     /* When the previous cursor position is deleted, the new one is shown on the editor if the new
      * position is different than 0. */
     if (position != 0)
         changeBackground(position, u.getAssignedColor());
-
-    ui->textEdit->document()->blockSignals(false);
 }
 
 /* This function is used to change the background color by passing the position of the char that
  * must be changed and the color that must be applied. */
 void TextEditor::changeBackground(_int position, const QColor &color) {
+    ui->textEdit->document()->blockSignals(true);
     QTextCursor cursor(ui->textEdit->textCursor());
     cursor.setPosition(position, QTextCursor::MoveAnchor);
     QTextCharFormat textCharFormat = cursor.charFormat();
@@ -440,6 +456,7 @@ void TextEditor::changeBackground(_int position, const QColor &color) {
     cursor.setPosition(position - 1, QTextCursor::MoveAnchor);
     cursor.setPosition(position, QTextCursor::KeepAnchor);
     cursor.setCharFormat(textCharFormat);
+    ui->textEdit->document()->blockSignals(false);
 }
 
 /* This slot is called when insert_into_window signal is emitted, it has to insert the new char
@@ -600,16 +617,13 @@ void TextEditor::change(int pos, int del, int add) {
                 /* Check if alignment or indentation are changed. */
                 if (alignment == QString::number(textBlockFormat.alignment()) &&
                     indentation == QString::number(textBlockFormat.indent())) {
-                    multipleErase(pos, del);
+                    multipleErase(pos, del); // or removed.size()?
                     multipleInsert(pos, added);
                 } else {
                     alignment = QString::number(textBlockFormat.alignment());
                     indentation = QString::number(textBlockFormat.indent());
 
                     this->client->changeBlockFormat(charData);
-
-                    //this->client->localInsert(pos, "X", charData);
-                    //this->client->localErase(pos);
                 }
                 return;
             }
@@ -629,7 +643,7 @@ void TextEditor::change(int pos, int del, int add) {
             multipleInsert(pos, added);
             return;
         }
-        multipleErase(pos, del);
+        multipleErase(pos, del); // or removed.size()?
         multipleInsert(pos, added);
     }
 }

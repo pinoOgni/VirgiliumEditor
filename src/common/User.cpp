@@ -74,7 +74,7 @@ _int User::getSiteId() const {
     return this->siteId;
 }
 
-_int User::getLastCursorPos() {
+_int User::getLastCursorPos() const {
     return this->lastCursorPos;
 }
 

@@ -12,8 +12,9 @@
 class SaveFileService : public QRunnable {
     Model &model;
     CrdtMessage crdtMessage;
+    QVector<Symbol> symbols;
 public:
-    SaveFileService(Model &model, CrdtMessage crdtMessage);
+    SaveFileService(Model &model, CrdtMessage crdtMessage, QVector<Symbol> symbols);
 
     void run() override;
 

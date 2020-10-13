@@ -4,13 +4,13 @@
 
 #include "SaveFileService.h"
 
-SaveFileService::SaveFileService(Model &model, CrdtMessage crdtMessage) : model(model), crdtMessage(crdtMessage) {
-}
+#include <utility>
+
+SaveFileService::SaveFileService(Model &model, CrdtMessage crdtMessage, QVector<Symbol> symbols) :
+        model(model),
+        crdtMessage(std::move(crdtMessage)),
+        symbols(std::move(symbols)) {}
 
 void SaveFileService::run() {
-    auto symbols = this->model.getSymbolsForDocument(crdtMessage.getFileName());
-    auto toBeSaved = this->model.performServerProcess(symbols, crdtMessage);
-
-    this->model.updateSymbolsForDocument(crdtMessage.getFileName(), toBeSaved);
-
+    this->model.updateSymbolsForDocument(crdtMessage.getFileName(), this->symbols);
 }

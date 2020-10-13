@@ -5,10 +5,8 @@
 #include "ClientSocket.h"
 #include "constants.h"
 
-//socket lato server
-//connected non serve perché non si fa la connecttohost
+/* server side constructor */
 ClientSocket::ClientSocket(QObject *parent) : QTcpSocket(parent), clientID(-1), in(this) {
-
     //connect(this, &QTcpSocket::stateChanged, this, &ClientSocket::onSocketStateChanged);
     connect(this, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error), this, &ClientSocket::onDisplayError);
     connect(this, &QTcpSocket::disconnected, this, &ClientSocket::onDisconnectedSocketServer);
@@ -18,10 +16,11 @@ ClientSocket::ClientSocket(QObject *parent) : QTcpSocket(parent), clientID(-1), 
     this->in.setVersion(Q_DATA_STREAM_VERSION);
 }
 
-//socket lato client
-ClientSocket::ClientSocket(const QString &hostName, quint16 port, QObject *parent) : QTcpSocket(parent), clientID(-1),
-                                                                                     in(this) {
-    //connect(this, &QTcpSocket::stateChanged, this, &ClientSocket::onSocketStateChanged);
+/* client side constructor */
+ClientSocket::ClientSocket(const QString &hostName, quint16 port, QObject *parent) :
+        QTcpSocket(parent),
+        clientID(-1),
+        in(this) {
     connect(this, &QTcpSocket::connected, this, &ClientSocket::onConnected);
     connect(this, &QTcpSocket::disconnected, this, &ClientSocket::onDisconnected);
     connect(this, &QTcpSocket::bytesWritten, this, &ClientSocket::onBytesWritten);
@@ -36,6 +35,12 @@ ClientSocket::ClientSocket(const QString &hostName, quint16 port, QObject *paren
     };
 
     this->in.setVersion(Q_DATA_STREAM_VERSION);
+}
+
+ClientSocket::~ClientSocket() {
+    /*this->disconnectFromHost();
+    this->waitForDisconnected(3000);*/
+    qDebug() << "distructor";
 }
 
 void ClientSocket::onReadyRead() {
@@ -227,6 +232,8 @@ void ClientSocket::onReadyRead() {
             CrdtMessage crdtMessage;
             this->in >> crdtMessage;
 
+            qDebug() << "SYMBOL " << crdtMessage.getSymbol().getLetter();
+
             if (!this->in.commitTransaction()) return;
             emit crdtMessageReceived(code, crdtMessage);
         }
@@ -236,12 +243,8 @@ void ClientSocket::onReadyRead() {
         }
     }
 
-    if (in.atEnd()) {
-        qDebug() << "ho letto tutto";
-    } else {
-        qDebug() << "c'è altra roba";
-        emit readyRead();
-    }
+    if (!in.atEnd())
+            emit readyRead();
 }
 
 /*void ClientSocket::onSocketStateChanged(QTcpSocket::SocketState state) {
@@ -279,29 +282,24 @@ void ClientSocket::onReadyRead() {
 //solo per debug
 void ClientSocket::onConnected() {
     qDebug() << "Connected.";
-    return;
 }
 
 void ClientSocket::onDisconnected() {
     qDebug() << "disconnected.";
-    return;
 }
 
 void ClientSocket::onDisconnectedSocketServer() {
     qDebug() << "disconnected.";
     this->deleteLater();
-    return;
 }
 
 //solo per debug
 void ClientSocket::onBytesWritten(_int bytes) {
     qDebug() << bytes << "bytes written";
-    return;
 }
 
 //add gli altri switch case
 void ClientSocket::onDisplayError(QTcpSocket::SocketError error) {
-
     switch (error) {
         case QAbstractSocket::RemoteHostClosedError:  //l'host cade
             qDebug() << "RemoteHostClosedError: the remote host closed the connection.";
@@ -345,8 +343,8 @@ void ClientSocket::send(QByteArray &data) {
     this->write(data);
 }
 
-void ClientSocket::setClientID(quintptr clientID) {
-    this->clientID = clientID;
+void ClientSocket::setClientID(quintptr clientId) {
+    this->clientID = clientId;
 }
 
 quint32 ClientSocket::getClientID() {
@@ -354,25 +352,26 @@ quint32 ClientSocket::getClientID() {
 }
 
 void ClientSocket::send(_int code, BasicMessage basicMessage) {
-    QByteArray blocco;
-    QDataStream out(&blocco, QIODevice::WriteOnly);
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(Q_DATA_STREAM_VERSION);
 
     out << code;
     out << basicMessage;
-    this->write(blocco);
+    this->write(arrBlock);
 }
 
 void ClientSocket::send(_int res) {
-    QByteArray blocco;
-    QDataStream out(&blocco, QIODevice::WriteOnly);
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(Q_DATA_STREAM_VERSION);
 
     out << res;
-    this->write(blocco);
+    this->write(arrBlock);
 }
 
 void ClientSocket::send(_int res, UserMessage userMessage) {
+    qDebug() << "PROVA";
     QByteArray blocco;
     QDataStream out(&blocco, QIODevice::WriteOnly);
     out.setVersion(Q_DATA_STREAM_VERSION);
@@ -455,7 +454,6 @@ void ClientSocket::send(_int code, StorageMessage &storageMessage) {
     this->write(arrBlock);
 }
 
-
 void ClientSocket::send(_int code, InvitationMessage invitationMessage) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
@@ -466,7 +464,7 @@ void ClientSocket::send(_int code, InvitationMessage invitationMessage) {
     this->write(arrBlock);
 }
 
-void ClientSocket::send(_int code, CrdtMessage crdtMessage) {
+void ClientSocket::send(_int code, const CrdtMessage &crdtMessage) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(Q_DATA_STREAM_VERSION);

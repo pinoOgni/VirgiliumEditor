@@ -28,12 +28,7 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
     _int i;
 
     if (m.getAction() == "INSERT") {
-        auto nuovaPos = m.getSymbol().getPosition();
-        /*for (_int i = 0; i < this->_symbols.size(); i++) {
-            if (this->_symbols[i].getPosition() == nuovaPos)
-                //throw wrongpositionException();
-                ;//throw wrongpositionException();
-        }*/
+        auto newPos = m.getSymbol().getPosition();
 
         for (i = 0; i < this->_symbols.size(); i++)
             if (symbol <= this->_symbols[i]) break; // position found
@@ -41,7 +36,7 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
         this->_symbols.insert(it, symbol);
 
         if (m.getMode())
-                emit insert_into_window(i, symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
+                emit insert_into_window(i, symbol.getLetter(), symbol.getFont(), m.getSender());
     } else if (m.getAction() == "ERASE") {
         for (i = 0; i < this->_symbols.size(); i++)
             if (symbol == this->_symbols[i]) break;
@@ -52,9 +47,9 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
         this->_symbols.erase(it);
 
         if (m.getMode())
-                emit remove_into_window(i, symbol.getSiteId());
+                emit remove_into_window(i, m.getSender());
     } else if (m.getAction() == "CURSOR_CHANGED") {
-        emit change_cursor_position(symbol.getPosition().at(1), symbol.getSiteId());
+        emit change_cursor_position(symbol.getPosition().at(1), m.getSender());
     } else if (m.getAction() == "CHANGE_BLOCK_FORMAT") {
         Symbol s = this->_symbols.at(0);
 
@@ -71,7 +66,8 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
         this->_symbols.removeFirst();
         this->_symbols.prepend(newSymbol);
 
-        emit change_block_format(newFont);
+        if (m.getMode())
+                emit change_block_format(newFont);
     }
 }
 
@@ -85,17 +81,17 @@ QVector<Symbol> Crdt_editor::serverProcess(QVector<Symbol> symbols, const CrdtMe
 //i due vettori vengono controllati parallelemante
 //_max gli si assegna il la dimensione maggiore tra i due vettori
 QVector<_int> Crdt_editor::getPosition(QVector<_int> prec, QVector<_int> succ) {
-    QVector<_int> nuovaPos;
+    QVector<_int> newPos;
     _int i, prev, next, _max = (prec.size() > succ.size()) ? prec.size() : succ.size();
     for (i = 0; i < _max; i++) {
         prev = (i >= prec.size()) ? 0 : prec[i];
         next = (i >= succ.size()) ? 9 : succ[i];
 
         if (prev == next) {
-            nuovaPos.push_back(prev);
+            newPos.push_back(prev);
         } else {
             if (next - prev >= 2) {
-                nuovaPos.push_back(prev + 1);
+                newPos.push_back(prev + 1);
                 break;
             } else {
                 // aggiungiamo il caso in cui prev > next
@@ -103,21 +99,21 @@ QVector<_int> Crdt_editor::getPosition(QVector<_int> prec, QVector<_int> succ) {
 
                     // se prev != 9 allora possiamo incrementarlo
                     if (prev != 9) {
-                        nuovaPos.push_back(prev + 1);
+                        newPos.push_back(prev + 1);
                         break;
                     } else if (next != 0) { // se prev = 9 allora proviamo a decrementare next
-                        nuovaPos.push_back(next - 1);
+                        newPos.push_back(next - 1);
                         break;
                     }
                 }
-                nuovaPos.push_back(prev);
+                newPos.push_back(prev);
             }
         }
     }
     if (i == _max) {
-        nuovaPos.push_back(1);
+        newPos.push_back(1);
     }
-    return nuovaPos;
+    return newPos;
 }
 
 /* This method is used to send to other clients the new position of my cursor. */
@@ -183,7 +179,6 @@ void Crdt_editor::localInsert(_int index, QString value, Symbol::CharFormat font
     auto it = this->_symbols.begin() + index;
     this->_symbols.insert(it, newSymbol);
     CrdtMessage m(this->_siteId, newSymbol, false, "INSERT", this->fileName);
-    //m.printMessage();
     this->socket->send(SYMBOL_INSERT_OR_ERASE, m);
 }
 
@@ -205,9 +200,9 @@ void Crdt_editor::loadRequest(const QString &name, User user) {
 }
 
 void Crdt_editor::loadResponse(_int code, StorageMessage storageMessage) {
-
-    for (const Symbol &symbol : storageMessage.getSymbols())
-        this->_symbols.push_back(symbol);
+    this->_symbols = storageMessage.getSymbols();
+    /*for (const Symbol &symbol : storageMessage.getSymbols())
+        this->_symbols.push_back(symbol);*/
 
     QList<User> users;
     for (User u : storageMessage.getActiveUsers()) {
@@ -226,12 +221,5 @@ void Crdt_editor::deleteFromActive(const User &user, const QString &name) {
 }
 
 void Crdt_editor::activeUserChanged(_int code, ActiveUserMessage activeUserMessage) {
-    QList<User> users;
-    for (User u : activeUserMessage.getActiveUsers()) {
-        u.setAssignedColor(QColor(QRandomGenerator::global()->bounded(64, 192),
-                                  QRandomGenerator::global()->bounded(64, 192),
-                                  QRandomGenerator::global()->bounded(64, 192)));
-        users.push_back(u);
-    }
-    emit change_active_users(users);
+    emit change_active_users(activeUserMessage.getActiveUsers());
 }
