@@ -60,13 +60,13 @@ public:
      * */
     ~Crdt_editor();
 
-    void localInsert(QVector<_int> indexes, QVector<QString> values, QVector<Symbol::CharFormat> fonts);
+    void localInsert(_int index, QString value, Symbol::CharFormat font);
 
-    void localErase(const QVector<_int> &indexes);
+    void localErase(_int index);
 
     void changeCursor(_int position);
 
-    /*void set_site_id(_int siteId);*/
+    void changeBlockFormat(const Symbol::CharFormat &font);
 
     void loadRequest(const QString &fileName, User user);
 
@@ -86,8 +86,6 @@ public slots:
 
 signals:
 
-    /*void site_id_assignment();*/
-
     void insert_into_window(_int pos, QString character, Symbol::CharFormat font, _int siteId);
 
     void remove_into_window(_int pos, _int siteId);
@@ -98,6 +96,7 @@ signals:
 
     void change_active_users(QList<User> users);
 
+    void change_block_format(QString font);
 };
 
 #endif //VIRGILIUMCLIENT_VIRGILIUM_CLIENT_H

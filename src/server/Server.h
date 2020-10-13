@@ -21,8 +21,6 @@ public:
 
     void incomingConnection(qintptr handle) override;
 
-    void dispatch();
-
 private slots:
 
     void onSocketStateChanged(QTcpSocket::SocketState state);

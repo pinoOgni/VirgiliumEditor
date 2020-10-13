@@ -98,11 +98,11 @@ public:
 
     void save(CrdtMessage crdtMessage);
 
-    QVector<Symbol> performServerProcess(QVector<Symbol> symbols, CrdtMessage crdtMessage);
+    QVector<Symbol> performServerProcess(QVector<Symbol> symbols, const CrdtMessage &crdtMessage);
 
-    void updateSymbolsForDocument(QString filename, QVector<Symbol> toBeSaved);
+    void updateSymbolsForDocument(const QString &filename, const QVector<Symbol> &toBeSaved);
 
-    QVector<Symbol> getFileFromFileSystem(QString filename);
+    QVector<Symbol> getFileFromFileSystem(const QString &filename);
 };
 
 #endif // VIRGILIUM_MODEL_H

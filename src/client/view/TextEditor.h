@@ -110,7 +110,9 @@ private slots:
 
     void loadResponse(_int code, const QVector<Symbol> &symbols, QList<User> users);
 
-    void changeActiveUser(QList<User> activeUsers);
+    void changeActiveUser(const QList<User> &activeUsers);
+
+    void changeBlockFormat(const QString &font);
 
 };
 

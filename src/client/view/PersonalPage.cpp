@@ -42,6 +42,7 @@ PersonalPage::PersonalPage(QWidget *parent) : QMainWindow(parent), ui(new Ui::Pe
 }
 
 PersonalPage::~PersonalPage() {
+    client->getSocket()->send(LOGOUT);
     delete ui;
 }
 
@@ -53,7 +54,7 @@ void PersonalPage::time_label() {
 
 void PersonalPage::on_logout_clicked() {
     disconnect(timer, SIGNAL(timeout()), this, SLOT(time_label()));
-    client->getSocket()->send(LOGOUT);
+    //client->getSocket()->send(LOGOUT);
     this->close();
     emit Want2Close();
 }

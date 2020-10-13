@@ -18,11 +18,11 @@ QDataStream &operator>>(QDataStream &stream, BasicMessage &myclass) {
     return stream;
 }
 
-BasicMessage::BasicMessage():sender(-1) {
+BasicMessage::BasicMessage() : sender(-1) {
 
 }
 
-qintptr BasicMessage::getSender() {
+_int BasicMessage::getSender() const {
     return this->sender;
 }
 

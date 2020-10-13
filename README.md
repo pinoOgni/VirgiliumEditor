@@ -37,7 +37,7 @@ Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte e
 
 * In alto a sinitra è possibile:
     
-    * cambiare tema: default, light mode, dark mode
+    * cambiare tema: default e light mode
     
     * cambiare password
     
