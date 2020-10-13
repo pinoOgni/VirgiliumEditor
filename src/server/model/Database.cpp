@@ -62,8 +62,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
                 QString create_files = "CREATE TABLE files ("
                                        "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
                                        "filename VARCHAR(50),"
-                                       "email_owner VARCHAR(50),"
-                                       "last_access DATETIME NOT NULL)";
+                                       "email_owner VARCHAR(50))";
                 if(!qry.exec(create_files)) {
                     qDebug() <<"error create table files";
                 }
@@ -100,6 +99,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
 void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
 
     QFileInfo checkfile(dbPath);
+    QDateTime dateTime;
     if(checkfile.isFile()) {
         if(db.open()) {
             QSqlQuery qry;
@@ -144,15 +144,13 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
 
 
 
-                //insert item in files then in user_files, retrieve the last id inserted
+                       //insert item in files then in user_files, retrieve the last id inserted
 
                         QSqlDatabase::database().transaction();
-                        qry.prepare("INSERT INTO files(filename, email_owner,last_access) VALUES(?,?,?)");
+                        qry.prepare("INSERT INTO files(filename, email_owner) VALUES(?,?)");
                         QString filename = "provafile";
                         qry.bindValue(0,filename);
                         qry.bindValue(1,"pino@pino.com");
-                        QDateTime dateTime = dateTime.currentDateTime();
-                        qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
                             qDebug() << "error insert in files";
                         }
@@ -175,6 +173,17 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.first();
                         int id = qry.value(0).toInt();
 
+                        //insert the owner
+                        qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
+                        qry.bindValue(0,id);
+                        qry.bindValue(1,"pino@pino.com");
+                        dateTime = dateTime.currentDateTime();
+                        qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
+                        if(!qry.exec()) {
+                            qDebug() << "error insert in files";
+                        }
+
+                        //insert some collaborators
                         qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
                         qry.bindValue(0,id);
                         qry.bindValue(1,"ale@ale.com");
@@ -196,7 +205,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
 
                         //altra prova
 
-                        qry.prepare("INSERT INTO files(filename, email_owner,last_access) VALUES(?,?,?)");
+                        qry.prepare("INSERT INTO files(filename, email_owner) VALUES(?,?)");
                         filename = "ciao";
                         qry.bindValue(0,filename);
                         qry.bindValue(1,"pino@pino.com");
@@ -219,6 +228,18 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.first();
                         id = qry.value(0).toInt();
 
+                        //insert the owner
+                        qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
+                        qry.bindValue(0,id);
+                        qry.bindValue(1,"pino@pino.com");
+                        dateTime = dateTime.currentDateTime();
+                        qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
+                        if(!qry.exec()) {
+                            qDebug() << "error insert in files";
+                        }
+
+
+                        //insert some collaborators
                         qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
                         qry.bindValue(0,id);
                         qry.bindValue(1,"ale@ale.com");
@@ -351,7 +372,7 @@ std::vector<FilesMessage> Database::getFilesOwner(User user) {
     std::vector<FilesMessage> filesMessage;
     if(db.open()) {
         QSqlDatabase::database().transaction();
-        QSqlQuery qry, qry1;
+        QSqlQuery qry, qry1, qry0;
 
 
         qry.prepare("SELECT count(id) FROM files where email_owner = :email_owner");
@@ -359,16 +380,25 @@ std::vector<FilesMessage> Database::getFilesOwner(User user) {
         qry.exec();
         qry.first();
 
-        qry.prepare("SELECT filename,last_access,id FROM files WHERE email_owner = :email_owner");
+        qry.prepare("SELECT filename,id FROM files WHERE email_owner = :email_owner");
         qry.bindValue(":email_owner", user.getEmail());
         qry.exec();
 
         int row = 0;
 
         for(qry.first(); qry.isValid(); qry.next(), ++row) {
-            int id = qry.value(2).toInt();
-            qry1.prepare("SELECT email FROM user_files WHERE id = :id");
+            int id = qry.value(1).toInt();
+            qry0.prepare("SELECT last_access FROM user_files WHERE id = :id and email =:email_owner");
+            qry0.bindValue(":id",id);
+            qry0.bindValue(":email_owner",user.getEmail());
+            qry0.exec();
+            qry0.first();
+            QString last_access = qry0.value(0).toString();
+            qDebug() << "last_access getFilesOwner " << last_access << " email_owner " << user.getEmail();
+
+            qry1.prepare("SELECT email FROM user_files WHERE id = :id AND email <> :email_owner");
             qry1.bindValue(":id",id);
+            qry1.bindValue(":email_owner",user.getEmail());
             qry1.exec();
             QStringList collaborators;
 
@@ -376,7 +406,7 @@ std::vector<FilesMessage> Database::getFilesOwner(User user) {
                 //collaborators.append(qry1.value(0).toString()).append(" ");
                 collaborators << qry1.value(0).toString();
             }
-            filesMessage.emplace_back(0,qry.value(0).toString(),qry.value(1).toString(),collaborators,user.getEmail());
+            filesMessage.emplace_back(0,qry.value(0).toString(),last_access,collaborators,user.getEmail());
             collaborators.clear();
         }
         QSqlDatabase::database().commit();
@@ -422,12 +452,15 @@ std::vector<FilesMessage>  Database::getUserFiles(User user) {
 
         int row = 0;
 
-        for(qry.first(); qry.isValid(); qry.next(), ++row) {
+        //senza QString::compare(qry.value(1).toString(),user.getEmail())!=0; nella seconda tabella spuntano i file di cui l'utente è owner
+        for(qry.first(); qry.isValid() && QString::compare(qry.value(1).toString(),user.getEmail())!=0; qry.next(), ++row) {
 
             int id = qry.value(3).toInt();
 
-            qry1.prepare("SELECT email FROM user_files WHERE id = :id");
+            //nella lista dei collaboratori non voglio l'utente owner quindi serve <> :email_owner
+            qry1.prepare("SELECT email FROM user_files WHERE id = :id AND email <> :email_owner");
             qry1.bindValue(":id",id);
+            qry1.bindValue(":email_owner",qry.value(1).toString());
             qry1.exec();
             QStringList collaborators;
 
@@ -568,13 +601,13 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
             //C'È UNA QUERY MIGLIORE (forse)
 
             /*
-             * select 'utente ale@ale.com rimuove file suca_1 di conseguenza i file viene cancellato fisicamente ed elimanato anche da user_files (rimuovo tutti i collaboratori)' AS '';
+             * select 'utente ale@ale.com rimuove file ciao 1 di conseguenza i file viene cancellato fisicamente ed elimanato anche da user_files (rimuovo tutti i collaboratori)' AS '';
 
 
                 DELETE FROM user_files
                 WHERE user_files.id IN (select files.id
                                         from files
-                                        where files.filename="suca_1"
+                                        where files.filename="ciao 1"
                                         and files.email_owner="ale@ale.com");
 
                 select '-----PRIMA DELETE---' AS '';
@@ -582,7 +615,7 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
 
                 DELETE FROM files
                 WHERE files.email_owner ="ale@ale.com"
-                and files.filename = "suca_1";
+                and files.filename = "ciao 1";
               */
 
             //take id to delete files in user_files table
@@ -671,14 +704,31 @@ bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
             if(filenameDB.isNull()) {
                 //interrupt while loop
                 go = false;
-                qry.prepare("INSERT INTO files(filename, email_owner,last_access) VALUES(?,?,?)");
+                qry.prepare("INSERT INTO files(filename, email_owner) VALUES(?,?)");
                 qry.bindValue(0,filenameTemp);
+                qry.bindValue(1,fileManagementMessage.getEmail());
+
+                if(!qry.exec()) {
+                    qDebug() << "error insert new file in files tables";
+                    return false;
+                }
+
+                qry.prepare("SELECT LAST_INSERT_ROWID();");
+                if(!qry.exec()) {
+                    qDebug() << "error retrieve last id inserted in files";
+                }
+                qry.first();
+                int id = qry.value(0).toInt();
+
+                //insert the owner
+                qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
+                qry.bindValue(0,id);
                 qry.bindValue(1,fileManagementMessage.getEmail());
                 QDateTime dateTime = dateTime.currentDateTime();
                 qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
 
                 if(!qry.exec()) {
-                    qDebug() << "error retrieve last id inserted in files";
+                    qDebug() << "error insert into user_files";
                 } else {
                     created=true;
                 }
@@ -766,8 +816,10 @@ bool Database::requestToCollaborateDB(InvitationMessage invitationMessage) {
 
 
         //TODO controllare timeout
-        qry.prepare("SELECT id FROM invitation_urls WHERE url =:url");
+        qry.prepare("SELECT id FROM invitation_urls WHERE url =:url AND timeout > :timeNow");
         qry.bindValue(":url",invitationMessage.getInvitationCode());
+        QDateTime timeNow = timeNow.currentDateTime();
+        qry.bindValue(":timeNow",timeNow.toString("dd/MM/yyyy  hh:mm:ss"));
         qry.exec();
         qry.first();
         int idResult = qry.value(0).toInt();
@@ -883,6 +935,7 @@ QString Database::createUrlCollaboratorDB(UserManagementMessage userManagementMe
             if(!urlAlreadyExist.isEmpty()) {
                 qry.prepare("UPDATE invitation_urls SET timeout = :timeout WHERE url = :url");
                 QDateTime timeout = timeout.currentDateTime();
+                timeout = timeout.addSecs(3600);
                 qry.bindValue(":timeout",timeout.toString("dd/MM/yyyy  hh:mm:ss") );
                 qry.bindValue(":url",URL);
             }
@@ -891,6 +944,7 @@ QString Database::createUrlCollaboratorDB(UserManagementMessage userManagementMe
                 qry.bindValue(0, URL);
                 qry.bindValue(1, id);
                 QDateTime timeout = timeout.currentDateTime();
+                timeout = timeout.addSecs(3600);
                 qry.bindValue(2, timeout.toString("dd/MM/yyyy  hh:mm:ss"));
             }
             if(!qry.exec()) {
@@ -1030,6 +1084,62 @@ bool Database::unsubscribeDB(UserManagementMessage userManagementMessage) {
             db.close();
             return false;
         }
+    }
+    else {
+        qDebug() << "error opened db";
+        return false;
+    }
+}
+
+
+_int Database::getIdFilenameDB(QString email_owner, QString filename) {
+    if(db.open()) {
+        qDebug() << "correct opened db to control password";
+        QSqlDatabase::database().transaction();
+        QSqlQuery qry;
+        //take id of the filename thanks to the filename and to the email_owner
+        qry.prepare("SELECT id FROM files WHERE email_owner = :email_owner and filename = :filename");
+        qry.bindValue(":email_owner", email_owner);
+        qry.bindValue(":filename",filename);
+        if(!qry.exec()) {
+            qDebug() << "error while retrieve id from files table";
+            return false;
+        }
+
+        qry.first();
+        _int idFilename = qry.value(0).toInt();
+        qDebug() << "idToDelete " << idFilename;
+        QSqlDatabase::database().commit();
+        db.close();
+        return idFilename;
+    }
+    else {
+        qDebug() << "error opened db";
+        return 0;
+    }
+}
+
+
+bool Database::updateLastAccessDB(QString email, _int idFilename) {
+
+    if(db.open()) {
+        qDebug() << "correct opened db to control password";
+        QSqlDatabase::database().transaction();
+        QSqlQuery qry;
+
+
+        qry.prepare("UPDATE user_files SET last_access = :last_access WHERE email = :email and id = :idFilename");
+        QDateTime dateTime = dateTime.currentDateTime();
+        qry.bindValue(":last_access", dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
+        qry.bindValue(":email", email);
+        qry.bindValue(":idFilename",idFilename);
+        if(!qry.exec()) {
+            qDebug() << "error while updating last_access in user_files";
+            return false;
+        }
+        QSqlDatabase::database().commit();
+        db.close();
+        return true;
     }
     else {
         qDebug() << "error opened db";

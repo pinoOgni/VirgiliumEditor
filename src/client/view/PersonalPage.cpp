@@ -303,7 +303,7 @@ void PersonalPage::isRequestToCollaboratedReceived(bool res) {
                    &PersonalPage::isRequestToCollaboratedReceived);
         getUserFiles();
     } else {
-        QMessageBox::warning(this, "Error", "Error while adding you as collaborator, check your url and try again");
+        QMessageBox::warning(this, "Error", "Error while adding you as collaborator, maybe yout url is wrong or it is expired");
         disconnect(client, &ClientStuff::isRequestToCollaboratedReceived, this,
                    &PersonalPage::isRequestToCollaboratedReceived);
     }

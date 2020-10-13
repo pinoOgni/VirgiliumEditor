@@ -154,6 +154,18 @@ public:
          */
         bool requestToCollaborateDB(InvitationMessage invitationMessage);
 
+        /*
+         * serve per aggiornare il last access ad un file
+         * return true se va bene, false altrimenti
+         */
+        bool updateLastAccessDB(QString email, _int idFilename);
+
+        /*
+         * serve per ritoranre un id dato un utente e un filename, utile per gli utenti attivi e per l'aggiornamento del last access
+         * return id se va bene, 0 altrimenti
+         */
+        _int getIdFilenameDB(QString email_owner, QString filename);
+
 };
 
 #endif // VIRGILIUM_DATABASE_H

@@ -255,3 +255,14 @@ QVector<Symbol> Model::getFileFromFileSystem(QString filename) {
 }
 
 
+
+//pino 12 ottobre
+
+_int Model::getIdFilename(QString email_owner, QString filename) {
+    return Database::getInstance().getIdFilenameDB(email_owner,filename);
+}
+
+
+bool Model::updateLastAcces(QString email, _int idFilename) {
+    return Database::getInstance().updateLastAccessDB(email,idFilename);
+}

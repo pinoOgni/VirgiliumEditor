@@ -54,11 +54,11 @@ QString User::printMessage() {
     return this->firstName + " " + this->lastName + " " + this->email + " " + this->password;
 }
 
-QString User::getEmail() {
+QString User::getEmail() const {
     return this->email;
 }
 
-QString User::getPassword() {
+QString User::getPassword() const {
     return this->password;
 }
 
