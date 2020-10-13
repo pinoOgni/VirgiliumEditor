@@ -442,8 +442,6 @@ std::vector<FilesMessage>  Database::getUserFiles(User user) {
         //qry.prepare("SELECT * FROM files WHERE files.id IN (SELECT user_files.id FROM user_files WHERE user_files.email = :email )");
 
         qry.prepare("SELECT files.filename, files.email_owner, user_files.last_access, files.id FROM files, user_files WHERE user_files.id = files.id AND user_files.email = :email");
-
-
         // select files.filename, files.email_owner, user_files.last_access, files.id from files, user_files where user_files.id = files.id and user_files.email = "ale@ale.com";
         qry.bindValue(":email", user.getEmail());
         if(!qry.exec()) {
@@ -453,24 +451,25 @@ std::vector<FilesMessage>  Database::getUserFiles(User user) {
         int row = 0;
 
         //senza QString::compare(qry.value(1).toString(),user.getEmail())!=0; nella seconda tabella spuntano i file di cui l'utente è owner
-        for(qry.first(); qry.isValid() && QString::compare(qry.value(1).toString(),user.getEmail())!=0; qry.next(), ++row) {
+        for(qry.first(); qry.isValid(); qry.next(), ++row) {
 
             int id = qry.value(3).toInt();
 
-            //nella lista dei collaboratori non voglio l'utente owner quindi serve <> :email_owner
-            qry1.prepare("SELECT email FROM user_files WHERE id = :id AND email <> :email_owner");
-            qry1.bindValue(":id",id);
-            qry1.bindValue(":email_owner",qry.value(1).toString());
-            qry1.exec();
-            QStringList collaborators;
+            if(QString::compare(qry.value(1).toString(),user.getEmail())!=0) {
+                //nella lista dei collaboratori non voglio l'utente owner quindi serve <> :email_owner
+                qry1.prepare("SELECT email FROM user_files WHERE id = :id AND email <> :email_owner");
+                qry1.bindValue(":id",id);
+                qry1.bindValue(":email_owner",qry.value(1).toString());
+                qry1.exec();
+                QStringList collaborators;
 
-            while (qry1.next()) {
-                //collaborators.append(qry1.value(0).toString()).append(" ");
-                collaborators << qry1.value(0).toString();
+                while (qry1.next()) {
+                    //collaborators.append(qry1.value(0).toString()).append(" ");
+                    collaborators << qry1.value(0).toString();
+                }
+                filesMessage.emplace_back(0,qry.value(0).toString(),qry.value(2).toString(),collaborators,qry.value(1).toString());
+                collaborators.clear();
             }
-            filesMessage.emplace_back(0,qry.value(0).toString(),qry.value(2).toString(),collaborators,qry.value(1).toString());
-            collaborators.clear();
-
         }
         QSqlDatabase::database().commit();
         db.close();
