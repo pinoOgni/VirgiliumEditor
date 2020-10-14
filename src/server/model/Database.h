@@ -10,8 +10,6 @@
 #include <QDataStream>
 #include <QList>
 #include "../../common/constants.h"
-
-//virgilium
 #include <QMessageBox>
 #include <QObject>
 #include <QtSql/QSql>
@@ -29,6 +27,7 @@
 #include "common/messages/ChangePasswordMessage.h"
 #include "common/messages/UserMessage.h"
 #include "common/User.h"
+
 
 class Database {
 
@@ -131,8 +130,6 @@ public:
      */
      bool unsubscribeDB(UserManagementMessage);
 
-
-     // TODO ALE e PINO -> quando lo user fa logout, informare il server e chiamare questo metodo
      /*
       * chiude il database, ossia la connessione con il DB
       * quando lo User clicca su logout

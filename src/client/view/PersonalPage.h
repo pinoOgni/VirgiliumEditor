@@ -26,7 +26,7 @@ public:
     ~PersonalPage();
     void databaseManagement(QString);
 
-private slots:
+public slots:
     void on_logout_clicked();
     void on_newFile_clicked();
     void on_filename_returnPressed();
@@ -61,6 +61,7 @@ private slots:
 
     void on_invitationCode_returnPressed();
     void updateTimerSlot();
+    void closeEvent(QCloseEvent *);
 
 signals:
 

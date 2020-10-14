@@ -9,6 +9,27 @@
 #include "renameordelete.h"
 #include "managecollaborators.h"
 #include "unsubscribefile.h"
+#include <QCloseEvent>
+#include <spdlog/spdlog.h>
+
+
+void PersonalPage::closeEvent(QCloseEvent *event)
+{
+    /*
+     QMessageBox::StandardButton resBtn = QMessageBox::question( this, "Virgilium Client",
+                                                                tr("Are you sure?\n"),
+                                                                QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes,
+                                                                QMessageBox::Yes);
+                                                                */
+
+    //se facciamo così si chiude tutto il client
+    User u = User(email);
+    UserMessage userMessage = UserMessage(client->getSocket()->getClientID(),u);
+    client->getSocket()->send(LOGOUT,userMessage);
+
+    event->accept();
+}
+
 
 PersonalPage::PersonalPage(QWidget *parent) : QMainWindow(parent), ui(new Ui::PersonalPage) {
     ui->setupUi(this);
@@ -35,9 +56,7 @@ PersonalPage::PersonalPage(QWidget *parent) : QMainWindow(parent), ui(new Ui::Pe
 }
 
 PersonalPage::~PersonalPage() {
-    User u = User(email);
-    UserMessage userMessage = UserMessage(client->getSocket()->getClientID(),u);
-    client->getSocket()->send(LOGOUT,userMessage);
+    qDebug() << "~PersonalPage";
     disconnect(timer, SIGNAL(timeout()), this, SLOT(time_label()));
     disconnect(updateTimer, SIGNAL(timeout()), this, SLOT(updateTimerSlot()));
     delete ui;
@@ -57,24 +76,22 @@ void PersonalPage::time_label() {
 
 void PersonalPage::on_logout_clicked() {
     this->close();
-   emit Want2Close();
+    emit Want2Close();
 }
 
 void PersonalPage::receiveData(QString string, ClientStuff *client) {
     email = string;
     this->client = client;
 
-    qDebug() << "receiveData \n";
+    spdlog::debug("receiveData");
     connect(client, &ClientStuff::getFilesOwner, this, &PersonalPage::getFilesOwner2);
     connect(client, &ClientStuff::getInfoUser, this, &PersonalPage::getInfoUser2);
     connect(client, &ClientStuff::getUserFiles, this, &PersonalPage::getUserFiles2);
 
     connect(client, &ClientStuff::getAllData, this, &PersonalPage::getAllData2);
 
-
     //every time the user push on "new file" I connect a signal
     connect(client, &ClientStuff::isFileCreated, this, &PersonalPage::isFileCreated);
-
 
     getAllData();
 }
@@ -87,7 +104,7 @@ void PersonalPage::getAllData() {
 
 void PersonalPage::getAllData2(UserMessage &u, _int row1, std::vector<FilesMessage> &filesMessage1, _int row2,
                                std::vector<FilesMessage> &filesMessage2) {
-    qDebug() << "getAllData2";
+    spdlog::debug("PersonalPage::getAllData2");
     this->currentUser = u.getUser();
     getInfoUser2(u);
     getFilesOwner2(row1, filesMessage1);
@@ -103,8 +120,8 @@ void PersonalPage::getInfoUser() {
 }
 
 void PersonalPage::getInfoUser2(UserMessage &u) {
+    spdlog::debug("PersonalPage::getInfoUser2");
     QFont serifFont("Times", 14, QFont::Bold);
-    qDebug() << "getInfoUser2 PersonalPage";
     ui->firstName->setText(u.getUser().getEmail());
     ui->firstName->setFont(serifFont);
     ui->lastName->setText(u.getUser().getFirstName());
@@ -123,7 +140,7 @@ void PersonalPage::getFilesOwner() {
 
 //receive data from mainwindow who receive data from clientstuff who recevice data from the server
 void PersonalPage::getFilesOwner2(_int row, std::vector<FilesMessage> &filesMessage) {
-    qDebug() << "getFilesOwner2";
+    spdlog::debug("PersonalPage::getFilesOwner2");
     ui->tableWidget->clearContents();
 
     ui->tableWidget->setRowCount(row);
@@ -152,7 +169,7 @@ void PersonalPage::getUserFiles() {
 }
 
 void PersonalPage::getUserFiles2(_int row, std::vector<FilesMessage> &filesMessage) {
-    qDebug() << "getUserFiles2 ";
+    spdlog::debug("PersonalPage::getUserFiles2");
     ui->tableWidget_2->clearContents();
     ui->tableWidget_2->setRowCount(row);
     QTableWidgetItem *temp;
@@ -209,7 +226,6 @@ void PersonalPage::on_tableWidget_cellDoubleClicked(int row, int column) {
         qDebug() << ui->tableWidget->item(row, 0)->text();
         qDebug() << "ADD OR REMOVE COLLABORATOR";
 
-        //QMessageBox::warning(this,"Attention","ADD OR REMOVE COLLABORATOR");
         connect(manageC, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
     }
 }
@@ -227,21 +243,18 @@ void PersonalPage::on_actionDefault_triggered() {
     QString theme = "background: #";
     theme.append("eff0f6");
     this->setStyleSheet(theme);
-    qDebug() << "theme " << theme;
 }
 
 void PersonalPage::on_actionDark_triggered() {
     QString theme = "background: #";
     theme.append("2d383c");
     this->setStyleSheet(theme);
-    qDebug() << "theme " << theme;
 }
 
 void PersonalPage::on_actionLight_triggered() {
     QString theme = "background: #";
     theme.append("fffefc");
     this->setStyleSheet(theme);
-    qDebug() << "theme " << theme;
 }
 
 //creation of new file: insert into files, control if there is a equal filename
@@ -256,7 +269,7 @@ void PersonalPage::newFile(QString email, QString filename) {
                                   ""); //password is not used to create a new file. Change??
     client->getSocket()->send(NEW_FILE, fileManagementMessage);
 
-    qDebug() << "delete file push button clicked " << fileManagementMessage.getEmail();
+    spdlog::debug("PersonalPage::newFile ");
 }
 
 void PersonalPage::on_newFile_clicked() {

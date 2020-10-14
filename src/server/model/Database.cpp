@@ -19,14 +19,12 @@ void Database::initDatabase() {
     //delete databaase file only for testing
     QString dbPath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).filePath("database.db");
 
-    if(TESTDB==true) {
+    spdlog::debug("init database TESTDB ");
+    if(TESTDB) {
         QFile file (dbPath);
-
-        //if(file.exists())  file.remove();
-
         file.open(QIODevice::WriteOnly | QIODevice::Text);  //create file
     }
-    qDebug() << "init database";
+
     db = QSqlDatabase::addDatabase("QSQLITE"); //"SQLITE"
     db.setDatabaseName(dbPath);
 
@@ -34,7 +32,7 @@ void Database::initDatabase() {
              qDebug() << "error first try to open DB";
     } else {
         db.close();
-        if(TESTDB==true) {
+        if(TESTDB) {
             createTables(dbPath,db);
             fillTablesForTests(dbPath, db);
         }

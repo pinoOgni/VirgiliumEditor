@@ -6,6 +6,8 @@
 #ifndef VIRGILIUM_CONSTANTS_H
 #define VIRGILIUM_CONSTANTS_H
 
+#include <spdlog/spdlog.h>
+
 #define _int qint64
 #define FILE_IDENTIFIER 993
 #define ConnectionWaitingTime 5000 // in millisecondi
@@ -75,7 +77,8 @@
 
 //true --> ricrea i db vergini
 //false --> usa il DB con i dati che ci sono
-#define TESTDB true
+static bool TESTDB = false;
+
 #define VIRGILIUM_STORAGE "/VIRGILIUM_STORAGE/"
 
 #endif //VIRGILIUM_CONSTANTS_H

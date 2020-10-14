@@ -30,6 +30,7 @@ WelcomePage::WelcomePage(QWidget *parent) :
 
 WelcomePage::~WelcomePage()
 {
+    spdlog::debug("~WelcomePage");
     delete client;
     delete ui;
 }
