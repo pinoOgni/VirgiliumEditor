@@ -120,7 +120,7 @@ signals:
 
     void requestToCollaborateReceived(_int code);
 
-    void logoutReceived(_int code); //pino close connection when client "logout"
+    void logoutReceived(_int code,UserMessage userMessage); //pino close connection when client "logout"
     void crdtMessageReceived(_int code, CrdtMessage crdtMessage);
 
     void activeUserMessageReceived(_int code, ActiveUserMessage activeUserMessage);

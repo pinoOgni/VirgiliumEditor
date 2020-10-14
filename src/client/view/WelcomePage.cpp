@@ -24,6 +24,7 @@ WelcomePage::WelcomePage(QWidget *parent) :
 
     connect(client, &ClientStuff::tryToLogin, this, &WelcomePage::loggedIn);
     connect(client, &ClientStuff::tryToSignup, this, &WelcomePage::registered);
+    connect(client, &ClientStuff::userAlreadyLogged, this, &WelcomePage::userAlreadyLogged);
 }
 
 
@@ -31,6 +32,11 @@ WelcomePage::~WelcomePage()
 {
     delete client;
     delete ui;
+}
+
+void WelcomePage::userAlreadyLogged() {
+    qDebug() << "userAlreadyLogged ";
+    QMessageBox::warning(this, "Attention", "You are already logged!");
 }
 
 void WelcomePage::loggedIn(const bool logged) {

@@ -25,25 +25,28 @@ PersonalPage::PersonalPage(QWidget *parent) : QMainWindow(parent), ui(new Ui::Pe
     ui->label_orario->setFont(serifFont);
     ui->label_orario->setText(dateTimeString);
 
-    //connect to default connection to the DB
-    //db = QSqlDatabase::database();
-
-    //database
-    //QString dbPath = QDir(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)).filePath("database.db");
-    //databaseManagement(dbPath);
-
     timer = new QTimer(this);;
     connect(timer, SIGNAL(timeout()), this, SLOT(time_label()));
     timer->start(1000);
 
-    //updateTimer = new QTimer(this);
-    //connect(updateTimer, SIGNAL(timeout()), this, SLOT(getAllData()));
-    //updateTimer->start(10000);
+    updateTimer = new QTimer(this);
+    connect(updateTimer, SIGNAL(timeout()), this, SLOT(updateTimerSlot()));
+    updateTimer->start(60000); //every minute the GUI is uptaded to look for modification of collaborators
 }
 
 PersonalPage::~PersonalPage() {
-    client->getSocket()->send(LOGOUT);
+    User u = User(email);
+    UserMessage userMessage = UserMessage(client->getSocket()->getClientID(),u);
+    client->getSocket()->send(LOGOUT,userMessage);
+    disconnect(timer, SIGNAL(timeout()), this, SLOT(time_label()));
+    disconnect(updateTimer, SIGNAL(timeout()), this, SLOT(updateTimerSlot()));
     delete ui;
+}
+
+
+void PersonalPage::updateTimerSlot() {
+    connect(client, &ClientStuff::getAllData, this, &PersonalPage::getAllData2);
+    getAllData();
 }
 
 void PersonalPage::time_label() {
@@ -53,10 +56,8 @@ void PersonalPage::time_label() {
 }
 
 void PersonalPage::on_logout_clicked() {
-    disconnect(timer, SIGNAL(timeout()), this, SLOT(time_label()));
-    //client->getSocket()->send(LOGOUT);
     this->close();
-    emit Want2Close();
+   emit Want2Close();
 }
 
 void PersonalPage::receiveData(QString string, ClientStuff *client) {
@@ -111,8 +112,6 @@ void PersonalPage::getInfoUser2(UserMessage &u) {
     ui->user_email->setText(u.getUser().getLastName());
     ui->user_email->setFont(serifFont);
 
-    //now I try to retrieve data for the first table
-    //getFilesOwner();
 }
 
 //retrieve files which are owned by the user
@@ -144,9 +143,6 @@ void PersonalPage::getFilesOwner2(_int row, std::vector<FilesMessage> &filesMess
         ui->tableWidget->setItem(i, 2, temp);
         i++;
     }
-
-    //now I try to retrieve data for the second table
-    //getUserFiles();
 }
 
 void PersonalPage::getUserFiles() {
@@ -181,13 +177,6 @@ void PersonalPage::getUserFiles2(_int row, std::vector<FilesMessage> &filesMessa
         i++;
     }
 }
-
-/*
-void PersonalPage::databaseManagement(QString dbPath) {
-    db = QSqlDatabase::addDatabase("QSQLITE"); //"SQLITE"
-    db.setDatabaseName(dbPath);
-}
-*/
 
 //first table: file created by the user
 void PersonalPage::on_tableWidget_cellDoubleClicked(int row, int column) {

@@ -30,6 +30,7 @@
 #define LOAD_RESPONSE 13
 #define UPDATE_ACTIVE_USERS 14
 #define DELETE_ACTIVE 15
+#define ALREADY_LOGGED 16
 
 //list of constants for interactions with the database
 #define LOGIN  701
@@ -70,6 +71,7 @@
 #define REQUEST_TO_COLLABORATE 752
 #define REQUEST_TO_COLLABORATE_OK 753
 #define REQUEST_TO_COLLABORATE_KO 754
+
 
 //true --> ricrea i db vergini
 //false --> usa il DB con i dati che ci sono

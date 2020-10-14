@@ -41,6 +41,7 @@ private slots:
 public slots:
      void loggedIn(const bool logged);
      void registered(const bool registered);
+     void userAlreadyLogged();
 
      void getFilesOwner(int row,std::vector<FilesMessage>& userinfo);
      void getInfoUser(UserMessage& u);
