@@ -37,6 +37,7 @@ private:
     QString fileName;
     User currentUser;
     QComboBox *comboUsers;
+    QFontComboBox *myFont;
 
     void drawFontComboBox();
 

@@ -24,50 +24,52 @@ Crdt_editor::Crdt_editor() = default;
 Crdt_editor::~Crdt_editor() = default;
 
 void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
-    auto symbol = m.getSymbol();
-    _int i;
+    if (code == 0 || this->fileName == m.getFileName()) {
+        auto symbol = m.getSymbol();
+        _int i;
 
-    if (m.getAction() == "INSERT") {
-        auto newPos = m.getSymbol().getPosition();
+        if (m.getAction() == "INSERT") {
+            auto newPos = m.getSymbol().getPosition();
 
-        for (i = 0; i < this->_symbols.size(); i++)
-            if (symbol <= this->_symbols[i]) break; // position found
-        auto it = this->_symbols.begin() + i;
-        this->_symbols.insert(it, symbol);
+            for (i = 0; i < this->_symbols.size(); i++)
+                if (symbol <= this->_symbols[i]) break; // position found
+            auto it = this->_symbols.begin() + i;
+            this->_symbols.insert(it, symbol);
 
-        if (m.getMode())
-                emit insert_into_window(i, symbol.getLetter(), symbol.getFont(), m.getSender());
-    } else if (m.getAction() == "ERASE") {
-        for (i = 0; i < this->_symbols.size(); i++)
-            if (symbol == this->_symbols[i]) break;
+            if (m.getMode())
+                    emit insert_into_window(i, symbol.getLetter(), symbol.getFont(), m.getSender());
+        } else if (m.getAction() == "ERASE") {
+            for (i = 0; i < this->_symbols.size(); i++)
+                if (symbol == this->_symbols[i]) break;
 
-        if (this->_symbols.begin() + i == this->_symbols.end())
-            return;
-        auto it = this->_symbols.begin() + i;
-        this->_symbols.erase(it);
+            if (this->_symbols.begin() + i == this->_symbols.end())
+                return;
+            auto it = this->_symbols.begin() + i;
+            this->_symbols.erase(it);
 
-        if (m.getMode())
-                emit remove_into_window(i, m.getSender());
-    } else if (m.getAction() == "CURSOR_CHANGED") {
-        emit change_cursor_position(symbol.getPosition().at(1), m.getSender());
-    } else if (m.getAction() == "CHANGE_BLOCK_FORMAT") {
-        Symbol s = this->_symbols.at(0);
+            if (m.getMode())
+                    emit remove_into_window(i, m.getSender());
+        } else if (m.getAction() == "CURSOR_CHANGED") {
+            emit change_cursor_position(symbol.getPosition().at(1), m.getSender());
+        } else if (m.getAction() == "CHANGE_BLOCK_FORMAT") {
+            Symbol s = this->_symbols.at(0);
 
-        QRegExp tagExp("/");
-        QStringList oldList = s.getFont().font.split(tagExp);
-        QRegExp tagExp2("/");
-        QStringList newList = symbol.getFont().font.split(tagExp);
+            QRegExp tagExp("/");
+            QStringList oldList = s.getFont().font.split(tagExp);
+            QRegExp tagExp2("/");
+            QStringList newList = symbol.getFont().font.split(tagExp);
 
-        Symbol::CharFormat format = s.getFont();
-        QString newFont = oldList.at(0) + "/" + newList.at(1) + "/" + newList.at(2);
-        format.font = newFont;
+            Symbol::CharFormat format = s.getFont();
+            QString newFont = oldList.at(0) + "/" + newList.at(1) + "/" + newList.at(2);
+            format.font = newFont;
 
-        Symbol newSymbol(s.getLetter(), s.getSiteId(), s.getCounterId(), s.getPosition(), format);
-        this->_symbols.removeFirst();
-        this->_symbols.prepend(newSymbol);
+            Symbol newSymbol(s.getLetter(), s.getSiteId(), s.getCounterId(), s.getPosition(), format);
+            this->_symbols.removeFirst();
+            this->_symbols.prepend(newSymbol);
 
-        if (m.getMode())
-                emit change_block_format(newFont);
+            if (m.getMode())
+                    emit change_block_format(newFont);
+        }
     }
 }
 
