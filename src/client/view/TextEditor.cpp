@@ -118,12 +118,15 @@ void TextEditor::loadRequest(const QString &f, User user) {
 /* This slot is used to get the response of the server. It contains the list
  * of symbols and the list of users. */
 void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, QList<User> users) {
-    if (!symbols.empty())
-        changeBlockFormat(symbols.at(0).getFont().font);
+    /*if (!symbols.empty())
+        changeBlockFormat(symbols.at(0).getFont().font);*/
 
     if (code == LOAD_RESPONSE) {
-        for (const Symbol &symbol : symbols)
+        for (const Symbol &symbol : symbols) {
+            qDebug() << symbol.getLetter() << symbols.indexOf(symbol) << symbol.getFont().font;
             insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
+            changeBlockFormat(symbol.getFont().font, symbols.indexOf(symbol), symbols.indexOf(symbol) + 1);
+        }
     }
 
     changeActiveUser(users);
@@ -526,12 +529,15 @@ void TextEditor::delete_text(_int pos, _int siteId) {
     this->changeCursorPosition(pos, siteId);
 }
 
-void TextEditor::changeBlockFormat(const QString &font) {
+void TextEditor::changeBlockFormat(const QString &font, _int startPos, _int finalPos) {
     ui->textEdit->document()->blockSignals(true);
     QRegExp tagExp("/");
     QStringList firstList = font.split(tagExp);
 
     QTextCursor cursor(ui->textEdit->textCursor());
+    cursor.setPosition(startPos, QTextCursor::MoveAnchor);
+    cursor.setPosition(finalPos - 1, QTextCursor::KeepAnchor);
+    qDebug() << cursor.selectedText();
     QTextBlockFormat textBlockFormat = cursor.block().blockFormat();
     switch (firstList.at(1).toInt()) {
         case 1:
@@ -628,7 +634,11 @@ void TextEditor::change(int pos, int del, int add) {
                     alignment = QString::number(textBlockFormat.alignment());
                     indentation = QString::number(textBlockFormat.indent());
 
-                    this->client->changeBlockFormat(charData);
+                    qDebug() << pos + add << cursor.document()->characterCount();
+                    if (pos + add < cursor.document()->characterCount())
+                        this->client->changeBlockFormat(charData, pos, pos + add);
+                    else
+                        this->client->changeBlockFormat(charData, pos, pos + add - 2);
                 }
                 return;
             }

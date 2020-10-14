@@ -209,8 +209,6 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         filename = "ciao";
                         qry.bindValue(0,filename);
                         qry.bindValue(1,"pino@pino.com");
-                        dateTime = dateTime.currentDateTime();
-                        qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
                             qDebug() << "error insert in files";
                         }

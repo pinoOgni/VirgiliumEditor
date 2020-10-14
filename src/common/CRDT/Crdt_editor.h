@@ -66,7 +66,7 @@ public:
 
     void changeCursor(_int position);
 
-    void changeBlockFormat(const Symbol::CharFormat &font);
+    void changeBlockFormat(const Symbol::CharFormat &font, _int startPos, _int finalPos);
 
     void loadRequest(const QString &fileName, User user);
 
@@ -96,7 +96,7 @@ signals:
 
     void change_active_users(QList<User> users);
 
-    void change_block_format(QString font);
+    void change_block_format(QString font, _int startPos, _int finalPos);
 };
 
 #endif //VIRGILIUMCLIENT_VIRGILIUM_CLIENT_H
