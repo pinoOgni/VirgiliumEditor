@@ -46,6 +46,7 @@ qDebug() << "processAllData";
             item.printUserInfo();
 
         emit getAllData(userMessage,row1,filesOwner,row2,filesCollabs);
+        qDebug() << "emit getAllData";
     }
     break;
     }
@@ -136,6 +137,11 @@ void ClientStuff::processLoginAndSignup(_int code) {
     case SIGNUP_KO: {
         emit tryToSignup(false);
         qDebug()  << "signup ko" << this->clientSocket->getClientID();
+    }
+    break;
+    case ALREADY_LOGGED: {
+        emit userAlreadyLogged();
+        qDebug()  << "userAlreadyLogged " << this->clientSocket->getClientID();
     }
     break;
     }

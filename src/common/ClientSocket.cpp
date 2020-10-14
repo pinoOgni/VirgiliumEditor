@@ -99,11 +99,12 @@ void ClientSocket::onReadyRead() {
         case LOGIN_KO:
         case LOGIN_OK:
         case SIGNUP_OK:
-        case SIGNUP_KO: {
+        case SIGNUP_KO:
+        case ALREADY_LOGGED:{
             if (!this->in.commitTransaction()) return;
             emit loginSignupReceived(code);
         }
-            break;
+        break;
         case GET_FILES_OWNER_OK:
         case GET_FILES_OWNER_KO:
         case GET_FILES_COLLABORATOR_OK:
@@ -217,8 +218,10 @@ void ClientSocket::onReadyRead() {
         }
             break;
         case LOGOUT: {
+            UserMessage um;
+            this->in >> um;
             if (!this->in.commitTransaction()) return;
-            emit logoutReceived(LOGOUT);
+            emit logoutReceived(LOGOUT,um);
         }
             break;
         case REQUEST_TO_COLLABORATE_OK:

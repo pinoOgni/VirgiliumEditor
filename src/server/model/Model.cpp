@@ -22,7 +22,32 @@ void Model::removeLoggedUser(ClientSocket *socket) {
         clientToUser.erase(it);
 }
 
-ClientSocket *Model::getLoggedUser(User &user) {
+bool Model::isUserOnline(const QString email) {
+    bool find = false;
+    for (auto it = onlineUsers.begin(); it != onlineUsers.end(); ++it) {
+        if (QString::compare(*it,email)==0) {
+            qDebug() << "isUserOnline " << *it;
+            find = true;
+        }
+    }
+    return find;
+}
+
+void Model::insertUserOnline(const QString email) {
+    onlineUsers.emplace_back(email);
+    qDebug() << "insertUserOnline " << onlineUsers.at(onlineUsers.size()-1);
+}
+
+void Model::removeUserOnline(const QString email) {
+    for (auto it = onlineUsers.begin(); it != onlineUsers.end(); ++it) {
+        if (QString::compare(*it,email)==0) {
+            it = onlineUsers.erase(it);
+            break;
+        }
+    }
+}
+
+ClientSocket *Model::getLoggedUser(const User &user) {
     auto it = clientToUser.find(user.getSiteId());
     if (it == clientToUser.end()) {
         throw std::runtime_error("User not logged!");

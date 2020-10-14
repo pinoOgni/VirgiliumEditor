@@ -41,7 +41,7 @@ private slots:
 
     void onInvitationReceived(_int code, InvitationMessage invitationMessage);
 
-    void onLogoutReceived(_int code); //pino close connection  DB user "logout"
+    void onLogoutReceived(_int code, UserMessage userMessage); //pino close connection  DB user "logout"
 
 signals:
 
