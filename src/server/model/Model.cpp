@@ -50,7 +50,7 @@ void Model::removeUserOnline(const QString email) {
 ClientSocket *Model::getLoggedUser(const User &user) {
     auto it = clientToUser.find(user.getSiteId());
     if (it == clientToUser.end()) {
-        return nullptr;
+        throw std::runtime_error("User not logged!");
     } else {
         return it->second;
     }
@@ -69,12 +69,10 @@ void Model::removeSymbolsForDocument(const QString &fileName) {
 QVector<Symbol> Model::getSymbolsForDocument(const QString &fileName) {
     QMutexLocker lock(&this->symbolsForDocumentMutex);
     auto it = symbolsForDocument.find(fileName);
-    QVector<Symbol> symbols;
     if (it == symbolsForDocument.end())
-        symbols = QVector<Symbol>();
-    else
-        symbols = symbolsForDocument[fileName];
-    return symbols;
+        throw std::runtime_error("Document not opened!");
+
+    return symbolsForDocument[fileName];
 }
 
 QList<User> Model::addActiveUser(const User &user, const QString &fileName) {

@@ -107,54 +107,33 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
             return;
 
         /* It is a kind of dispatch messages */
-        QList<User> users = activeUsersForDocument[crdtMessage.getFileName()];
-        for (auto &user : users) {
-            if (message.getSender() != user.getSiteId()) {
-                message.setMode(true);
-                ClientSocket *socket = this->model.getLoggedUser(user);
-                if (socket == nullptr) return;
-                if (message.getAction() == "CURSOR_CHANGED")
-                    socket->send(CURSOR_CHANGED, message);
-                else
-                    socket->send(SYMBOL_INSERT_OR_ERASE, message);
+        try {
+            QList<User> users = activeUsersForDocument[crdtMessage.getFileName()];
+            for (auto &user : users) {
+                if (message.getSender() != user.getSiteId()) {
+                    message.setMode(true);
+                    ClientSocket *socket = this->model.getLoggedUser(user);
+                    if (message.getAction() == "CURSOR_CHANGED")
+                        socket->send(CURSOR_CHANGED, message);
+                    else
+                        socket->send(SYMBOL_INSERT_OR_ERASE, message);
+                }
             }
-        }
 
-        /* Now, the new symbol must be saved on file system */
-        if (code == SYMBOL_INSERT_OR_ERASE)
-            this->model.save(crdtMessage);
+            /* Now, the new symbol must be saved on file system */
+            if (code == SYMBOL_INSERT_OR_ERASE)
+                this->model.save(crdtMessage);
+        } catch (std::exception &e) {
+            qDebug() << e.what(); //TODO mettere in un file di log
+            throw;
+        }
     }
 }
 
 void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     if (code == LOAD_REQUEST) {
-        QList<User> users = model.addActiveUser(storageMessage.getActiveUsers().at(0),
-                                                storageMessage.getFileName());
-
-        QVector<Symbol> symbols;
-        if (users.size() == 1) {
-            symbols = this->model.getFileFromFileSystem(storageMessage.getFileName());
-            this->model.insertSymbolsForDocument(storageMessage.getFileName(), symbols);
-        } else {
-            symbols = this->model.getSymbolsForDocument(storageMessage.getFileName());
-        }
-
-        StorageMessage storageMessage1(0, symbols, storageMessage.getFileName(), users);
-        sender->send(LOAD_RESPONSE, storageMessage1);
-
-        for (auto &user : users) {
-            if (storageMessage.getActiveUsers().at(0).getSiteId() != user.getSiteId()) {
-                ClientSocket *socket = this->model.getLoggedUser(user);
-                ActiveUserMessage activeUserMessage(0, users);
-                if (socket == nullptr) return;
-                socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
-            }
-        }
-    }
-    /*switch (code) {
-        case LOAD_REQUEST: {
-            /* get the list of users that are modifying the current document *//*
+        try {
             QList<User> users = model.addActiveUser(storageMessage.getActiveUsers().at(0),
                                                     storageMessage.getFileName());
 
@@ -177,12 +156,11 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
                     socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
                 }
             }
+        } catch (std::exception &e) {
+            qDebug() << e.what(); //TODO mettere in un file di log
+            throw;
         }
-            break;
-        default: {
-
-        }
-    }*/
+    }
 }
 
 void Server::onProcessUserMessage(_int code, UserMessage userMessage) {

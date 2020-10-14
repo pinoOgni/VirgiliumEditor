@@ -374,7 +374,6 @@ void ClientSocket::send(_int res) {
 }
 
 void ClientSocket::send(_int res, UserMessage userMessage) {
-    qDebug() << "PROVA";
     QByteArray blocco;
     QDataStream out(&blocco, QIODevice::WriteOnly);
     out.setVersion(Q_DATA_STREAM_VERSION);

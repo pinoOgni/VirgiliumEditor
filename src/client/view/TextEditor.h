@@ -37,6 +37,7 @@ private:
     QString fileName;
     User currentUser;
     QComboBox *comboUsers;
+    QFontComboBox *myFont;
 
     void drawFontComboBox();
 
@@ -112,7 +113,7 @@ private slots:
 
     void changeActiveUser(const QList<User> &activeUsers);
 
-    void changeBlockFormat(const QString &font);
+    void changeBlockFormat(const QString &font, _int startPos, _int finalPos);
 
 };
 
