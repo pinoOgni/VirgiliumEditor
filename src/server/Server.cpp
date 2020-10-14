@@ -191,17 +191,25 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
 
     switch (code) {
         case LOGIN: {
-            qDebug() << "popipopi qui arrivo";
-            if (Model::loginUser(userMessage.getUser())) {
-                sender->send(LOGIN_OK);
-                this->model.insertLoggedUser(sender, userMessage.getUser());
-                qDebug() << "readClient L true";
+            qDebug() << "onProcessUserMessage LOGIN" << userMessage.getUser().getSiteId();
+
+            bool isUserOnline = this->model.isUserOnline(userMessage.getUser().getEmail());
+            if (isUserOnline) {
+                qDebug() << "ALREADY_LOGGED";
+                sender->send(ALREADY_LOGGED);
             } else {
-                sender->send(LOGIN_KO);
-                qDebug() << "readClient L false";
+                if (Model::loginUser(userMessage.getUser())) {
+                    this->model.insertLoggedUser(sender, userMessage.getUser());
+                    this->model.insertUserOnline(userMessage.getUser().getEmail());
+                    sender->send(LOGIN_OK);
+                    qDebug() << "readClient L true";
+                } else {
+                    sender->send(LOGIN_KO);
+                    qDebug() << "readClient L false";
+                }
             }
         }
-            break;
+        break;
         case SIGNUP: {
             if (Model::signinUser(userMessage.getUser())) {
                 sender->send(SIGNUP_OK);
@@ -400,7 +408,7 @@ void Server::onUserManagementMessageReceived(_int code, UserManagementMessage us
     }
 }
 
-void Server::onLogoutReceived(_int code) {
+void Server::onLogoutReceived(_int code, UserMessage userMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch (code) {
         case LOGOUT: {
@@ -408,6 +416,7 @@ void Server::onLogoutReceived(_int code) {
             model.closeConnectionDB();
             //this->model.removeUserFromEditor(sender);
             this->model.removeLoggedUser(sender);
+            this->model.removeUserOnline(userMessage.getUser().getEmail());
         }
             break;
     }

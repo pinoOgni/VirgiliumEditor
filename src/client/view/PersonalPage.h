@@ -60,6 +60,7 @@ private slots:
     void on_requestToCollaborate_clicked();
 
     void on_invitationCode_returnPressed();
+    void updateTimerSlot();
 
 signals:
 

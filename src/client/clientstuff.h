@@ -40,6 +40,7 @@ signals:
     void hasReadSome(QString msg);
     void tryToLogin(bool logged);
     void tryToSignup(bool registered);
+    void userAlreadyLogged();
 
     void getFilesOwner(int row,std::vector<FilesMessage>& filesMessage);
     void getInfoUser(UserMessage &u);
