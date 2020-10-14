@@ -269,6 +269,31 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
         case DELETE_ACTIVE: {
             QList<User> users = this->model.removeActiveUser(userMessage.getUser(), userMessage.getFileName());
 
+            //PINO 12 ottobre
+            qDebug() << "onProcessUserMessage " << userMessage.getUser().getEmail() << " ---- " << userMessage.getFileName();
+            QRegExp tagExp("/");
+            QStringList firstList = userMessage.getFileName().split(tagExp);
+            QString email_owner = firstList.at(0);
+            QString filename = firstList.at(1);
+            qDebug() << "onProcessUserMessage " << email_owner << " ---- " << filename;
+            if(model.updateLastAcces(userMessage.getUser().getEmail(),
+                                     model.getIdFilename(email_owner, filename))) {
+                if(QString::compare(email_owner,userMessage.getUser().getEmail())==0) {
+                    qDebug() << "update last_access owner";
+                    User user = User(email_owner);
+                    UserMessage userMessage = UserMessage(sender->getClientID(),user);
+                    onProcessUserMessage(GET_FILES_OWNER,userMessage);
+                } else {
+                    qDebug() << "update last_access collaborator";
+                    User user = User(userMessage.getUser().getEmail());
+                    UserMessage userMessage = UserMessage(sender->getClientID(),user);
+                    onProcessUserMessage(GET_FILES_COLLABORATOR,userMessage);
+                }
+            } else {
+                qDebug() << "update last_access ERROR";
+            }
+            //fine pino
+
             if (users.empty()) {
                 this->model.removeSymbolsForDocument(userMessage.getFileName());
                 return;
