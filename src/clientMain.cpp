@@ -16,8 +16,6 @@ int main(int argc, char *argv[])
     //level of spdlog
     if (argc == 2 && (std::strncmp(argv[1], "-d", 2) == 0 || std::strncmp(argv[1], "--debug", 7) == 0)) {
         spdlog::set_level(spdlog::level::debug);
-    } else {
-        spdlog::set_level(spdlog::level::critical);
     }
 
     WelcomePage w;

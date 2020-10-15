@@ -37,7 +37,6 @@ PersonalPage::PersonalPage(QWidget *parent) : QMainWindow(parent), ui(new Ui::Pe
     QString theme = "background: #";
     theme.append("eff0f6");
     this->setStyleSheet(theme);
-    qDebug() << "theme " << theme;
 
     //date and time
     QDateTime dateTime = dateTime.currentDateTime();
@@ -56,7 +55,7 @@ PersonalPage::PersonalPage(QWidget *parent) : QMainWindow(parent), ui(new Ui::Pe
 }
 
 PersonalPage::~PersonalPage() {
-    qDebug() << "~PersonalPage";
+    spdlog::debug( "~PersonalPage");
     disconnect(timer, SIGNAL(timeout()), this, SLOT(time_label()));
     disconnect(updateTimer, SIGNAL(timeout()), this, SLOT(updateTimerSlot()));
     delete ui;
@@ -69,7 +68,6 @@ void PersonalPage::updateTimerSlot() {
 }
 
 void PersonalPage::time_label() {
-    //qDebug() << "time_label ";
     QDateTime dateTime = dateTime.currentDateTime();
     ui->label_orario->setText(dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
 }
@@ -208,8 +206,7 @@ void PersonalPage::on_tableWidget_cellDoubleClicked(int row, int column) {
         emit sendData_2(this->client, email, ui->tableWidget->item(row, column)->text(), this->currentUser);
 
         newRenameOrDelete->show();
-        qDebug() << ui->tableWidget->item(row, column)->text();
-        qDebug() << "RENAME OR DELETE FILE";
+        spdlog::debug("RENAME OR DELETE FILE");
 
         //close renameordelete and refresh table files
         connect(newRenameOrDelete, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
@@ -223,8 +220,7 @@ void PersonalPage::on_tableWidget_cellDoubleClicked(int row, int column) {
         emit sendData_2(this->client, email, ui->tableWidget->item(row, 0)->text(), this->currentUser);
 
         manageC->show();
-        qDebug() << ui->tableWidget->item(row, 0)->text();
-        qDebug() << "ADD OR REMOVE COLLABORATOR";
+        spdlog::debug("ADD OR REMOVE COLLABORATOR");
 
         connect(manageC, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
     }
@@ -327,8 +323,7 @@ void PersonalPage::on_tableWidget_2_cellDoubleClicked(int row, int column) {
                     ui->tableWidget_2->item(row, 1)->text(), this->currentUser);
 
     unsubscribe->show();
-    qDebug() << ui->tableWidget_2->item(row, 0)->text();
-    qDebug() << "REMOVE MYSELF FROM A FILE";
+    spdlog::debug("REMOVE MYSELF FROM A FILE");
 
     connect(unsubscribe, SIGNAL(Want2Close2()), this, SLOT(getUserFiles()));
 }
@@ -358,7 +353,4 @@ void PersonalPage::requestToCollaborate(QString email, QString invitationCode) {
             InvitationMessage(client->getSocket()->getClientID(), email,
                               invitationCode);
     client->getSocket()->send(REQUEST_TO_COLLABORATE, invitationMessage);
-
-    qDebug() << "requestToCollaborate";
-
 }

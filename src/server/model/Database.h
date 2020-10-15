@@ -107,7 +107,7 @@ public:
      * serve per cambiare la password di un utente controllando che i parametri siano corretti
      * @return true se va bene, altrimenti false
      */
-     bool changePasswordDB(ChangePasswordMessage);
+     bool changePasswordDB(const ChangePasswordMessage&);
      /*
       * serve per aggiungere un collaboratore ad un file di proprietà del client User
       * controlla se il nuovo collaboratore esiste, se è già un collaboratore
@@ -121,14 +121,14 @@ public:
      * controlla anche la password
      * @return true se va bene, false altrimenti
      */
-     bool removeCollaboratorDB(UserManagementMessage);
+     bool removeCollaboratorDB(const UserManagementMessage&);
      /*
      * serve per rimuovere il client che ne fa richiesta da un file a cui collabora
      * controlla se in effetti il client collabora a quel file (magari è già stato rimosso)
      * controlla anche la password
      * @return true se va bene, false altrimenti
      */
-     bool unsubscribeDB(UserManagementMessage);
+     bool unsubscribeDB(const UserManagementMessage&);
 
      /*
       * chiude il database, ossia la connessione con il DB
@@ -143,13 +143,13 @@ public:
          * lo aggiunge al DB nella tabella invitation_url
          * @return l'URL se va bene, empty string altrimenti
          */
-        QString createUrlCollaboratorDB(UserManagementMessage);
+        QString createUrlCollaboratorDB(const UserManagementMessage&);
 
         /*
          * serve, per aggiungere uno user ad un file, grazie ad un codice di invito
          * @return true se va bene, false altrimenti
          */
-        bool requestToCollaborateDB(InvitationMessage invitationMessage);
+        bool requestToCollaborateDB(const InvitationMessage& invitationMessage);
 
         /*
          * serve per aggiornare il last access ad un file

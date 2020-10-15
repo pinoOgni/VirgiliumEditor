@@ -29,7 +29,6 @@ QDataStream &operator <<(QDataStream &stream, const FilesMessage &myclass) {
     return stream;
 }
 QDataStream &operator >>(QDataStream &stream, FilesMessage &myclass) {
-    qDebug() << myclass.filename;
     stream >> myclass.filename;
     stream >> myclass.last_access;
     stream >> myclass.collaborators;
@@ -38,7 +37,7 @@ QDataStream &operator >>(QDataStream &stream, FilesMessage &myclass) {
 }
 
 void FilesMessage::printUserInfo() {
-    qDebug() << this->filename << " " << this->last_access << " " << this->collaborators << " " << this->owner;
+    spdlog::debug("{}, {}, {}",this->filename.toStdString(), this->last_access.toStdString(), this->owner.toStdString());
 }
 
 QString FilesMessage::getFilename() const {    return filename; }

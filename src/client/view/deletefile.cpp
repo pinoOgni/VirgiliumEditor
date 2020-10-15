@@ -29,7 +29,7 @@ void deleteFile::receiveData_2(ClientStuff *client,QString email,QString filenam
     QString displayText = "Are you sure to delete ' ";
     displayText.append(filename).append(" ' file? \n No collaborator can access it anymore. ");
     ui->label->setText(displayText);
-    qDebug() << "receiveData_2 deletefile" << email << filename;
+    spdlog::debug("receiveData_2 deletefile");
 
 }
 
@@ -61,9 +61,6 @@ void deleteFile::on_pushButton_clicked()
                                   QCryptographicHash::hash(password.toUtf8(),QCryptographicHash::Sha224));
 
     client->getSocket()->send(DELETE_FILE,fileManagementMessage);
-    qDebug() << "delete file push button clicked " << fileManagementMessage.getEmail();
-
-
 }
 
 

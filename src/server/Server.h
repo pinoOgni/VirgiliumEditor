@@ -31,11 +31,11 @@ private slots:
 
     void onProcessStorageMessage(_int code, StorageMessage storageMessage);
 
-    void onFileManagementMessageReceived(_int code, FileManagementMessage fileManagementMessage);
+    void onFileManagementMessageReceived(_int code, const FileManagementMessage& fileManagementMessage);
 
-    void onChangePasswordMessageReceived(_int code, ChangePasswordMessage changePasswordMessage);
+    void onChangePasswordMessageReceived(_int code, const ChangePasswordMessage& changePasswordMessage);
 
-    void onUserManagementMessageReceived(_int code, UserManagementMessage userManagementMessage);
+    void onUserManagementMessageReceived(_int code, const UserManagementMessage& userManagementMessage);
 
     void onInvitationReceived(_int code, InvitationMessage invitationMessage);
 
