@@ -33,7 +33,6 @@ public slots:
     void on_tableWidget_cellDoubleClicked(int row, int column);
     void on_actionChange_Password_triggered();
     void on_actionDefault_triggered();
-    void on_actionDark_triggered();
     void on_actionLight_triggered();
     void newFile(QString,QString);
     void requestToCollaborate(QString,QString);

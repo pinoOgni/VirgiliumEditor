@@ -241,12 +241,6 @@ void PersonalPage::on_actionDefault_triggered() {
     this->setStyleSheet(theme);
 }
 
-void PersonalPage::on_actionDark_triggered() {
-    QString theme = "background: #";
-    theme.append("2d383c");
-    this->setStyleSheet(theme);
-}
-
 void PersonalPage::on_actionLight_triggered() {
     QString theme = "background: #";
     theme.append("fffefc");
