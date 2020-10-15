@@ -46,7 +46,7 @@ void ClientSocket::onReadyRead() {
     this->in.startTransaction();
     _int code;
     this->in >> code;
-    qDebug() << "ClientSocket onReadyRead " << code;
+    spdlog::debug("ClientSocket onReadyRead {} ", code);
 
     switch (code) {
         case UPDATE_ACTIVE_USERS: {
@@ -132,7 +132,7 @@ void ClientSocket::onReadyRead() {
                 in >> temp1;
                 filesOwner.push_back(temp1);
             }
-            qDebug() << "GET_ALL_DATA row1 " << row1;
+            spdlog::debug("GET_ALL_DATA row1 ");
             for (auto item: filesOwner)
                 item.printUserInfo();
 
@@ -145,7 +145,7 @@ void ClientSocket::onReadyRead() {
                 filesCollabs.push_back(temp2);
             }
 
-            qDebug() << "GET_ALL_DATA row2 " << row2;
+            spdlog::debug("GET_ALL_DATA row2 ");
             for (auto item: filesCollabs)
                 item.printUserInfo();
             if (!this->in.commitTransaction()) return;
@@ -234,12 +234,14 @@ void ClientSocket::onReadyRead() {
             CrdtMessage crdtMessage;
             this->in >> crdtMessage;
 
+            spdlog::debug("SYMBOL {} ", crdtMessage.getSymbol().getLetter().toStdString());
+
             if (!this->in.commitTransaction()) return;
             emit crdtMessageReceived(code, crdtMessage);
         }
             break;
         default: {
-            qDebug() << "Default case in ReadyRead";
+            spdlog::debug("Default case in ReadyRead");
         }
     }
 
@@ -250,82 +252,80 @@ void ClientSocket::onReadyRead() {
 /*void ClientSocket::onSocketStateChanged(QTcpSocket::SocketState state) {
     switch (state) {
         case QAbstractSocket::ListeningState:
-            qDebug() << "The socket is listening.";
+            spdlog::debug("The socket is listening.");
             break;
         case QAbstractSocket::UnconnectedState: {
-            qDebug() << "The socket is not connected.";
+            spdlog::debug("The socket is not connected.");
             //ADD SPIA ROSSA
             break;
         }
         case QAbstractSocket::HostLookupState:
-            qDebug() << "The socket is performing a hostname lookup.";
+            spdlog::debug("The socket is performing a hostname lookup.");
             break;
         case QAbstractSocket::ConnectedState: {
-            qDebug() << "A connection is established.";
+            spdlog::debug("A connection is established.");
             //ADD SPIA VERDE
             break;
         }
         case QAbstractSocket::ConnectingState:
-            qDebug() << "The socket has started establishing a connection.";
+            spdlog::debug("The socket has started establishing a connection.");
             break;
         case QAbstractSocket::ClosingState: {
-            qDebug() << "The socket is about to close.";
+            spdlog::debug("The socket is about to close.");
             auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
             BasicMessage msg(sender->getClientID());
             break;
         }
         default:
-            qDebug() << "Unknown State.";
+            spdlog::debug("Unknown State.");
     }
 }*/
 
 //solo per debug
 void ClientSocket::onConnected() {
-    qDebug() << "Connected.";
+    spdlog::debug("Connected.");
 }
 
 void ClientSocket::onDisconnected() {
-    qDebug() << "disconnected.";
+    spdlog::debug("disconnected.");
 }
 
 void ClientSocket::onDisconnectedSocketServer() {
-    qDebug() << "disconnected.";
+    spdlog::debug("disconnected.");
     this->deleteLater();
 }
 
 //solo per debug
 void ClientSocket::onBytesWritten(_int bytes) {
-    qDebug() << bytes << "bytes written";
+    spdlog::debug("bytes {} written ", bytes );
 }
 
 //add gli altri switch case
 void ClientSocket::onDisplayError(QTcpSocket::SocketError error) {
     switch (error) {
         case QAbstractSocket::RemoteHostClosedError:  //l'host cade
-            qDebug() << "RemoteHostClosedError: the remote host closed the connection.";
+            spdlog::debug("RemoteHostClosedError: the remote host closed the connection.");
             break;
         case QAbstractSocket::HostNotFoundError: //address ""
-            qDebug() << "HostNotFoundError: the host address was not found.";
+            spdlog::debug("HostNotFoundError: the host address was not found.");
             break;
         case QAbstractSocket::SocketAccessError:
-            qDebug()
-                    << "SocketAccessError: the socket operation failed because the application lacked the required privileges.";
+            spdlog::debug("SocketAccessError: the socket operation failed because the application lacked the required privileges.");
             break;
         case QAbstractSocket::SocketResourceError:
-            qDebug() << "SocketResourceError: the local system ran out of resources (e.g., too many sockets).";
+            spdlog::debug("SocketResourceError: the local system ran out of resources (e.g., too many sockets).");
             break;
         case QAbstractSocket::ConnectionRefusedError: //se provo a connetermi ma il server è down
-            qDebug() << "ConnectionRefusedError: the connection was refused by the peer (or timed out).";
+            spdlog::debug("ConnectionRefusedError: the connection was refused by the peer (or timed out).");
             break;
         case QAbstractSocket::NetworkError:
-            qDebug() << "NetworkError: an error occurred with the network.";
+            spdlog::debug("NetworkError: an error occurred with the network.");
             break;
         case QAbstractSocket::OperationError:
-            qDebug()
-                    << "OperationError: an operation was attempted while the socket was in a state that did not permit it.";
+            spdlog::debug("OperationError: an operation was attempted while the socket was in a state that did not permit it.");
             break;
         case QAbstractSocket::UnknownSocketError:
-            qDebug() << "UnknownSocketError: an unidentified error occurred..";
+            spdlog::debug("UnknownSocketError: an unidentified error occurred..");
             break;
     }
 

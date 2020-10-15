@@ -226,7 +226,6 @@
      </property>
      <addaction name="actionDefault"/>
      <addaction name="actionLight"/>
-     <addaction name="actionDark"/>
     </widget>
     <addaction name="actionChange_Password"/>
     <addaction name="menuChange_Theme"/>
@@ -246,11 +245,6 @@
   <action name="actionLight">
    <property name="text">
     <string>Light</string>
-   </property>
-  </action>
-  <action name="actionDark">
-   <property name="text">
-    <string>Dark</string>
    </property>
   </action>
  </widget>

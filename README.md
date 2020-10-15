@@ -44,7 +44,17 @@ Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte e
 
 # Text editor
 
-* SIMONE
+* In alto a sinistra è possibile vedere gli utenti che stanno attualmente modificando il file, ad ognuno di questi è assegnato un colore con il quale è possibile distinguere i diversi cursori all'interno del foglio di lavoro.
+
+* Nella parte superiore della pagina ci sono diverse azioni che possono essere eseguite, la maggior parte di queste possono essere attivate sia dal menù che utilizzando delle apposite icone, tra le più importanti abbiamo 
+   * la creazione di un file PDF con il contenuto del documento
+   * le operazioni di copia, taglia e incolla
+   * l'allineamento e l'indentazione
+   * la possibilità di modificare il testo in corsivo, grassetto o sottolineato
+   * l'opzione per sostituire tutte le occorrenze di una o più parole con delle altre
+   * le azioni per modificare il font, la dimensione del testo ed anche il suo colore
+
+* Infine, nella parte centrale della finestra c'è un foglio a disposizione dove è possibile inserire tutto ciò che farà parte del documento attualmente modificato.
 
 
 

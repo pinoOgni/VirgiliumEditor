@@ -16,7 +16,7 @@ Crdt_editor::Crdt_editor(QWidget *parent, ClientSocket *receivedSocket, QString 
     connect(this->socket, &ClientSocket::activeUserMessageReceived, this, &Crdt_editor::activeUserChanged);
 
     this->_siteId = this->socket->getClientID();
-    qDebug() << "Il mio siteID è: " << this->_siteId;
+    spdlog::debug("Il mio siteID è: {} ", this->_siteId);
 }
 
 Crdt_editor::Crdt_editor() = default;

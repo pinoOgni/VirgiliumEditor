@@ -33,9 +33,7 @@ void unsubscribeFile::on_unsubscribe_clicked()
                                   QCryptographicHash::hash(password.toUtf8(),QCryptographicHash::Sha224));
 
     client->getSocket()->send(UNSUBSCRIBE,userManagementMessage);
-    qDebug() << "unsubscribe on push button clicked " << userManagementMessage.getEmail_collaborator();
-
-
+    spdlog::debug("unsubscribe on push button clicked ");
 }
 
 void unsubscribeFile::on_cancel_clicked()
@@ -66,9 +64,6 @@ unsubscribeFile::receiveData_2(ClientStuff *client, QString email, QString filen
     QString displayText = "You are unsubscribing from ' ";
     displayText.append(filename).append(" ' file!");
     ui->label->setText(displayText);
-    qDebug() << "receiveData_2 unsubscribeFile" << email << filename;
-
-
 
 }
 

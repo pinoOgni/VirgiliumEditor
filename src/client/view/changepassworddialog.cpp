@@ -34,8 +34,6 @@ void ChangePasswordDialog::on_ok_clicked()
                                     QCryptographicHash::hash(newPsw.toUtf8(),QCryptographicHash::Sha224));
 
         client->getSocket()->send(CHANGE_PASSWORD,changePasswordMessage);
-        qDebug() << "change password push button clicked " << changePasswordMessage.getEmail();
-
     }
 }
 
@@ -48,9 +46,7 @@ void ChangePasswordDialog::on_cancel_clicked()
 void ChangePasswordDialog::receiveData(ClientStuff * client,QString email) {
     this->email = email;
     this->client = client;
-    qDebug() << "receiveData changepassworddialog" << this->email;
-
-
+    spdlog::debug("receiveData changepassworddialog");
 
     //every time the user push on "change" I connect a signal
     connect(client, &ClientStuff::isPswChanged,this,&ChangePasswordDialog::isPswChanged);
@@ -60,7 +56,6 @@ void ChangePasswordDialog::keyPressEvent(QKeyEvent *e) {
  switch (e->key ()) {
         case Qt::Key_Return:
         case Qt::Key_Enter:
-            qDebug ("Return/enter pressed");
                 on_ok_clicked();
         break;
 
@@ -71,7 +66,7 @@ void ChangePasswordDialog::keyPressEvent(QKeyEvent *e) {
 
 
 void ChangePasswordDialog::isPswChanged(bool res) {
-    qDebug() << "isPswChanged";
+    spdlog::debug("isPswChanged");
     if(res) {
         QMessageBox::information(this,"Done","Password changed");
         this->close();

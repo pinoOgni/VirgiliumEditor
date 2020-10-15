@@ -13,14 +13,12 @@
 //ADD quint16 port è un unsigned short
 Server::Server(unsigned short port, Model &model) : model(model) {
     if (!listen(QHostAddress::LocalHost, port)) {
-        qDebug() << "Error: server is not listening" << "\n";
+        spdlog::error("Error: server is not listening");
         exit(-1);
     }
 
-    qDebug() << "Server is listening on address:" << this->serverAddress().toString() << ":" << this->serverPort()
-             << "\n";
+    spdlog::info("Server is listening on address: {0}, {1} ", this->serverAddress().toString().toStdString(), this->serverPort());
 
-    //TODO PROVA PINO
     if (TESTDB == true) {
         QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(
                 VIRGILIUM_STORAGE)).removeRecursively();
@@ -38,7 +36,6 @@ void Server::incomingConnection(_int handle) {
 
     newSocket->setClientID(handle);
 
-    connect(newSocket, &ClientSocket::basicMessageReceived, this, &Server::onProcessBasicMessage);
     connect(newSocket, &ClientSocket::userMessageReceived, this, &Server::onProcessUserMessage);
     connect(newSocket, &ClientSocket::fileManagementMessageReceived, this, &Server::onFileManagementMessageReceived);
     connect(newSocket, &ClientSocket::changePasswordMessageReceived, this, &Server::onChangePasswordMessageReceived);
@@ -53,7 +50,7 @@ void Server::incomingConnection(_int handle) {
 
     //client is connected
     BasicMessage basicMessage(handle);
-    qDebug() << "Sending: " << handle << "\n";
+    spdlog::debug("Sending: {} ", handle);
     newSocket->send(CLIENT_CONNECTED, basicMessage);
 }
 
@@ -61,40 +58,32 @@ void Server::incomingConnection(_int handle) {
 void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
     switch (state) {
         case QAbstractSocket::UnconnectedState:
-            qDebug() << "The socket is not connected." << "\n";
+            spdlog::debug("The socket is not connected.");
             break;
         case QAbstractSocket::HostLookupState:
-            qDebug() << "The socket is performing a hostname lookup." << "\n";
+            spdlog::debug("The socket is performing a hostname lookup.");
             break;
         case QAbstractSocket::ConnectedState:
-            qDebug() << "A connection is established." << "\n";
+            spdlog::debug("A connection is established.");
             break;
         case QAbstractSocket::ConnectingState:
-            qDebug() << "The socket has started establishing a connection." << "\n";
+            spdlog::debug("The socket has started establishing a connection.");
             break;
         case QAbstractSocket::BoundState:
-            qDebug() << "The socket is bound to an address and port." << "\n";
+            spdlog::debug("The socket is bound to an address and port.");
             break;
         case QAbstractSocket::ClosingState: {
-            qDebug() << "The socket is about to close." << "\n";
+            spdlog::debug("The socket is about to close.");
             auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
             this->model.removeLoggedUser(sender);
             this->model.removeActiveUser(sender->getClientID());
             break;
         }
         case QAbstractSocket::ListeningState:
-            qDebug() << "The socket is listening." << "\n";
+            spdlog::debug("The socket is listening.");
             break;
         default:
-            qDebug() << "Unknown State." << "\n";
-    }
-}
-
-void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
-    //robe super basic
-    switch (code) {
-        case CLIENT_CONNECTED:
-            break;
+            spdlog::debug("Unknown State.");
     }
 }
 
@@ -126,7 +115,7 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
             if (code == SYMBOL_INSERT_OR_ERASE)
                 this->model.save(crdtMessage);
         } catch (std::exception &e) {
-            qDebug() << e.what(); //TODO mettere in un file di log
+            spdlog::error(e.what()); //TODO mettere in un file di log
             throw;
         }
     }
@@ -158,7 +147,7 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
                 }
             }
         } catch (std::exception &e) {
-            qDebug() << e.what(); //TODO mettere in un file di log
+            spdlog::error(e.what()); //TODO mettere in un file di log
             throw;
         }
     }
@@ -166,25 +155,25 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
 
 void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
-    qDebug() << "userMessage onProcessUserMessage " << userMessage.getUser().printMessage();
+    spdlog::debug("userMessage onProcessUserMessage {} ", userMessage.getUser().printMessage().toStdString());
 
     switch (code) {
         case LOGIN: {
-            qDebug() << "onProcessUserMessage LOGIN" << userMessage.getUser().getSiteId();
+            spdlog::debug("onProcessUserMessage LOGIN {} ", userMessage.getUser().getSiteId());
 
             bool isUserOnline = this->model.isUserOnline(userMessage.getUser().getEmail());
             if (isUserOnline) {
-                qDebug() << "ALREADY_LOGGED";
+                spdlog::debug("ALREADY_LOGGED");
                 sender->send(ALREADY_LOGGED);
             } else {
                 if (Model::loginUser(userMessage.getUser())) {
                     this->model.insertLoggedUser(sender, userMessage.getUser());
                     this->model.insertUserOnline(userMessage.getUser().getEmail());
                     sender->send(LOGIN_OK);
-                    qDebug() << "readClient L true";
+                    spdlog::debug("readClient L true");
                 } else {
                     sender->send(LOGIN_KO);
-                    qDebug() << "readClient L false";
+                    spdlog::debug("readClient L false");
                 }
             }
         }
@@ -192,10 +181,10 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
         case SIGNUP: {
             if (Model::signinUser(userMessage.getUser())) {
                 sender->send(SIGNUP_OK);
-                qDebug() << "readClient S true";
+                spdlog::debug("readClient S true");
             } else {
                 sender->send(SIGNUP_KO);
-                qDebug() << "readClient S false";
+                spdlog::debug("readClient S false");
             }
         }
             break;
@@ -209,10 +198,10 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
         case GET_FILES_OWNER: {
             std::vector<FilesMessage> filesMessage = model.getFilesOwner(userMessage.getUser());
             if (filesMessage.size() == 0) {
-                qDebug() << "get_files_owner ko";
+                spdlog::debug("get_files_owner ko");
                 sender->send(GET_FILES_OWNER_KO, filesMessage);
             } else {
-                qDebug() << "get_files_owner ok";
+                spdlog::debug("get_files_owner ok");
 
                 //problema con sender dove lo metto?
                 for (int i = 0; i < filesMessage.size(); i++)
@@ -224,10 +213,10 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
         case GET_FILES_COLLABORATOR: {
             std::vector<FilesMessage> filesMessage = model.getUserFiles(userMessage.getUser());
             if (filesMessage.size() == 0) {
-                qDebug() << "get_user_files ko";
+                spdlog::debug("get_user_files ko");
                 sender->send(GET_FILES_COLLABORATOR_OK, filesMessage);
             } else {
-                qDebug() << "get_user_files ok";
+                spdlog::debug("get_user_files ok");
 
                 //problema con sender dove lo metto?
                 for (int i = 0; i < filesMessage.size(); i++)
@@ -250,35 +239,30 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
                 filesCollabs[i].setSender(sender->getClientID());
 
             sender->send(GET_ALL_DATA_OK, userMessageReturn, filesOwner, filesCollabs);
-            qDebug() << "GET_ALL_DATA_OK ";
+            spdlog::debug("GET_ALL_DATA_OK ");
         }
             break;
         case DELETE_ACTIVE: {
             QList<User> users = this->model.removeActiveUser(userMessage.getUser(), userMessage.getFileName());
 
-            //PINO 12 ottobre
-            qDebug() << "onProcessUserMessage " << userMessage.getUser().getEmail() << " ---- "
-                     << userMessage.getFileName();
             QRegExp tagExp("/");
             QStringList firstList = userMessage.getFileName().split(tagExp);
             QString email_owner = firstList.at(0);
             QString filename = firstList.at(1);
-            qDebug() << "onProcessUserMessage " << email_owner << " ---- " << filename;
-            if (model.updateLastAcces(userMessage.getUser().getEmail(),
-                                      model.getIdFilename(email_owner, filename))) {
-                if (QString::compare(email_owner, userMessage.getUser().getEmail()) == 0) {
-                    qDebug() << "update last_access owner";
+
+            if(model.updateLastAcces(userMessage.getUser().getEmail(),
+                                     model.getIdFilename(email_owner, filename))) {
+                if(QString::compare(email_owner,userMessage.getUser().getEmail())==0) {
                     User user = User(email_owner);
-                    UserMessage userMessage = UserMessage(sender->getClientID(), user);
-                    onProcessUserMessage(GET_FILES_OWNER, userMessage);
+                    UserMessage userMessage = UserMessage(sender->getClientID(),user);
+                    onProcessUserMessage(GET_FILES_OWNER,userMessage);
                 } else {
-                    qDebug() << "update last_access collaborator";
                     User user = User(userMessage.getUser().getEmail());
-                    UserMessage userMessage = UserMessage(sender->getClientID(), user);
-                    onProcessUserMessage(GET_FILES_COLLABORATOR, userMessage);
+                    UserMessage userMessage = UserMessage(sender->getClientID(),user);
+                    onProcessUserMessage(GET_FILES_COLLABORATOR,userMessage);
                 }
             } else {
-                qDebug() << "update last_access ERROR";
+                spdlog::error("update last_access ERROR");
             }
             //fine pino
 
@@ -302,12 +286,12 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
 }
 
 
-void Server::onFileManagementMessageReceived(_int code, FileManagementMessage fileManagementMessage) {
+void Server::onFileManagementMessageReceived(_int code, const FileManagementMessage& fileManagementMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
-    qDebug() << "onFileManagementMessageReceived ";
+    spdlog::debug("onFileManagementMessageReceived ");
     switch (code) {
         case RENAME_FILE: {
-            qDebug() << "rename_file: " << fileManagementMessage.getEmail() << "\n";
+            spdlog::debug("rename_file: {} ", fileManagementMessage.getEmail().toStdString());
             if (model.renameFile(fileManagementMessage))
                 sender->send(RENAME_FILE_OK);
             else
@@ -315,7 +299,7 @@ void Server::onFileManagementMessageReceived(_int code, FileManagementMessage fi
         }
             break;
         case DELETE_FILE: {
-            qDebug() << "delete_file: " << fileManagementMessage.getEmail() << "\n";
+            spdlog::debug("delete_file: {} ", fileManagementMessage.getEmail().toStdString());
             if (model.deleteFile(fileManagementMessage))
                 sender->send(DELETE_FILE_OK);
             else
@@ -323,7 +307,7 @@ void Server::onFileManagementMessageReceived(_int code, FileManagementMessage fi
         }
             break;
         case NEW_FILE: {
-            qDebug() << "new_file: " << fileManagementMessage.getEmail() << "\n";
+            spdlog::debug("new_file: {}", fileManagementMessage.getEmail().toStdString());
             if (model.newFile(fileManagementMessage))
                 sender->send(NEW_FILE_OK);
             else
@@ -334,11 +318,11 @@ void Server::onFileManagementMessageReceived(_int code, FileManagementMessage fi
 }
 
 
-void Server::onChangePasswordMessageReceived(_int code, ChangePasswordMessage changePasswordMessage) {
+void Server::onChangePasswordMessageReceived(_int code, const ChangePasswordMessage& changePasswordMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch (code) {
         case CHANGE_PASSWORD: {
-            qDebug() << "change_password: " << changePasswordMessage.getEmail() << "\n";
+            spdlog::debug("change_password: {} ", changePasswordMessage.getEmail().toStdString());
             if (model.changePassword(changePasswordMessage))
                 sender->send(CHANGE_PASSWORD_OK);
             else
@@ -348,21 +332,21 @@ void Server::onChangePasswordMessageReceived(_int code, ChangePasswordMessage ch
     }
 }
 
-void Server::onUserManagementMessageReceived(_int code, UserManagementMessage userManagementMessage) {
+void Server::onUserManagementMessageReceived(_int code, const UserManagementMessage& userManagementMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch (code) {
         case CREATE_INVITE: {
-            qDebug() << "create_invite: " << userManagementMessage.getEmail_owner() << "\n";
+            spdlog::debug("create_invite: {} ", userManagementMessage.getEmail_owner().toStdString());
             QString invitationCode = model.createUrlCollaborator(userManagementMessage);
             InvitationMessage invitationMessage = InvitationMessage(sender->getClientID(),
                                                                     userManagementMessage.getEmail_owner(),
                                                                     invitationCode);
-            qDebug() << "CREATE INVITE SERVER ";
+            spdlog::debug("CREATE INVITE SERVER ");
             sender->send(INVITE_CREATED, invitationMessage);
         }
             break;
         case ADD_COLLABORATOR: {
-            qDebug() << "add_collaborator: " << userManagementMessage.getEmail_owner() << "\n";
+            spdlog::debug("add_collaborator: {} ", userManagementMessage.getEmail_owner().toStdString());
             if (model.addCollaborator(userManagementMessage))
                 sender->send(ADD_COLLABORATOR_OK);
             else
@@ -370,7 +354,7 @@ void Server::onUserManagementMessageReceived(_int code, UserManagementMessage us
         }
             break;
         case REMOVE_COLLABORATOR: {
-            qDebug() << "remove_collaborator: " << userManagementMessage.getEmail_owner() << "\n";
+            spdlog::debug("remove_collaborator: {} ", userManagementMessage.getEmail_owner().toStdString());
             if (model.removeCollaborator(userManagementMessage))
                 sender->send(REMOVE_COLLABORATOR_OK);
             else
@@ -378,7 +362,7 @@ void Server::onUserManagementMessageReceived(_int code, UserManagementMessage us
         }
             break;
         case UNSUBSCRIBE: {
-            qDebug() << "unsubscribe: " << userManagementMessage.getEmail_collaborator() << "\n";
+            spdlog::debug("unsubscribe: {} ", userManagementMessage.getEmail_collaborator().toStdString());
             if (model.unsubscribe(userManagementMessage))
                 sender->send(UNSUBSCRIBE_OK);
             else
@@ -392,7 +376,7 @@ void Server::onLogoutReceived(_int code, UserMessage userMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch (code) {
         case LOGOUT: {
-            qDebug() << "close connection DB";
+            spdlog::debug("close connection DB");
             model.closeConnectionDB();
             //this->model.removeUserFromEditor(sender);
             this->model.removeLoggedUser(sender);
@@ -406,7 +390,7 @@ void Server::onInvitationReceived(_int code, InvitationMessage invitationMessage
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch (code) {
         case REQUEST_TO_COLLABORATE: {
-            qDebug() << "onInvitationReceived";
+            spdlog::debug("onInvitationReceived");
             if (model.requestToCollaborate(invitationMessage))
                 sender->send(REQUEST_TO_COLLABORATE_OK);
             else
@@ -418,7 +402,7 @@ void Server::onInvitationReceived(_int code, InvitationMessage invitationMessage
 
 /*void Server::onClosePendingSocket(_int clientID, ClientSocket *cs){
     if(clientID==cs->getClientID()){
-       qDebug() << cs->getClientID() << "ciao2!";
+       spdlog::debug(cs->getClientID() << "ciao2!");
        cs->deleteLater();
     }
 }*/

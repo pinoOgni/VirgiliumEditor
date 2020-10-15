@@ -30,17 +30,18 @@ WelcomePage::WelcomePage(QWidget *parent) :
 
 WelcomePage::~WelcomePage()
 {
+    spdlog::debug("~WelcomePage");
     delete client;
     delete ui;
 }
 
 void WelcomePage::userAlreadyLogged() {
-    qDebug() << "userAlreadyLogged ";
+    spdlog::debug("userAlreadyLogged ");
     QMessageBox::warning(this, "Attention", "You are already logged!");
 }
 
 void WelcomePage::loggedIn(const bool logged) {
-    qDebug() << "loggedIn " << logged;
+    spdlog::debug("loggedIn {} ", logged);
     if(logged) {
         QMessageBox::information(this,"Login","Logged in");
         QString email = ui->email_accedi->text();
@@ -78,17 +79,17 @@ void WelcomePage::registered(const bool registered) {
 }
 
 void WelcomePage::getFilesOwner(int row,std::vector<FilesMessage>& filesMessage) {
-    qDebug() << "getFilesOwner welcomepage";
+    spdlog::debug("getFilesOwner welcomepage");
     emit getFilesOwner2(row,filesMessage);
 }
 
 void WelcomePage::getInfoUser(UserMessage& um) {
-    qDebug() << um.getUser().printMessage() << "getInfoUser welcomepage";
     emit getInfoUser2(um);
 }
 
 void WelcomePage::getUserFiles(int row,std::vector<FilesMessage>& filesMessage) {
-    qDebug() << "getUserFiles welcomepage";
+    spdlog::debug("getUserFiles welcomepage");
+    spdlog::debug("getUserFiles welcomepage");
 
     emit getUserFiles2(row,filesMessage);
 }
@@ -97,8 +98,6 @@ void WelcomePage::on_accedi_clicked()
 {
     QString email = ui->email_accedi->text();
     QString password = ui->password_accedi->text();
-
-    qDebug() << email << password;
 
     if(email.isEmpty() || password.isEmpty()) {
         QMessageBox::warning(this,"Error","Email and/or password empty");
@@ -118,8 +117,6 @@ void WelcomePage::on_iscriviti_clicked()
     QString password = ui->password_iscriviti->text();
     QString firstname = ui->nome_iscriviti->text();
     QString lastname = ui->cognome_iscriviti->text();
-
-     qDebug() << firstname << lastname<< email << password;
 
     if(email.isEmpty() || password.isEmpty() || firstname.isEmpty() || lastname.isEmpty()) {
         QMessageBox::warning(this,"Error","One or more fields are empty");
