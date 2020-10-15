@@ -77,8 +77,7 @@
 
 //true --> ricrea i db vergini
 //false --> usa il DB con i dati che ci sono
-static bool TESTDB = false;
-
+#define TESTDB true
 #define VIRGILIUM_STORAGE "/VIRGILIUM_STORAGE/"
 
 #endif //VIRGILIUM_CONSTANTS_H

@@ -19,8 +19,7 @@ int main(int argc, char** argv) {
         spdlog::set_level(spdlog::level::critical);
     }
     //testDB
-    if (argc == 3 && (std::strncmp(argv[2], "-t", 2) == 0 || std::strncmp(argv[2], "--test", 6) == 0))
-            TESTDB = true;
+    //if (argc == 3 && (std::strncmp(argv[2], "-t", 2) == 0 || std::strncmp(argv[2], "--test", 6) == 0))
 
 
     QApplication app(argc, argv);

@@ -29,7 +29,7 @@ void Database::initDatabase() {
     db.setDatabaseName(dbPath);
 
     if(!db.open()) {
-             qDebug() << "error first try to open DB";
+             spdlog::error("error first try to open DB");
     } else {
         db.close();
         if(TESTDB) {
@@ -46,7 +46,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
     if(checkfile.isFile()) {
         if(db.open()) {
             QSqlQuery qry;
-            qDebug() << "correct opened db";
+            spdlog::debug("createTables correct opened db");
 
             if(!db.tables().contains("users")) {
                 QString create_users = "CREATE TABLE users ("
@@ -55,14 +55,14 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
                                        "lastName VARCHAR(20),"
                                        "password VARCHAR(255))";
                 if(!qry.exec(create_users)) {
-                    qDebug() <<"error create table users";
+                    spdlog::error("error create table users");
                 }
                 QString create_files = "CREATE TABLE files ("
                                        "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
                                        "filename VARCHAR(50),"
                                        "email_owner VARCHAR(50))";
                 if(!qry.exec(create_files)) {
-                    qDebug() <<"error create table files";
+                    spdlog::error("error create table files");
                 }
                 QString create_user_files = "CREATE TABLE user_files ("
                                                 "id INTEGER,"
@@ -70,7 +70,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
                                                 "last_access DATETIME NOT NULL,"
                                                 "PRIMARY KEY (id,email))";
                     if(!qry.exec(create_user_files)) {
-                        qDebug() <<"error create table files";
+                        spdlog::error("error create table files");
                     }
                 QString create_invitation_urls = "CREATE TABLE invitation_urls ("
                                             "url VARCHAR(255),"
@@ -78,7 +78,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
                                             "timeout DATETIME NOT NULL,"
                                             "PRIMARY KEY (url))";
                 if(!qry.exec(create_invitation_urls)) {
-                    qDebug() <<"error create table invitation_urls";
+                    spdlog::error("error create table invitation_urls");
                 }
                 QSqlDatabase::database().commit();
             }
@@ -87,10 +87,8 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
         }
     }
     else {
-        qDebug() << "error opened db";
+        spdlog::error("createTables error opened db");
     }
-
-
 }
 
 
@@ -101,7 +99,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
     if(checkfile.isFile()) {
         if(db.open()) {
             QSqlQuery qry;
-            qDebug() << "correct opened db";
+            spdlog::debug("fillTablesForTests correct opened db");
 
                     QSqlDatabase::database().transaction();
                     qry.prepare("INSERT INTO users (email,firstName,lastName,password) VALUES(?,?,?,?)");
@@ -110,7 +108,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                     qry.bindValue(2,"OGNIBENE");
                     qry.bindValue(3,QCryptographicHash::hash("pino",QCryptographicHash::Sha224));
                     if(!qry.exec()) {
-                        qDebug() << "what??";
+                        spdlog::error("error insert user");
                     }
                     qry.prepare("INSERT INTO users (email,firstName,lastName,password) VALUES(?,?,?,?)");
                     qry.bindValue(0,"ale@ale.com");
@@ -118,7 +116,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                     qry.bindValue(2,"PAGANO");
                     qry.bindValue(3,QCryptographicHash::hash("ale",QCryptographicHash::Sha224));
                     if(!qry.exec()) {
-                        qDebug() << "what??";
+                        spdlog::error("error insert user");
                     }
                     QSqlDatabase::database().commit();
                     qry.prepare("INSERT INTO users (email,firstName,lastName,password) VALUES(?,?,?,?)");
@@ -127,7 +125,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                     qry.bindValue(2,"D'AMILO");
                     qry.bindValue(3,QCryptographicHash::hash("simo",QCryptographicHash::Sha224));
                     if(!qry.exec()) {
-                        qDebug() << "what??";
+                        spdlog::error("error insert user");
                     }
                     QSqlDatabase::database().commit();
                     qry.prepare("INSERT INTO users (email,firstName,lastName,password) VALUES(?,?,?,?)");
@@ -136,7 +134,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                     qry.bindValue(2,"SURACI");
                     qry.bindValue(3,QCryptographicHash::hash("ste",QCryptographicHash::Sha224));
                     if(!qry.exec()) {
-                        qDebug() << "what??";
+                        spdlog::error("error insert user");
                     }
                     QSqlDatabase::database().commit();
 
@@ -150,7 +148,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.bindValue(0,filename);
                         qry.bindValue(1,"pino@pino.com");
                         if(!qry.exec()) {
-                            qDebug() << "error insert in files";
+                            spdlog::error("error insert file");
                         }
 
 
@@ -166,7 +164,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         //aggiungo ale@ale.com e ste@ste.com al mio file "provafile"
                         qry.prepare("SELECT LAST_INSERT_ROWID();");
                         if(!qry.exec()) {
-                            qDebug() << "error retrieve last id inserted in files";
+                            spdlog::error("error retrieve last id inserted in files");
                         }
                         qry.first();
                         int id = qry.value(0).toInt();
@@ -178,7 +176,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         dateTime = dateTime.currentDateTime();
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
-                            qDebug() << "error insert in files";
+                            spdlog::error("error insert in user_files");
                         }
 
                         //insert some collaborators
@@ -188,7 +186,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         dateTime = dateTime.currentDateTime();
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
-                            qDebug() << "error insert in files";
+                            spdlog::error("error insert in user_files");
                         }
 
                         qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
@@ -197,18 +195,17 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         dateTime = dateTime.currentDateTime();
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
-                            qDebug() << "error insert in files";
+                            spdlog::error("error insert in user_files");
                         }
 
 
                         //altra prova
-
                         qry.prepare("INSERT INTO files(filename, email_owner) VALUES(?,?)");
                         filename = "ciao";
                         qry.bindValue(0,filename);
                         qry.bindValue(1,"pino@pino.com");
                         if(!qry.exec()) {
-                            qDebug() << "error insert in files";
+                            spdlog::error("error insert in files");
                         }
 
                         //create second file "ciao"
@@ -219,7 +216,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         //aggiungo ale@ale.com e ste@ste.com al mio file "provafile"
                         qry.prepare("SELECT LAST_INSERT_ROWID();");
                         if(!qry.exec()) {
-                            qDebug() << "error retrieve last id inserted in files";
+                            spdlog::error("error retrieve last id inserted in files");
                         }
                         qry.first();
                         id = qry.value(0).toInt();
@@ -231,7 +228,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         dateTime = dateTime.currentDateTime();
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
-                            qDebug() << "error insert in files";
+                            spdlog::error("error insert in user_files");
                         }
 
 
@@ -242,7 +239,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         dateTime = dateTime.currentDateTime();
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
-                            qDebug() << "error insert in files";
+                            spdlog::error("error insert in user_files");
                         }
 
                         qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
@@ -251,16 +248,14 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         dateTime = dateTime.currentDateTime();
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
-                            qDebug() << "error insert in files";
+                            spdlog::error("error insert in user_files");
                         }
-
 
                         QSqlDatabase::database().commit();
                     }
             db.close();
-           //QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
     } else {
-            qDebug() << "error opened db";
+            spdlog::error("fillTablesForTests error opened db");
       }
 
 }
@@ -294,7 +289,7 @@ bool Database::loginDB(User user) {
         }
     }
     else {
-           qDebug() << "error opened db";
+           spdlog::error("loginDB error opened db");
            return false;
      }
 }

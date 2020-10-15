@@ -37,7 +37,6 @@ void Server::incomingConnection(_int handle) {
 
     newSocket->setClientID(handle);
 
-    connect(newSocket, &ClientSocket::basicMessageReceived, this, &Server::onProcessBasicMessage);
     connect(newSocket, &ClientSocket::userMessageReceived, this, &Server::onProcessUserMessage);
     connect(newSocket, &ClientSocket::fileManagementMessageReceived, this, &Server::onFileManagementMessageReceived);
     connect(newSocket, &ClientSocket::changePasswordMessageReceived, this, &Server::onChangePasswordMessageReceived);
@@ -88,14 +87,6 @@ void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
     }
 }
 
-void Server::onProcessBasicMessage(_int code, BasicMessage basicMessage) {
-    //robe super basic
-    switch (code) {
-        case CLIENT_CONNECTED:
-            break;
-    }
-}
-
 void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
     this->model.insertMessage(crdtMessage);
 
@@ -124,7 +115,7 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
             if (code == SYMBOL_INSERT_OR_ERASE)
                 this->model.save(crdtMessage);
         } catch (std::exception &e) {
-            qDebug() << e.what(); //TODO mettere in un file di log
+            spdlog::error(e.what()); //TODO mettere in un file di log
             throw;
         }
     }
