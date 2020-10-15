@@ -98,6 +98,7 @@ TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fil
     QObject::connect(this->client, &Crdt_editor::insert_into_window, this, &TextEditor::insert_text);
     QObject::connect(this->client, &Crdt_editor::remove_into_window, this, &TextEditor::delete_text);
     QObject::connect(this->client, &Crdt_editor::change_block_format, this, &TextEditor::changeBlockFormat);
+    QObject::connect(this->client, &Crdt_editor::change_char_format, this, &TextEditor::changeCharFormat);
     QObject::connect(this->client, &Crdt_editor::change_cursor_position, this, &TextEditor::changeCursorPosition);
     QObject::connect(ui->textEdit->document(), SIGNAL(contentsChange(int, int, int)), this,
                      SLOT(change(int, int, int)));
@@ -122,27 +123,16 @@ void TextEditor::loadRequest(const QString &f, User user) {
 
 /* This slot is used to get the response of the server. It contains the list
  * of symbols and the list of users. */
-void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, QList<User> users) {
+void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, const QList<User> &users) {
     if (code == LOAD_RESPONSE) {
         for (const Symbol &symbol : symbols) {
-            insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
+            insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont());
             changeBlockFormat(symbol.getFont().font, symbols.indexOf(symbol), symbols.indexOf(symbol) + 1);
         }
     }
 
     changeActiveUser(users);
 }
-/*void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, QList<User> users) {
-    if (!symbols.empty())
-        changeBlockFormat(symbols.at(0).getFont().font);
-
-    if (code == LOAD_RESPONSE) {
-        for (const Symbol &symbol : symbols)
-            insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
-    }
-
-    changeActiveUser(std::move(users));
-}*/
 
 /* This slot is used to change the actual active users */
 void TextEditor::changeActiveUser(const QList<User> &users) {
@@ -320,19 +310,33 @@ void TextEditor::on_actionSelect_all_triggered() {
 }
 
 void TextEditor::on_actionUnderline_triggered() {
-    ui->textEdit->setFontUnderline(!ui->textEdit->fontUnderline());
+    QTextCursor cursor = ui->textEdit->textCursor();
+    if (cursor.hasSelection()) {
+        cursor.setPosition(cursor.selectionStart() + 1);
+        ui->textEdit->setFontUnderline(!cursor.charFormat().fontUnderline());
+    } else {
+        ui->textEdit->setFontUnderline(!ui->textEdit->fontUnderline());
+    }
 }
 
 void TextEditor::on_actionBold_triggered() {
-    if (ui->textEdit->fontWeight() == 50) {
-        ui->textEdit->setFontWeight(75);
+    QTextCursor cursor = ui->textEdit->textCursor();
+    if (cursor.hasSelection()) {
+        cursor.setPosition(cursor.selectionStart() + 1);
+        ui->textEdit->setFontWeight(cursor.charFormat().fontWeight() == 50 ? 75 : 50);
     } else {
-        ui->textEdit->setFontWeight(50);
+        ui->textEdit->setFontWeight(ui->textEdit->fontWeight() == 50 ? 75 : 50);
     }
 }
 
 void TextEditor::on_actionItalic_triggered() {
-    ui->textEdit->setFontItalic(!ui->textEdit->fontItalic());
+    QTextCursor cursor = ui->textEdit->textCursor();
+    if (cursor.hasSelection()) {
+        cursor.setPosition(cursor.selectionStart() + 1);
+        ui->textEdit->setFontItalic(!cursor.charFormat().fontItalic());
+    } else {
+        ui->textEdit->setFontItalic(!ui->textEdit->fontItalic());
+    }
 }
 
 void TextEditor::on_actionFind_and_replace_triggered() {
@@ -373,10 +377,16 @@ void TextEditor::on_actionFind_and_replace_triggered() {
 
 void TextEditor::on_actionIncrease_indent_triggered() {
     changeIndentSpacing(1);
+    QTextCursor cursor(ui->textEdit->textCursor());
+    if (cursor.document()->isEmpty())
+        sendBlockFormatChange();
 }
 
 void TextEditor::on_actionDecrease_indent_triggered() {
     changeIndentSpacing(-1);
+    QTextCursor cursor(ui->textEdit->textCursor());
+    if (cursor.document()->isEmpty())
+        sendBlockFormatChange();
 }
 
 void TextEditor::changeIndentSpacing(int num) {
@@ -419,21 +429,33 @@ void TextEditor::on_actionExport_PDF_triggered() {
 void TextEditor::on_actionRight_alignment_triggered() {
     if (alignment != "2")
         ui->textEdit->setAlignment(Qt::AlignRight);
+    QTextCursor cursor(ui->textEdit->textCursor());
+    if (cursor.document()->isEmpty())
+        sendBlockFormatChange();
 }
 
 void TextEditor::on_actionLeft_alignment_triggered() {
     if (alignment != "1")
         ui->textEdit->setAlignment(Qt::AlignLeft);
+    QTextCursor cursor(ui->textEdit->textCursor());
+    if (cursor.document()->isEmpty())
+        sendBlockFormatChange();
 }
 
 void TextEditor::on_actionCenter_alignment_triggered() {
     if (alignment != "132")
         ui->textEdit->setAlignment(Qt::AlignCenter);
+    QTextCursor cursor(ui->textEdit->textCursor());
+    if (cursor.document()->isEmpty())
+        sendBlockFormatChange();
 }
 
 void TextEditor::on_actionJustify_triggered() {
     if (alignment != "8")
         ui->textEdit->setAlignment(Qt::AlignJustify);
+    QTextCursor cursor(ui->textEdit->textCursor());
+    if (cursor.document()->isEmpty())
+        sendBlockFormatChange();
 }
 
 
@@ -484,11 +506,11 @@ void TextEditor::changeBackground(_int position, const QColor &color) {
  * inside the editor of the other clients. In fact, it accepts the char, the position where
  * it must be inserted and the font of the char. */
 void TextEditor::insert_text(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId) {
-    insertOneChar(pos, character, font, siteId);
+    insertOneChar(pos, character, font);
     this->changeCursorPosition(pos + 1, siteId);
 }
 
-void TextEditor::insertOneChar(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId) {
+void TextEditor::insertOneChar(_int pos, const QString &character, const Symbol::CharFormat &font) {
     QTextCursor cursor(ui->textEdit->textCursor());
     int originalPosition = cursor.position();
     cursor.setPosition(pos);
@@ -544,30 +566,36 @@ void TextEditor::delete_text(_int pos, _int siteId) {
 }
 
 void TextEditor::changeBlockFormat(const QString &font, _int startPos, _int finalPos) {
-    ui->textEdit->document()->blockSignals(true);
     QRegExp tagExp("/");
     QStringList firstList = font.split(tagExp);
 
+    ui->textEdit->document()->blockSignals(true);
     QTextCursor cursor(ui->textEdit->textCursor());
-    cursor.setPosition(startPos, QTextCursor::MoveAnchor);
-    cursor.setPosition(finalPos - 1, QTextCursor::KeepAnchor);
+    if (startPos != -1 && finalPos != -1) {
+        cursor.setPosition(startPos, QTextCursor::MoveAnchor);
+        cursor.setPosition(finalPos - 1, QTextCursor::KeepAnchor);
+    }
     QTextBlockFormat textBlockFormat = cursor.block().blockFormat();
     switch (firstList.at(1).toInt()) {
         case 1:
             textBlockFormat.setAlignment(Qt::AlignLeft);
-            this->on_actionLeft_alignment_triggered();
+            if (alignment != "1")
+                ui->textEdit->setAlignment(Qt::AlignLeft);
             break;
         case 2:
             textBlockFormat.setAlignment(Qt::AlignRight);
-            this->on_actionRight_alignment_triggered();
+            if (alignment != "2")
+                ui->textEdit->setAlignment(Qt::AlignRight);
             break;
         case 8:
             textBlockFormat.setAlignment(Qt::AlignJustify);
-            this->on_actionJustify_triggered();
+            if (alignment != "8")
+                ui->textEdit->setAlignment(Qt::AlignJustify);
             break;
         case 132:
             textBlockFormat.setAlignment(Qt::AlignHCenter);
-            this->on_actionCenter_alignment_triggered();
+            if (alignment != "132")
+                ui->textEdit->setAlignment(Qt::AlignCenter);
             break;
     }
     textBlockFormat.setIndent(firstList.at(2).toInt());
@@ -577,39 +605,30 @@ void TextEditor::changeBlockFormat(const QString &font, _int startPos, _int fina
     indentation = QString::number(textBlockFormat.indent());
     ui->textEdit->document()->blockSignals(false);
 }
-/*void TextEditor::changeBlockFormat(const QString &font) {
+
+void TextEditor::changeCharFormat(_int pos, const Symbol::CharFormat &charData) {
     ui->textEdit->document()->blockSignals(true);
-    QRegExp tagExp("/");
-    QStringList firstList = font.split(tagExp);
-
     QTextCursor cursor(ui->textEdit->textCursor());
-    QTextBlockFormat textBlockFormat = cursor.block().blockFormat();
-    switch (firstList.at(1).toInt()) {
-        case 1:
-            textBlockFormat.setAlignment(Qt::AlignLeft);
-            this->on_actionLeft_alignment_triggered();
-            break;
-        case 2:
-            textBlockFormat.setAlignment(Qt::AlignRight);
-            this->on_actionRight_alignment_triggered();
-            break;
-        case 8:
-            textBlockFormat.setAlignment(Qt::AlignJustify);
-            this->on_actionJustify_triggered();
-            break;
-        case 132:
-            textBlockFormat.setAlignment(Qt::AlignHCenter);
-            this->on_actionCenter_alignment_triggered();
-            break;
-    }
-    textBlockFormat.setIndent(firstList.at(2).toInt());
-    cursor.setBlockFormat(textBlockFormat);
+    cursor.setPosition(pos, QTextCursor::MoveAnchor);
+    QTextCharFormat textCharFormat = cursor.charFormat();
 
-    alignment = QString::number(textBlockFormat.alignment());
-    indentation = QString::number(textBlockFormat.indent());
+    QRegExp tagExp2(",");
+    QStringList fontList = charData.font.split(tagExp2);
+    QFont insertedFont;
+    insertedFont.setFamily(fontList.at(0));
+    insertedFont.setPointSize(fontList.at(1).toInt());
+    insertedFont.setWeight(fontList.at(4).toInt());
+    insertedFont.setItalic(!(fontList.at(5) == "0"));
+    insertedFont.setUnderline(!(fontList.at(6) == "0"));
+
+    textCharFormat.setFont(insertedFont);
+    textCharFormat.setForeground(charData.foreground);
+
+    cursor.setPosition(pos, QTextCursor::MoveAnchor);
+    cursor.setPosition(pos + 1, QTextCursor::KeepAnchor);
+    cursor.setCharFormat(textCharFormat);
     ui->textEdit->document()->blockSignals(false);
-}*/
-
+}
 
 /* This slot is called every time that the cursorPositionChanged() signal is emitted. It is only used
  * to send the new position of the cursor of my editor to the other clients. */
@@ -673,8 +692,9 @@ void TextEditor::change(int pos, int del, int add) {
                 /* Check if alignment or indentation are changed. */
                 if (alignment == QString::number(textBlockFormat.alignment()) &&
                     indentation == QString::number(textBlockFormat.indent())) {
-                    multipleErase(pos, removed.size());
-                    multipleInsert(pos, added);
+                    /*multipleErase(pos, removed.size());
+                    multipleInsert(pos, added);*/
+                    multipleUpdate(pos, removed.size(), charData);
                 } else {
                     alignment = QString::number(textBlockFormat.alignment());
                     indentation = QString::number(textBlockFormat.indent());
@@ -739,7 +759,7 @@ void TextEditor::multipleErase(int pos, int del) {
     }
 }
 
-/*void TextEditor::sendBlockFormatChange() {
+void TextEditor::sendBlockFormatChange() {
     QTextCursor cursor(ui->textEdit->textCursor());
     cursor.setPosition(cursor.selectionEnd(), QTextCursor::MoveAnchor);
     QTextCharFormat textCharFormat = cursor.charFormat();
@@ -752,5 +772,13 @@ void TextEditor::multipleErase(int pos, int del) {
     Symbol::CharFormat charData;
     charData.foreground = textCharFormat.foreground().color();
     charData.font = result;
-}*/
 
+    this->client->changeBlockFormat(charData, -1, -1);
+}
+
+void TextEditor::multipleUpdate(_int pos, _int size, const Symbol::CharFormat &charData) {
+    for (int i = 0; i < size; i++) {
+        this->client->localUpdate(pos, charData);
+        pos++;
+    }
+}
