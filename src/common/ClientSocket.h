@@ -22,23 +22,25 @@
 class ClientSocket : public QTcpSocket {
 Q_OBJECT
 private:
-
     quint32 clientID;
     QDataStream in;
 
 public:
-    //socket lato server
+    /* server side constructor */
     explicit ClientSocket(QObject *parent = nullptr);
 
-    //socket lato client
+    /* client side constructor */
     explicit ClientSocket(const QString &hostName, quint16 port, QObject *parent = nullptr);
 
-    //~ClientSocket() override { qDebug() << "ClientSocket ~"; };
     ~ClientSocket();
 
     bool operator==(const ClientSocket &b);
 
     bool operator==(const ClientSocket *b);
+
+    void setClientID(quintptr clientID);
+
+    quint32 getClientID();
 
     void send(QByteArray &data);
 
@@ -66,10 +68,6 @@ public:
     void send(_int code, const CrdtMessage &crdtMessage);
 
     void send(_int code, const ActiveUserMessage &activeUserMessage);
-
-    void setClientID(quintptr clientID);
-
-    quint32 getClientID();
 
 private slots:
 
@@ -120,7 +118,8 @@ signals:
 
     void requestToCollaborateReceived(_int code);
 
-    void logoutReceived(_int code,UserMessage userMessage); //pino close connection when client "logout"
+    void logoutReceived(_int code, UserMessage userMessage); //pino close connection when client "logout"
+
     void crdtMessageReceived(_int code, CrdtMessage crdtMessage);
 
     void activeUserMessageReceived(_int code, ActiveUserMessage activeUserMessage);

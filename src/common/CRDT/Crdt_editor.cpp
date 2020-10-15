@@ -55,7 +55,6 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
 
             int i = m.getSymbol().getPosition().at(0);
             for (i; i <= m.getSymbol().getPosition().at(1); i++) {
-                qDebug() << i;
                 Symbol s = this->_symbols.at(i);
                 Symbol::CharFormat format = m.getSymbol().getFont();
                 Symbol newSymbol(s.getLetter(), s.getSiteId(), s.getCounterId(), s.getPosition(), format);
@@ -204,8 +203,6 @@ void Crdt_editor::loadRequest(const QString &name, User user) {
 
 void Crdt_editor::loadResponse(_int code, StorageMessage storageMessage) {
     this->_symbols = storageMessage.getSymbols();
-    /*for (const Symbol &symbol : storageMessage.getSymbols())
-        this->_symbols.push_back(symbol);*/
 
     QList<User> users;
     for (User u : storageMessage.getActiveUsers()) {

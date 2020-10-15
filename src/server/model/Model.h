@@ -20,9 +20,6 @@
 #include <common/CRDT/Crdt_editor.h>
 
 class Model {
-
-    //std::multimap<ServerDocument *, ClientSocket *> fileToClients;
-
     std::map<_int, ClientSocket *> clientToUser;
     std::vector<QString> onlineUsers;
     std::map<QString, QList<User>> activeClientsForDocument;
@@ -70,8 +67,6 @@ public:
 
     QVector<Symbol> getSymbolsForDocument(const QString &fileName);
 
-    //void removeUserFromEditor(ClientSocket *socket); //serve?
-    //void insertUserIntoEditor(ServerDocument *, ClientSocket *); //serve?
     static bool loginUser(User user);
 
     static bool signinUser(User user);
@@ -111,8 +106,8 @@ public:
 
     QVector<Symbol> getFileFromFileSystem(const QString &filename);
 
-    //pino 12 ottobre
     _int getIdFilename(QString email_owner, QString filename);
+
     bool updateLastAcces(QString email, _int idFilename);
 
 };

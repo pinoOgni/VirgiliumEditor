@@ -82,7 +82,7 @@
       <string>Text</string>
      </property>
      <addaction name="actionUnderline"/>
-     <addaction name="actionBost"/>
+     <addaction name="actionBold"/>
      <addaction name="actionItalic"/>
     </widget>
     <addaction name="menuText"/>

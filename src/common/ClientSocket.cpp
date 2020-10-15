@@ -40,7 +40,6 @@ ClientSocket::ClientSocket(const QString &hostName, quint16 port, QObject *paren
 ClientSocket::~ClientSocket() {
     /*this->disconnectFromHost();
     this->waitForDisconnected(3000);*/
-    qDebug() << "distructor";
 }
 
 void ClientSocket::onReadyRead() {
@@ -75,11 +74,11 @@ void ClientSocket::onReadyRead() {
         }
             break;
         case CLIENT_CONNECTED: {
-            BasicMessage bm;
-            this->in >> bm;
+            BasicMessage basicMessage;
+            this->in >> basicMessage;
 
             if (!this->in.commitTransaction()) return;
-            emit basicMessageReceived(code, bm);
+            emit basicMessageReceived(code, basicMessage);
         }
             break;
         case LOGIN:
@@ -89,22 +88,22 @@ void ClientSocket::onReadyRead() {
         case GET_FILES_COLLABORATOR:
         case DELETE_ACTIVE:
         case GET_ALL_DATA: {
-            UserMessage um;
-            this->in >> um;
+            UserMessage userMessage;
+            this->in >> userMessage;
 
             if (!this->in.commitTransaction()) return;
-            emit userMessageReceived(code, um);
+            emit userMessageReceived(code, userMessage);
         }
             break;
         case LOGIN_KO:
         case LOGIN_OK:
         case SIGNUP_OK:
         case SIGNUP_KO:
-        case ALREADY_LOGGED:{
+        case ALREADY_LOGGED: {
             if (!this->in.commitTransaction()) return;
             emit loginSignupReceived(code);
         }
-        break;
+            break;
         case GET_FILES_OWNER_OK:
         case GET_FILES_OWNER_KO:
         case GET_FILES_COLLABORATOR_OK:
@@ -218,10 +217,10 @@ void ClientSocket::onReadyRead() {
         }
             break;
         case LOGOUT: {
-            UserMessage um;
-            this->in >> um;
+            UserMessage userMessage;
+            this->in >> userMessage;
             if (!this->in.commitTransaction()) return;
-            emit logoutReceived(LOGOUT,um);
+            emit logoutReceived(LOGOUT, userMessage);
         }
             break;
         case REQUEST_TO_COLLABORATE_OK:
@@ -234,8 +233,6 @@ void ClientSocket::onReadyRead() {
         case SYMBOL_INSERT_OR_ERASE: {
             CrdtMessage crdtMessage;
             this->in >> crdtMessage;
-
-            qDebug() << "SYMBOL " << crdtMessage.getSymbol().getLetter();
 
             if (!this->in.commitTransaction()) return;
             emit crdtMessageReceived(code, crdtMessage);
@@ -342,16 +339,16 @@ bool ClientSocket::operator==(const ClientSocket *b) {
     return this->clientID == b->clientID;
 }
 
-void ClientSocket::send(QByteArray &data) {
-    this->write(data);
-}
-
 void ClientSocket::setClientID(quintptr clientId) {
     this->clientID = clientId;
 }
 
 quint32 ClientSocket::getClientID() {
     return this->clientID;
+}
+
+void ClientSocket::send(QByteArray &data) {
+    this->write(data);
 }
 
 void ClientSocket::send(_int code, BasicMessage basicMessage) {
@@ -364,23 +361,23 @@ void ClientSocket::send(_int code, BasicMessage basicMessage) {
     this->write(arrBlock);
 }
 
-void ClientSocket::send(_int res) {
+void ClientSocket::send(_int code) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(Q_DATA_STREAM_VERSION);
 
-    out << res;
+    out << code;
     this->write(arrBlock);
 }
 
-void ClientSocket::send(_int res, UserMessage userMessage) {
-    QByteArray blocco;
-    QDataStream out(&blocco, QIODevice::WriteOnly);
+void ClientSocket::send(_int code, UserMessage userMessage) {
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(Q_DATA_STREAM_VERSION);
 
-    out << res;
+    out << code;
     out << userMessage;
-    this->write(blocco);
+    this->write(arrBlock);
 }
 
 void ClientSocket::send(_int code, std::vector<FilesMessage> filesMessage) {

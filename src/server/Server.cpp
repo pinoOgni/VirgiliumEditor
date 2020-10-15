@@ -28,6 +28,7 @@ Server::Server(unsigned short port, Model &model) : model(model) {
     }
 }
 
+/* This function is called when a new client is active and the client call the connectToHost method */
 void Server::incomingConnection(_int handle) {
     auto newSocket = new ClientSocket(this);
     if (!newSocket->setSocketDescriptor(handle)) {
@@ -56,6 +57,7 @@ void Server::incomingConnection(_int handle) {
     newSocket->send(CLIENT_CONNECTED, basicMessage);
 }
 
+/* Every time the socket state change, this method is invoked */
 void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
     switch (state) {
         case QAbstractSocket::UnconnectedState:
@@ -152,7 +154,6 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
                 if (storageMessage.getActiveUsers().at(0).getSiteId() != user.getSiteId()) {
                     ClientSocket *socket = this->model.getLoggedUser(user);
                     ActiveUserMessage activeUserMessage(0, users);
-                    if (socket == nullptr) return;
                     socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
                 }
             }
@@ -187,7 +188,7 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
                 }
             }
         }
-        break;
+            break;
         case SIGNUP: {
             if (Model::signinUser(userMessage.getUser())) {
                 sender->send(SIGNUP_OK);
@@ -256,24 +257,25 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
             QList<User> users = this->model.removeActiveUser(userMessage.getUser(), userMessage.getFileName());
 
             //PINO 12 ottobre
-            qDebug() << "onProcessUserMessage " << userMessage.getUser().getEmail() << " ---- " << userMessage.getFileName();
+            qDebug() << "onProcessUserMessage " << userMessage.getUser().getEmail() << " ---- "
+                     << userMessage.getFileName();
             QRegExp tagExp("/");
             QStringList firstList = userMessage.getFileName().split(tagExp);
             QString email_owner = firstList.at(0);
             QString filename = firstList.at(1);
             qDebug() << "onProcessUserMessage " << email_owner << " ---- " << filename;
-            if(model.updateLastAcces(userMessage.getUser().getEmail(),
-                                     model.getIdFilename(email_owner, filename))) {
-                if(QString::compare(email_owner,userMessage.getUser().getEmail())==0) {
+            if (model.updateLastAcces(userMessage.getUser().getEmail(),
+                                      model.getIdFilename(email_owner, filename))) {
+                if (QString::compare(email_owner, userMessage.getUser().getEmail()) == 0) {
                     qDebug() << "update last_access owner";
                     User user = User(email_owner);
-                    UserMessage userMessage = UserMessage(sender->getClientID(),user);
-                    onProcessUserMessage(GET_FILES_OWNER,userMessage);
+                    UserMessage userMessage = UserMessage(sender->getClientID(), user);
+                    onProcessUserMessage(GET_FILES_OWNER, userMessage);
                 } else {
                     qDebug() << "update last_access collaborator";
                     User user = User(userMessage.getUser().getEmail());
-                    UserMessage userMessage = UserMessage(sender->getClientID(),user);
-                    onProcessUserMessage(GET_FILES_COLLABORATOR,userMessage);
+                    UserMessage userMessage = UserMessage(sender->getClientID(), user);
+                    onProcessUserMessage(GET_FILES_COLLABORATOR, userMessage);
                 }
             } else {
                 qDebug() << "update last_access ERROR";

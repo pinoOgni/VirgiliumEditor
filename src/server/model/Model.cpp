@@ -25,7 +25,7 @@ void Model::removeLoggedUser(ClientSocket *socket) {
 bool Model::isUserOnline(const QString email) {
     bool find = false;
     for (auto it = onlineUsers.begin(); it != onlineUsers.end(); ++it) {
-        if (QString::compare(*it,email)==0) {
+        if (QString::compare(*it, email) == 0) {
             qDebug() << "isUserOnline " << *it;
             find = true;
         }
@@ -35,12 +35,12 @@ bool Model::isUserOnline(const QString email) {
 
 void Model::insertUserOnline(const QString email) {
     onlineUsers.emplace_back(email);
-    qDebug() << "insertUserOnline " << onlineUsers.at(onlineUsers.size()-1);
+    qDebug() << "insertUserOnline " << onlineUsers.at(onlineUsers.size() - 1);
 }
 
 void Model::removeUserOnline(const QString email) {
     for (auto it = onlineUsers.begin(); it != onlineUsers.end(); ++it) {
-        if (QString::compare(*it,email)==0) {
+        if (QString::compare(*it, email) == 0) {
             it = onlineUsers.erase(it);
             break;
         }
@@ -181,21 +181,6 @@ bool Model::requestToCollaborate(InvitationMessage invitationMessage) {
     return Database::getInstance().requestToCollaborateDB(invitationMessage);
 }
 
-/*void Model::removeUserFromEditor(ClientSocket *socket) {
-    auto toRemove = std::find_if(fileToClients.begin(), fileToClients.end(),
-                                 [socket](auto &pair) {
-                                     return socket == pair.second;
-                                 }
-    );
-    fileToClients.erase(toRemove);
-}
-
-void Model::insertUserIntoEditor(ServerDocument *serverDocument, ClientSocket *socket) {
-    this->fileToClients.insert(
-            std::pair<ServerDocument *, ClientSocket *>(serverDocument, socket)
-    );
-}*/
-
 void Model::insertMessage(const CrdtMessage &message) {
     this->messages.push_back(message);
 }
@@ -263,15 +248,10 @@ QVector<Symbol> Model::getFileFromFileSystem(const QString &filename) {
     return symbols;
 }
 
-
-
-//pino 12 ottobre
-
 _int Model::getIdFilename(QString email_owner, QString filename) {
-    return Database::getInstance().getIdFilenameDB(email_owner,filename);
+    return Database::getInstance().getIdFilenameDB(email_owner, filename);
 }
 
-
 bool Model::updateLastAcces(QString email, _int idFilename) {
-    return Database::getInstance().updateLastAccessDB(email,idFilename);
+    return Database::getInstance().updateLastAccessDB(email, idFilename);
 }
