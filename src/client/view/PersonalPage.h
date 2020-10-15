@@ -26,14 +26,13 @@ public:
     ~PersonalPage();
     void databaseManagement(QString);
 
-private slots:
+public slots:
     void on_logout_clicked();
     void on_newFile_clicked();
     void on_filename_returnPressed();
     void on_tableWidget_cellDoubleClicked(int row, int column);
     void on_actionChange_Password_triggered();
     void on_actionDefault_triggered();
-    void on_actionDark_triggered();
     void on_actionLight_triggered();
     void newFile(QString,QString);
     void requestToCollaborate(QString,QString);
@@ -61,6 +60,7 @@ private slots:
 
     void on_invitationCode_returnPressed();
     void updateTimerSlot();
+    void closeEvent(QCloseEvent *);
 
 signals:
 

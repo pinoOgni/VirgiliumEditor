@@ -25,19 +25,17 @@ private slots:
 
     void onSocketStateChanged(QTcpSocket::SocketState state);
 
-    void onProcessBasicMessage(_int code, BasicMessage basicMessage);
-
     void onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage);
 
     void onProcessUserMessage(_int code, UserMessage userMessage);
 
     void onProcessStorageMessage(_int code, StorageMessage storageMessage);
 
-    void onFileManagementMessageReceived(_int code, FileManagementMessage fileManagementMessage);
+    void onFileManagementMessageReceived(_int code, const FileManagementMessage& fileManagementMessage);
 
-    void onChangePasswordMessageReceived(_int code, ChangePasswordMessage changePasswordMessage);
+    void onChangePasswordMessageReceived(_int code, const ChangePasswordMessage& changePasswordMessage);
 
-    void onUserManagementMessageReceived(_int code, UserManagementMessage userManagementMessage);
+    void onUserManagementMessageReceived(_int code, const UserManagementMessage& userManagementMessage);
 
     void onInvitationReceived(_int code, InvitationMessage invitationMessage);
 

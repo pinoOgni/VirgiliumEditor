@@ -123,7 +123,7 @@ void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, QList<U
 
     if (code == LOAD_RESPONSE) {
         for (const Symbol &symbol : symbols) {
-            qDebug() << symbol.getLetter() << symbols.indexOf(symbol) << symbol.getFont().font;
+            spdlog::debug("{0}, {1}, {2}", symbol.getLetter().toStdString(), symbols.indexOf(symbol), symbol.getFont().font.toStdString());
             insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
             changeBlockFormat(symbol.getFont().font, symbols.indexOf(symbol), symbols.indexOf(symbol) + 1);
         }
@@ -537,7 +537,7 @@ void TextEditor::changeBlockFormat(const QString &font, _int startPos, _int fina
     QTextCursor cursor(ui->textEdit->textCursor());
     cursor.setPosition(startPos, QTextCursor::MoveAnchor);
     cursor.setPosition(finalPos - 1, QTextCursor::KeepAnchor);
-    qDebug() << cursor.selectedText();
+    spdlog::debug("{}", cursor.selectedText().toStdString());
     QTextBlockFormat textBlockFormat = cursor.block().blockFormat();
     switch (firstList.at(1).toInt()) {
         case 1:
@@ -576,7 +576,7 @@ void TextEditor::cursorMoved() {
  * emitted when one or more chars are inserted or deleted. So, this function is used to get all
  * necessary information and send it to the server. */
 void TextEditor::change(int pos, int del, int add) {
-    qDebug() << "POS" << pos << "DEL" << del << "ADD" << add;
+    spdlog::debug("pos {}, del {}, add {}", pos, del, add);
     /* Here, the format of the char is taken. */
     QTextCursor cursor(ui->textEdit->textCursor());
     cursor.setPosition(cursor.selectionEnd(), QTextCursor::MoveAnchor);
@@ -634,7 +634,7 @@ void TextEditor::change(int pos, int del, int add) {
                     alignment = QString::number(textBlockFormat.alignment());
                     indentation = QString::number(textBlockFormat.indent());
 
-                    qDebug() << pos + add << cursor.document()->characterCount();
+                    spdlog::debug("pos+add {}, {}", pos + add, cursor.document()->characterCount());
                     if (pos + add < cursor.document()->characterCount())
                         this->client->changeBlockFormat(charData, pos, pos + add);
                     else

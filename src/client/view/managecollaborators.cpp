@@ -32,7 +32,6 @@ void manageCollaborators::on_add_clicked()
                                   filename,
                                   QCryptographicHash::hash(password.toUtf8(),QCryptographicHash::Sha224));
 
-    qDebug() << "create invite on push button clicked " << userManagementMessage.getEmail_owner();
     client->getSocket()->send(CREATE_INVITE,userManagementMessage);
 
     //every time the user push on "rename" I connect a signal
@@ -68,7 +67,6 @@ void manageCollaborators::on_remove_clicked()
                                   QCryptographicHash::hash(password.toUtf8(),QCryptographicHash::Sha224));
 
     client->getSocket()->send(REMOVE_COLLABORATOR,userManagementMessage);
-    qDebug() << "remove collaborator on push button clicked " << userManagementMessage.getEmail_owner();
 
     //every time the user push on "rename" I connect a signal
     connect(client, &ClientStuff::isCollaboratorRemoved,this,&manageCollaborators::isCollaboratorRemoved);
@@ -108,7 +106,7 @@ void manageCollaborators::receiveData_2(ClientStuff *client, QString email, QStr
     QString displayText = "You can add or remove collaborator to ' ";
     displayText.append(filename).append(" ' file!");
     ui->label->setText(displayText);
-    qDebug() << "receiveData_2 managecollaborators" << email << filename;
+    spdlog::debug("receiveData_2 managecollaborators");
 }
 
 void manageCollaborators::on_cancel_clicked()
