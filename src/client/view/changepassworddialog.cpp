@@ -46,7 +46,7 @@ void ChangePasswordDialog::on_cancel_clicked()
 void ChangePasswordDialog::receiveData(ClientStuff * client,QString email) {
     this->email = email;
     this->client = client;
-    spdlog::debug("receiveData changepassworddialog");
+    //spdlog::debug("receiveData changepassworddialog");
 
     //every time the user push on "change" I connect a signal
     connect(client, &ClientStuff::isPswChanged,this,&ChangePasswordDialog::isPswChanged);
@@ -66,7 +66,7 @@ void ChangePasswordDialog::keyPressEvent(QKeyEvent *e) {
 
 
 void ChangePasswordDialog::isPswChanged(bool res) {
-    spdlog::debug("isPswChanged");
+    //spdlog::debug("isPswChanged");
     if(res) {
         QMessageBox::information(this,"Done","Password changed");
         this->close();

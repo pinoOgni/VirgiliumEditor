@@ -37,7 +37,7 @@ QDataStream &operator >>(QDataStream &stream, FilesMessage &myclass) {
 }
 
 void FilesMessage::printUserInfo() {
-    spdlog::debug("{}, {}, {}",this->filename.toStdString(), this->last_access.toStdString(), this->owner.toStdString());
+    //spdlog::debug("{}, {}, {}",this->filename.toStdString(), this->last_access.toStdString(), this->owner.toStdString());
 }
 
 QString FilesMessage::getFilename() const {    return filename; }

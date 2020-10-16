@@ -16,7 +16,7 @@ Crdt_editor::Crdt_editor(QWidget *parent, ClientSocket *receivedSocket, QString 
     connect(this->socket, &ClientSocket::activeUserMessageReceived, this, &Crdt_editor::activeUserChanged);
 
     this->_siteId = this->socket->getClientID();
-    spdlog::debug("Il mio siteID è: {} ", this->_siteId);
+    //spdlog::debug("Il mio siteID è: {} ", this->_siteId);
 }
 
 Crdt_editor::Crdt_editor() = default;
@@ -55,7 +55,7 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
 
             int i = m.getSymbol().getPosition().at(0);
             for (i; i <= m.getSymbol().getPosition().at(1); i++) {
-                spdlog::debug("i: {}", i);
+                //spdlog::debug("i: {}", i);
                 Symbol s = this->_symbols.at(i);
                 Symbol::CharFormat format = m.getSymbol().getFont();
                 Symbol newSymbol(s.getLetter(), s.getSiteId(), s.getCounterId(), s.getPosition(), format);

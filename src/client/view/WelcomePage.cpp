@@ -30,18 +30,18 @@ WelcomePage::WelcomePage(QWidget *parent) :
 
 WelcomePage::~WelcomePage()
 {
-    spdlog::debug("~WelcomePage");
+    //spdlog::debug("~WelcomePage");
     delete client;
     delete ui;
 }
 
 void WelcomePage::userAlreadyLogged() {
-    spdlog::debug("userAlreadyLogged ");
+    //spdlog::debug("userAlreadyLogged ");
     QMessageBox::warning(this, "Attention", "You are already logged!");
 }
 
 void WelcomePage::loggedIn(const bool logged) {
-    spdlog::debug("loggedIn {} ", logged);
+    //spdlog::debug("loggedIn {} ", logged);
     if(logged) {
         QMessageBox::information(this,"Login","Logged in");
         QString email = ui->email_accedi->text();
@@ -79,7 +79,7 @@ void WelcomePage::registered(const bool registered) {
 }
 
 void WelcomePage::getFilesOwner(int row,std::vector<FilesMessage>& filesMessage) {
-    spdlog::debug("getFilesOwner welcomepage");
+    //spdlog::debug("getFilesOwner welcomepage");
     emit getFilesOwner2(row,filesMessage);
 }
 
@@ -88,8 +88,7 @@ void WelcomePage::getInfoUser(UserMessage& um) {
 }
 
 void WelcomePage::getUserFiles(int row,std::vector<FilesMessage>& filesMessage) {
-    spdlog::debug("getUserFiles welcomepage");
-    spdlog::debug("getUserFiles welcomepage");
+    //spdlog::debug("getUserFiles welcomepage");
 
     emit getUserFiles2(row,filesMessage);
 }

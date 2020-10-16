@@ -33,7 +33,7 @@ void unsubscribeFile::on_unsubscribe_clicked()
                                   QCryptographicHash::hash(password.toUtf8(),QCryptographicHash::Sha224));
 
     client->getSocket()->send(UNSUBSCRIBE,userManagementMessage);
-    spdlog::debug("unsubscribe on push button clicked ");
+    //spdlog::debug("unsubscribe on push button clicked ");
 }
 
 void unsubscribeFile::on_cancel_clicked()

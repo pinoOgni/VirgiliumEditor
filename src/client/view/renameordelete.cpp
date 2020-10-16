@@ -15,7 +15,7 @@ renameOrDelete::renameOrDelete(QWidget *parent) :
 }
 
 renameOrDelete::~renameOrDelete() {
-    spdlog::debug("rename or delete ~");
+    //spdlog::debug("rename or delete ~");
     delete ui;
 }
 
@@ -37,7 +37,7 @@ void renameOrDelete::receiveData_2(ClientStuff *client, QString email, QString f
     this->email = email;
     this->filename = filename;
     this->client = client;
-    spdlog::debug("receiveData_2 renameordelete");
+    //spdlog::debug("receiveData_2 renameordelete");
 }
 
 void renameOrDelete::on_delete_2_clicked() {
@@ -54,7 +54,7 @@ void renameOrDelete::on_delete_2_clicked() {
 }
 
 void renameOrDelete::on_rename_clicked() {
-    spdlog::debug("on_rename_clicked");
+    //spdlog::debug("on_rename_clicked");
     auto *newRenameFile = new renameFile(this);
     //newRenameFile->setAttribute(Qt::WA_DeleteOnClose);
     connect(this, SIGNAL(sendData_2(ClientStuff * , QString, QString)), newRenameFile,
