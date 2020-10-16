@@ -36,6 +36,7 @@ private slots:
         void on_pushButton_clicked();
 
         void isFileDeleted(bool);
+        void canDeleteFile(bool);
 };
 
 #endif // DELETEFILE_H

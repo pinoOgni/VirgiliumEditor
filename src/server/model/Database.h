@@ -20,6 +20,7 @@
 #include <QDir>
 #include <QCryptographicHash>
 #include <common/messages/InvitationMessage.h>
+#include <common/messages/StorageMessage.h>
 #include "common/messages/FilesMessage.h"
 #include "common/constants.h"
 #include "common/messages/FileManagementMessage.h"
@@ -135,33 +136,42 @@ public:
       * quando lo User clicca su logout
       * @return void
       */
-        void closeConnectionDB();
+     void closeConnectionDB();
 
 
-        /*
-         * serve a creare un URL che lo user invierà attraverso terze parti ad un altro user
-         * lo aggiunge al DB nella tabella invitation_url
-         * @return l'URL se va bene, empty string altrimenti
-         */
-        QString createUrlCollaboratorDB(const UserManagementMessage&);
+     /*
+     * serve a creare un URL che lo user invierà attraverso terze parti ad un altro user
+     * lo aggiunge al DB nella tabella invitation_url
+     * @return l'URL se va bene, empty string altrimenti
+     */
+     QString createUrlCollaboratorDB(const UserManagementMessage&);
 
-        /*
-         * serve, per aggiungere uno user ad un file, grazie ad un codice di invito
-         * @return true se va bene, false altrimenti
-         */
-        bool requestToCollaborateDB(const InvitationMessage& invitationMessage);
+     /*
+     * serve, per aggiungere uno user ad un file, grazie ad un codice di invito
+     * @return true se va bene, false altrimenti
+     */
+     bool requestToCollaborateDB(const InvitationMessage& invitationMessage);
 
-        /*
-         * serve per aggiornare il last access ad un file
-         * return true se va bene, false altrimenti
-         */
-        bool updateLastAccessDB(QString email, _int idFilename);
+     /*
+     * serve per aggiornare il last access ad un file
+     * return true se va bene, false altrimenti
+     */
+     bool updateLastAccessDB(QString email, _int idFilename);
 
-        /*
-         * serve per ritoranre un id dato un utente e un filename, utile per gli utenti attivi e per l'aggiornamento del last access
-         * return id se va bene, 0 altrimenti
-         */
-        _int getIdFilenameDB(QString email_owner, QString filename);
+     /*
+     * serve per ritoranre un id dato un utente e un filename, utile per gli utenti attivi e per l'aggiornamento del last access
+     * return id se va bene, 0 altrimenti
+     */
+     _int getIdFilenameDB(QString email_owner, QString filename);
+
+     /* serve per vedere se un utente può accedere ad un file, si controlla la tabella user_files
+      * dentro storageMessage c'è:
+      *     email_owner/filename dentro fileName
+      *     email dell'utente che fa richiesta dentro storageMessage.getActiveUsers().at(0).getEmail();
+      * return true se può accedere, false, altrimenti
+      */
+     bool canOpenFileDB(const UserManagementMessage& userManagementMessage);
+
 
 };
 

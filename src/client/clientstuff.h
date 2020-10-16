@@ -49,6 +49,9 @@ signals:
     void isFileDeleted(bool);
     void isPswChanged(bool);
     void isFileCreated(bool);
+    void canDeleteFile(bool);
+    void canRemoveCollaborator(bool);
+    void canOpenFile(bool);
     void isCollaboratorAdded(bool);
     void isInviteCreated(InvitationMessage);
     void isCollaboratorRemoved(bool);

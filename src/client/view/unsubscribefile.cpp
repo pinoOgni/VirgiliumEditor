@@ -28,6 +28,8 @@ void unsubscribeFile::on_unsubscribe_clicked()
 
     //every time the user push on "unsubscribe" I connect a signal
     connect(client, &ClientStuff::isUnsubscribed,this,&unsubscribeFile::isUnsubscribed);
+    connect(client, &ClientStuff::canOpenFile,this,&unsubscribeFile::canOpenFile);
+
 
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
@@ -84,13 +86,39 @@ void unsubscribeFile::isUnsubscribed(bool res) {
     disconnect(client, &ClientStuff::isUnsubscribed,this,&unsubscribeFile::isUnsubscribed);
     ui->password->clear();
     emit Want2Close2();
-
 }
 
+void unsubscribeFile::canOpenFile(bool res) {
+    if(!res) {
+        QMessageBox::warning(this,"Error","You can access anymore to this file");
+        this->close();
+        disconnect(client, &ClientStuff::isUnsubscribed,this,&unsubscribeFile::isUnsubscribed);
+        disconnect(client, &ClientStuff::canOpenFile,this,&unsubscribeFile::canOpenFile);
+
+    emit Want2Close2();
+    } else {
+        QString path = this->email_owner + "/" + this->filename;
+        textEditor = new TextEditor(nullptr, this->client->getSocket(), path, this->currentUser);
+        textEditor->setAttribute(Qt::WA_DeleteOnClose);
+        close();
+        textEditor->show();
+    }
+}
+
+
+
+
 void unsubscribeFile::on_pushButton_clicked() {
-    QString path = this->email_owner + "/" + this->filename;
-    textEditor = new TextEditor(nullptr, this->client->getSocket(), path, this->currentUser);
-    textEditor->setAttribute(Qt::WA_DeleteOnClose);
-    close();
-    textEditor->show();
+    //every time the user push on "unsubscribe" I connect a signal
+    connect(client, &ClientStuff::isUnsubscribed,this,&unsubscribeFile::isUnsubscribed);
+    connect(client, &ClientStuff::canOpenFile,this,&unsubscribeFile::canOpenFile);
+
+
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
+    UserManagementMessage userManagementMessage = UserManagementMessage(client->getSocket()->getClientID(),email,
+                                  email_owner,
+                                  filename,"");
+
+    client->getSocket()->send(CAN_OPEN_FILE,userManagementMessage);
 }

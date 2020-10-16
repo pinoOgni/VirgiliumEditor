@@ -1109,3 +1109,32 @@ bool Database::updateLastAccessDB(QString email, _int idFilename) {
         return false;
     }
 }
+
+bool Database::canOpenFileDB(const UserManagementMessage& userManagementMessage) {
+    if(db.open()) {
+        //spdlog::debug("correct opened db to control password");
+        _int idFilename = getIdFilenameDB(userManagementMessage.getEmail_owner(),userManagementMessage.getFilename());
+        QSqlDatabase::database().transaction();
+        QSqlQuery qry;
+        qry.prepare("SELECT email FROM user_files WHERE id = :id AND email = :email");
+        qry.bindValue(":id",idFilename);
+        qry.bindValue(":email",userManagementMessage.getEmail_collaborator());
+        if(!qry.exec()) {
+            qDebug() << "error";
+            return false;
+        }
+        qry.first();
+        QString canOpenFile = qry.value(0).toString();
+        QSqlDatabase::database().commit();
+        db.close();
+        if(QString::compare(canOpenFile,userManagementMessage.getEmail_collaborator())==0)
+            return true;
+        else
+            return false;
+    } else {
+        //spdlog::error("error opened db");
+        return false;
+    }
+}
+
+
