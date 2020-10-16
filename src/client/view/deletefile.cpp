@@ -5,22 +5,21 @@
 #include "deletefile.h"
 #include "ui_deletefile.h"
 
-deleteFile::deleteFile(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::deleteFile)
-{
+deleteFile::deleteFile(QWidget *parent) : QDialog(parent), ui(new Ui::deleteFile) {
     ui->setupUi(this);
 
+    this->setWindowTitle("Virgilium");
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/Icons/v.png"), QSize(), QIcon::Normal, QIcon::On);
+    this->setWindowIcon(icon);
 }
 
-deleteFile::~deleteFile()
-{
+deleteFile::~deleteFile() {
     delete ui;
 }
 
 
-
-void deleteFile::receiveData_2(ClientStuff *client,QString email,QString filename) {
+void deleteFile::receiveData_2(ClientStuff *client, QString email, QString filename) {
     //bridge between secondlogin and delete or rename dialog
     this->email = email;
     this->filename = filename;
@@ -35,58 +34,57 @@ void deleteFile::receiveData_2(ClientStuff *client,QString email,QString filenam
 
 
 void deleteFile::keyPressEvent(QKeyEvent *e) {
-    switch (e->key ()) {
-           case Qt::Key_Return:
-           case Qt::Key_Enter:
-                on_pushButton_clicked();
+    switch (e->key()) {
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+            on_pushButton_clicked();
             break;
-           default:
-               QDialog::keyPressEvent (e);
-           }
+        default:
+            QDialog::keyPressEvent(e);
+    }
 }
 
 
-void deleteFile::on_pushButton_clicked()
-{
+void deleteFile::on_pushButton_clicked() {
     QString password = ui->password->text();
 
     //every time the user push on "delete" I connect a signal
-    connect(client, &ClientStuff::isFileDeleted,this,&deleteFile::isFileDeleted);
-    connect(client, &ClientStuff::canDeleteFile,this,&deleteFile::canDeleteFile);
+    connect(client, &ClientStuff::isFileDeleted, this, &deleteFile::isFileDeleted);
+    connect(client, &ClientStuff::canDeleteFile, this, &deleteFile::canDeleteFile);
 
 
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     FileManagementMessage fileManagementMessage =
-            FileManagementMessage(client->getSocket()->getClientID(),email,
+            FileManagementMessage(client->getSocket()->getClientID(), email,
                                   filename,
-                                  QCryptographicHash::hash(password.toUtf8(),QCryptographicHash::Sha224));
+                                  QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha224));
 
-    client->getSocket()->send(DELETE_FILE,fileManagementMessage);
+    client->getSocket()->send(DELETE_FILE, fileManagementMessage);
 }
 
 
 void deleteFile::isFileDeleted(bool res) {
 
-    if(res) {
-        QMessageBox::information(this,"Deleted","File deleted");
-        disconnect(client, &ClientStuff::canDeleteFile,this,&deleteFile::canDeleteFile);
+    if (res) {
+        QMessageBox::information(this, "Deleted", "File deleted");
+        disconnect(client, &ClientStuff::canDeleteFile, this, &deleteFile::canDeleteFile);
         this->close();
         emit Want2Close3();
     } else {
-        QMessageBox::information(this,"Deleted","Errore while deleteing file");
-        disconnect(client, &ClientStuff::canDeleteFile,this,&deleteFile::canDeleteFile);
-        disconnect(client, &ClientStuff::isFileDeleted,this,&deleteFile::isFileDeleted);
+        QMessageBox::information(this, "Deleted", "Errore while deleteing file");
+        disconnect(client, &ClientStuff::canDeleteFile, this, &deleteFile::canDeleteFile);
+        disconnect(client, &ClientStuff::isFileDeleted, this, &deleteFile::isFileDeleted);
     }
 }
 
 void deleteFile::canDeleteFile(bool res) {
     //res should be always false, but for safety we control it
 
-    if(!res) {
-        QMessageBox::warning(this,"Attention","There is someone online for this document, retry later");
-        disconnect(client, &ClientStuff::isFileDeleted,this,&deleteFile::isFileDeleted);
-        disconnect(client, &ClientStuff::canDeleteFile,this,&deleteFile::canDeleteFile);
+    if (!res) {
+        QMessageBox::warning(this, "Attention", "There is someone online for this document, retry later");
+        disconnect(client, &ClientStuff::isFileDeleted, this, &deleteFile::isFileDeleted);
+        disconnect(client, &ClientStuff::canDeleteFile, this, &deleteFile::canDeleteFile);
         this->close();
     }
 }

@@ -30,6 +30,7 @@ void Database::initDatabase() {
 
     if(!db.open()) {
              //spdlog::error("error first try to open DB");
+        std::cerr << "error first try to open DB" << std::endl;
     } else {
         db.close();
         if(TESTDB) {
@@ -56,6 +57,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
                                        "password VARCHAR(255))";
                 if(!qry.exec(create_users)) {
                     //spdlog::error("error create table users");
+                    std::cerr << "error create table users" << std::endl;
                 }
                 QString create_files = "CREATE TABLE files ("
                                        "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
@@ -63,6 +65,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
                                        "email_owner VARCHAR(50))";
                 if(!qry.exec(create_files)) {
                     //spdlog::error("error create table files");
+                    std::cerr << "error create table files" << std::endl;
                 }
                 QString create_user_files = "CREATE TABLE user_files ("
                                                 "id INTEGER,"
@@ -71,6 +74,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
                                                 "PRIMARY KEY (id,email))";
                     if(!qry.exec(create_user_files)) {
                         //spdlog::error("error create table files");
+                        std::cerr << "error create table files" << std::endl;
                     }
                 QString create_invitation_urls = "CREATE TABLE invitation_urls ("
                                             "url VARCHAR(255),"
@@ -79,6 +83,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
                                             "PRIMARY KEY (url))";
                 if(!qry.exec(create_invitation_urls)) {
                     //spdlog::error("error create table invitation_urls");
+                    std::cerr << "error create table invitation_urls" << std::endl;
                 }
                 QSqlDatabase::database().commit();
             }
@@ -88,6 +93,7 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
     }
     else {
         //spdlog::error("createTables error opened db");
+        std::cerr << "createTables error opened db" << std::endl;
     }
 }
 
@@ -109,6 +115,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                     qry.bindValue(3,QCryptographicHash::hash("pino",QCryptographicHash::Sha224));
                     if(!qry.exec()) {
                         //spdlog::error("error insert user");
+                        std::cerr << "error insert user" << std::endl;
                     }
                     qry.prepare("INSERT INTO users (email,firstName,lastName,password) VALUES(?,?,?,?)");
                     qry.bindValue(0,"ale@ale.com");
@@ -117,6 +124,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                     qry.bindValue(3,QCryptographicHash::hash("ale",QCryptographicHash::Sha224));
                     if(!qry.exec()) {
                         //spdlog::error("error insert user");
+                        std::cerr << "error insert user" << std::endl;
                     }
                     QSqlDatabase::database().commit();
                     qry.prepare("INSERT INTO users (email,firstName,lastName,password) VALUES(?,?,?,?)");
@@ -126,6 +134,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                     qry.bindValue(3,QCryptographicHash::hash("simo",QCryptographicHash::Sha224));
                     if(!qry.exec()) {
                         //spdlog::error("error insert user");
+                        std::cerr << "error insert user" << std::endl;
                     }
                     QSqlDatabase::database().commit();
                     qry.prepare("INSERT INTO users (email,firstName,lastName,password) VALUES(?,?,?,?)");
@@ -135,6 +144,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                     qry.bindValue(3,QCryptographicHash::hash("ste",QCryptographicHash::Sha224));
                     if(!qry.exec()) {
                         //spdlog::error("error insert user");
+                        std::cerr << "error insert user" << std::endl;
                     }
                     QSqlDatabase::database().commit();
 
@@ -149,6 +159,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.bindValue(1,"pino@pino.com");
                         if(!qry.exec()) {
                             //spdlog::error("error insert file");
+                            std::cerr << "error insert file" << std::endl;
                         }
 
 
@@ -165,6 +176,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.prepare("SELECT LAST_INSERT_ROWID();");
                         if(!qry.exec()) {
                             //spdlog::error("error retrieve last id inserted in files");
+                            std::cerr << "error retrieve last id inserted in files" << std::endl;
                         }
                         qry.first();
                         int id = qry.value(0).toInt();
@@ -177,6 +189,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
                             //spdlog::error("error insert in user_files");
+                            std::cerr << "error insert in user_files" << std::endl;
                         }
 
                         //insert some collaborators
@@ -187,6 +200,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
                             //spdlog::error("error insert in user_files");
+                            std::cerr << "error insert in user_files" << std::endl;
                         }
 
                         qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
@@ -196,6 +210,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
                             //spdlog::error("error insert in user_files");
+                            std::cerr << "error insert in user_files" << std::endl;
                         }
 
 
@@ -206,6 +221,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.bindValue(1,"pino@pino.com");
                         if(!qry.exec()) {
                             //spdlog::error("error insert in files");
+                            std::cerr << "error insert in files" << std::endl;
                         }
 
                         //create second file "ciao"
@@ -217,6 +233,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.prepare("SELECT LAST_INSERT_ROWID();");
                         if(!qry.exec()) {
                             //spdlog::error("error retrieve last id inserted in files");
+                            std::cerr << "error retrieve last id inserted in files" << std::endl;
                         }
                         qry.first();
                         id = qry.value(0).toInt();
@@ -229,6 +246,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
                             //spdlog::error("error insert in user_files");
+                            std::cerr << "error insert in user_files" << std::endl;
                         }
 
 
@@ -240,6 +258,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
                             //spdlog::error("error insert in user_files");
+                            std::cerr << "error insert in user_files" << std::endl;
                         }
 
                         qry.prepare("INSERT INTO user_files(id, email, last_access) VALUES(?,?,?)");
@@ -249,12 +268,14 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                         qry.bindValue(2,dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
                         if(!qry.exec()) {
                             //spdlog::error("error insert in user_files");
+                            std::cerr << "error insert in user_files" << std::endl;
                         }
                         QSqlDatabase::database().commit();
                     }
             db.close();
     } else {
             //spdlog::error("fillTablesForTests error opened db");
+        std::cerr << "fillTablesForTests error opened db" << std::endl;
       }
 
 }
@@ -288,6 +309,7 @@ bool Database::loginDB(User user) {
     }
     else {
            //spdlog::error("loginDB error opened db");
+        std::cerr << "loginDB error opened db" << std::endl;
            return false;
      }
 }
@@ -314,6 +336,7 @@ bool Database::signinDB(User user) {
             qry.bindValue(3,QCryptographicHash::hash(user.getPassword().toUtf8(),QCryptographicHash::Sha224));
             if(!qry.exec()) {
                 //spdlog::error("error insert in users");
+                std::cerr << "error insert in users" << std::endl;
             }
             QSqlDatabase::database().commit();
             db.close();
@@ -326,6 +349,7 @@ bool Database::signinDB(User user) {
     }
     else {
         //spdlog::error("signinDB error opened db");
+        std::cerr << "signinDB error opened db" << std::endl;
            return false;
      }
 }
@@ -352,6 +376,7 @@ User Database::getInfoUser(User user) {
     }
     else {
         //spdlog::error("getInfoUser error opened db");
+        std::cerr << "getInfoUser error opened db" << std::endl;
         userReturn = User();
         return userReturn;
     }
@@ -404,6 +429,7 @@ std::vector<FilesMessage> Database::getFilesOwner(User user) {
     }
     else {
         //spdlog::error("getFilesOwner, error opened db when try to get user's info");
+        std::cerr << "getFilesOwner, error opened db when try to get user's info" << std::endl;
         return filesMessage;
     }
 }
@@ -420,6 +446,7 @@ std::vector<FilesMessage>  Database::getUserFiles(User user) {
         qry.bindValue(":email", user.getEmail());
         if(!qry.exec()) {
             //spdlog::error("getUserFiles error retrieve file where this user collaborates");
+            std::cerr << "getUserFiles error retrieve file where this users collaborates" << std::endl;
         }
 
         int row = 0;
@@ -491,6 +518,7 @@ bool Database::renameFileDB(FileManagementMessage fileManagementMessage) {
                 qry.bindValue(":filenameTemp", filenameTemp);
                 if(!qry.exec()) {
                     //spdlog::error("error select filename");
+                    std::cerr << "error select filename" << std::endl;
                 }
                 qry.first();
                 QString filenameDB = qry.value(0).toString();
@@ -506,6 +534,7 @@ bool Database::renameFileDB(FileManagementMessage fileManagementMessage) {
 
                     if(!qry.exec()) {
                         //spdlog::error("renameFileDB error UPDATE files");
+                        std::cerr << "renameFileDB error UPDATE files" << std::endl;
                         return false;
                     } else {
                         //spdlog::debug("renameFileDB, renamed true");
@@ -542,6 +571,7 @@ bool Database::renameFileDB(FileManagementMessage fileManagementMessage) {
     }
     else {
         //spdlog::error("renameFileDB error opened db");
+        std::cerr << "renameFileDB error opened db" << std::endl;
         return false;
     }
 }
@@ -567,6 +597,7 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
             qry.bindValue(":filename",fileManagementMessage.getFilename());
             if(!qry.exec()) {
                 //spdlog::error("error while retrieve id from files table");
+                std::cerr << "error while retrieve id from files table" << std::endl;
                 return false;
             }
 
@@ -579,6 +610,7 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
                qry.bindValue(":idToDelete",idToDelete);
                if(!qry.exec()) {
                    //spdlog::error("error while deleting rows from user_files table");
+                   std::cerr << "error while deleting rows from user_files table" << std::endl;
                    return false;
                }
 
@@ -587,6 +619,7 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
                qry.bindValue(":idToDelete", idToDelete);
                if(!qry.exec()) {
                    //spdlog::error("error while deleting file from files table");
+                   std::cerr << "error while deleting file from files table" << std::endl;
                    return false;
                }
                QSqlDatabase::database().commit();
@@ -608,6 +641,7 @@ bool Database::deleteFileDB(FileManagementMessage fileManagementMessage) {
     }
     else {
         //spdlog::error("deleteFileDB error opened db");
+        std::cerr << "deleteFileDB error openend db" << std::endl;
         return false;
     }
     return true;
@@ -633,6 +667,7 @@ bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
             qry.bindValue(":filenameTemp", filenameTemp);
             if(!qry.exec()) {
                 //spdlog::error("error select filename");
+                std::cerr << "error select filename" << std::endl;
             }
             qry.first();
             QString filenameDB = qry.value(0).toString();
@@ -647,12 +682,14 @@ bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
 
                 if(!qry.exec()) {
                     //spdlog::error("error insert new file in files tables");
+                    std::cerr << "error insert new file in files tables" << std::endl;
                     return false;
                 }
 
                 qry.prepare("SELECT LAST_INSERT_ROWID();");
                 if(!qry.exec()) {
                     //spdlog::error("error retrieve last id inserted in files");
+                    std::cerr << "error retrieve last id inserted in files" << std::endl;
                 }
                 qry.first();
                 int id = qry.value(0).toInt();
@@ -667,6 +704,7 @@ bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
 
                 if(!qry.exec()) {
                     //spdlog::error("error insert into user_files");
+                    std::cerr << "error insert into user_files" << std::endl;
                 } else {
                     created=true;
                 }
@@ -697,6 +735,7 @@ bool Database::newFileDB(FileManagementMessage fileManagementMessage) {
     }
     else {
         //spdlog::error("newFileDB error opened db");
+        std::cerr << "newFileDB error opened db" << std::endl;
         return false;
     }
 }
@@ -720,6 +759,7 @@ bool Database::changePasswordDB(const ChangePasswordMessage& changePasswordMessa
             qry.bindValue(":newPsw",changePasswordMessage.getNewPsw());
             if(!qry.exec()) {
                 //spdlog::error("error update password");
+                std::cerr << "error update password" << std::endl;
             }
             QSqlDatabase::database().commit();
             db.close();
@@ -731,6 +771,7 @@ bool Database::changePasswordDB(const ChangePasswordMessage& changePasswordMessa
         }
     } else {
         //spdlog::error("changePasswordDB error opened db");
+        std::cerr << "changePasswordDB error opened db" << std::endl;
         return false;
     }
 }
@@ -773,6 +814,7 @@ bool Database::requestToCollaborateDB(const InvitationMessage& invitationMessage
             qry.bindValue(":url",invitationMessage.getInvitationCode());
             if(!qry.exec()) {
                 //spdlog::error("error deleteting from invitation_urls");
+                std::cerr << "error deleting from invitation_urls" << std::endl;
                 QSqlDatabase::database().commit();
                 db.close();
                 return false;
@@ -784,6 +826,7 @@ bool Database::requestToCollaborateDB(const InvitationMessage& invitationMessage
             qry.bindValue(2,"dd/MM/yyyy  hh:mm:ss");
             if(!qry.exec()) {
                 //spdlog::error("error insert in user_files");
+                std::cerr << "error insert in user_files" << std::endl;
                 QSqlDatabase::database().commit();
                 db.close();
                 return false;
@@ -800,6 +843,7 @@ bool Database::requestToCollaborateDB(const InvitationMessage& invitationMessage
     }
     else {
         //spdlog::error("error opened db");
+        std::cerr << "error opened db" << std::endl;
         return false;
     }
 }
@@ -868,6 +912,7 @@ QString Database::createUrlCollaboratorDB(const UserManagementMessage& userManag
             }
             if(!qry.exec()) {
                 //spdlog::error("error insert in invitation_urls");
+                std::cerr << "error insert in invitation_urls" << std::endl;
                 QSqlDatabase::database().commit();
                 db.close();
                 return URL;
@@ -880,6 +925,7 @@ QString Database::createUrlCollaboratorDB(const UserManagementMessage& userManag
     }
     else {
         //spdlog::error("error opened db");
+        std::cerr << "error opened db" << std::endl;
         return URL;
     }
     return URL;
@@ -929,6 +975,7 @@ bool Database::removeCollaboratorDB(const UserManagementMessage& userManagementM
             qry.bindValue(":email",userManagementMessage.getEmail_collaborator());
             if(!qry.exec()) {
                 //spdlog::error("error deleteting from user_files");
+                std::cerr << "error deleting from user_files" << std::endl;
                 QSqlDatabase::database().commit();
                 db.close();
                 return false;
@@ -946,6 +993,7 @@ bool Database::removeCollaboratorDB(const UserManagementMessage& userManagementM
     }
     else {
         //spdlog::error("error opened db");
+        std::cerr << "error opened db" << std::endl;
         return false;
     }
 }
@@ -984,6 +1032,7 @@ bool Database::unsubscribeDB(const UserManagementMessage& userManagementMessage)
             qry.bindValue(":email",userManagementMessage.getEmail_collaborator());
             if(!qry.exec()) {
                 //spdlog::error("error deleting from user_files");
+                std::cerr << "error deleting from user_files" << std::endl;
                 return false;
             } else
             QSqlDatabase::database().commit();
@@ -997,6 +1046,7 @@ bool Database::unsubscribeDB(const UserManagementMessage& userManagementMessage)
     }
     else {
         //spdlog::error("error opened db");
+        std::cerr << "error opened db" << std::endl;
         return false;
     }
 }
@@ -1013,7 +1063,7 @@ _int Database::getIdFilenameDB(QString email_owner, QString filename) {
         qry.bindValue(":filename",filename);
         if(!qry.exec()) {
             //spdlog::error("error while retrieve id from files table");
-            qDebug() << "error getIdFilenamnamDB";
+            std::cerr << "error while retrieve id from files table" << std::endl;
             return false;
         }
 
@@ -1025,6 +1075,7 @@ _int Database::getIdFilenameDB(QString email_owner, QString filename) {
     }
     else {
         //spdlog::error("error opened db");
+        std::cerr << "error opened db" << std::endl;
         return 0;
     }
 }
@@ -1045,6 +1096,7 @@ bool Database::updateLastAccessDB(QString email, _int idFilename) {
         qry.bindValue(":idFilename",idFilename);
         if(!qry.exec()) {
             //spdlog::error("error while updating last_access in user_files");
+            std::cerr << "error while updating last_access in user_files" << std::endl;
             return false;
         }
         QSqlDatabase::database().commit();
@@ -1053,6 +1105,7 @@ bool Database::updateLastAccessDB(QString email, _int idFilename) {
     }
     else {
         //spdlog::error("error opened db");
+        std::cerr << "error opened db" << std::endl;
         return false;
     }
 }

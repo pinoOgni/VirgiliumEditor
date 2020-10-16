@@ -12,13 +12,14 @@
 
 //ADD quint16 port è un unsigned short
 Server::Server(unsigned short port, Model &model) : model(model) {
+    freopen("serverLog.txt", "w", stderr);
     if (!listen(QHostAddress::LocalHost, port)) {
         //spdlog::error("Error: server is not listening");
+        std::cerr << "Error: server is not listening" << std::endl;
         exit(-1);
     }
 
     //spdlog::info("Server is listening on address: {0}, {1} ", this->serverAddress().toString().toStdString(), this->serverPort());
-
     if (TESTDB == true) {
         QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(
                 VIRGILIUM_STORAGE)).removeRecursively();
@@ -26,6 +27,11 @@ Server::Server(unsigned short port, Model &model) : model(model) {
     }
 }
 
+Server::~Server() {
+    fclose(stderr);
+};
+
+/* This function is called when a new client is active and the client call the connectToHost method */
 void Server::incomingConnection(_int handle) {
     auto newSocket = new ClientSocket(this);
     if (!newSocket->setSocketDescriptor(handle)) {
@@ -53,6 +59,7 @@ void Server::incomingConnection(_int handle) {
     newSocket->send(CLIENT_CONNECTED, basicMessage);
 }
 
+/* Every time the socket state change, this method is invoked */
 void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
     switch (state) {
         case QAbstractSocket::UnconnectedState:
@@ -81,7 +88,7 @@ void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
             //spdlog::debug("The socket is listening.");
             break;
         default:
-            qDebug("Unknown state");
+            std::cerr << "Unknown state" << std::endl;
             //spdlog::debug("Unknown State.");
     }
 }
@@ -123,6 +130,7 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
                 this->model.save(crdtMessage);
         } catch (std::exception &e) {
             //spdlog::error(e.what()); //TODO mettere in un file di log
+            std::cerr << e.what() << std::endl;
             throw;
         }
     }
@@ -150,12 +158,12 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
                 if (storageMessage.getActiveUsers().at(0).getSiteId() != user.getSiteId()) {
                     ClientSocket *socket = this->model.getLoggedUser(user);
                     ActiveUserMessage activeUserMessage(0, users);
-                    if (socket == nullptr) return;
                     socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
                 }
             }
         } catch (std::exception &e) {
             //spdlog::error(e.what()); //TODO mettere in un file di log
+            std::cerr << e.what() << std::endl;
             throw;
         }
     }
@@ -185,7 +193,7 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
                 }
             }
         }
-        break;
+            break;
         case SIGNUP: {
             if (Model::signinUser(userMessage.getUser())) {
                 sender->send(SIGNUP_OK);
@@ -273,6 +281,7 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
                 }
             } else {
                 //spdlog::error("update last_access ERROR");
+                std::cerr << "update last_access ERROR" << std::endl;
             }
             //fine pino
 

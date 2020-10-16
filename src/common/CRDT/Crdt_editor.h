@@ -76,6 +76,8 @@ public:
 
     QVector<_int> getPosition(QVector<_int> prec, QVector<_int> succ);
 
+    void localUpdate(_int pos, const Symbol::CharFormat &charData);
+
 public slots:
 
     void loadResponse(_int code, StorageMessage storageMessage);
@@ -97,6 +99,8 @@ signals:
     void change_active_users(QList<User> users);
 
     void change_block_format(QString font, _int startPos, _int finalPos);
+
+    void change_char_format(_int i, Symbol::CharFormat charData);
 };
 
 #endif //VIRGILIUMCLIENT_VIRGILIUM_CLIENT_H

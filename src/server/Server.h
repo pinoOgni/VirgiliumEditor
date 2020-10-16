@@ -19,6 +19,8 @@ Q_OBJECT
 public:
     Server(unsigned short port, Model &model);
 
+    ~Server();
+
     void incomingConnection(qintptr handle) override;
 
 private slots:

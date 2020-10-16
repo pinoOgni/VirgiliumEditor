@@ -33,5 +33,6 @@
         <file>color.png</file>
         <file>highlighter.png</file>
         <file>virgilium.png</file>
+        <file>v.png</file>
     </qresource>
 </RCC>

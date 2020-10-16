@@ -40,7 +40,6 @@ ClientSocket::ClientSocket(const QString &hostName, quint16 port, QObject *paren
 ClientSocket::~ClientSocket() {
     /*this->disconnectFromHost();
     this->waitForDisconnected(3000);*/
-    //spdlog::debug("distructor");
 }
 
 void ClientSocket::onReadyRead() {
@@ -75,11 +74,11 @@ void ClientSocket::onReadyRead() {
         }
             break;
         case CLIENT_CONNECTED: {
-            BasicMessage bm;
-            this->in >> bm;
+            BasicMessage basicMessage;
+            this->in >> basicMessage;
 
             if (!this->in.commitTransaction()) return;
-            emit basicMessageReceived(code, bm);
+            emit basicMessageReceived(code, basicMessage);
         }
             break;
         case LOGIN:
@@ -89,22 +88,22 @@ void ClientSocket::onReadyRead() {
         case GET_FILES_COLLABORATOR:
         case DELETE_ACTIVE:
         case GET_ALL_DATA: {
-            UserMessage um;
-            this->in >> um;
+            UserMessage userMessage;
+            this->in >> userMessage;
 
             if (!this->in.commitTransaction()) return;
-            emit userMessageReceived(code, um);
+            emit userMessageReceived(code, userMessage);
         }
             break;
         case LOGIN_KO:
         case LOGIN_OK:
         case SIGNUP_OK:
         case SIGNUP_KO:
-        case ALREADY_LOGGED:{
+        case ALREADY_LOGGED: {
             if (!this->in.commitTransaction()) return;
             emit loginSignupReceived(code);
         }
-        break;
+            break;
         case GET_FILES_OWNER_OK:
         case GET_FILES_OWNER_KO:
         case GET_FILES_COLLABORATOR_OK:
@@ -223,10 +222,10 @@ void ClientSocket::onReadyRead() {
         }
             break;
         case LOGOUT: {
-            UserMessage um;
-            this->in >> um;
+            UserMessage userMessage;
+            this->in >> userMessage;
             if (!this->in.commitTransaction()) return;
-            emit logoutReceived(LOGOUT,um);
+            emit logoutReceived(LOGOUT, userMessage);
         }
             break;
         case REQUEST_TO_COLLABORATE_OK:
@@ -248,6 +247,7 @@ void ClientSocket::onReadyRead() {
             break;
         default: {
             //spdlog::debug("Default case in ReadyRead");
+            std::cerr << "Error: default case" << std::endl;
         }
     }
 
@@ -309,32 +309,44 @@ void ClientSocket::onBytesWritten(_int bytes) {
 //add gli altri switch case
 void ClientSocket::onDisplayError(QTcpSocket::SocketError error) {
     switch (error) {
-        case QAbstractSocket::RemoteHostClosedError:  //l'host cade
+        case QAbstractSocket::RemoteHostClosedError:
             //spdlog::debug("RemoteHostClosedError: the remote host closed the connection.");
+            std::cerr << "RemoteHostClosedError: the remote host closed the connection." << std::endl;
             break;
-        case QAbstractSocket::HostNotFoundError: //address ""
+        case QAbstractSocket::HostNotFoundError:
             //spdlog::debug("HostNotFoundError: the host address was not found.");
+            std::cerr << "HostNotFoundError: the host address was not found." << std::endl;
             break;
         case QAbstractSocket::SocketAccessError:
             //spdlog::debug("SocketAccessError: the socket operation failed because the application lacked the required privileges.");
+            std::cerr
+                    << "SocketAccessError: the socket operation failed because the application lacked the required privileges."
+                    << std::endl;
             break;
         case QAbstractSocket::SocketResourceError:
             //spdlog::debug("SocketResourceError: the local system ran out of resources (e.g., too many sockets).");
+            std::cerr << "SocketResourceError: the local system ran out of resources (e.g., too many sockets)."
+                      << std::endl;
             break;
-        case QAbstractSocket::ConnectionRefusedError: //se provo a connetermi ma il server è down
+        case QAbstractSocket::ConnectionRefusedError:
             //spdlog::debug("ConnectionRefusedError: the connection was refused by the peer (or timed out).");
+            std::cerr << "ConnectionRefusedError: the connection was refused by the peer (or timed out)." << std::endl;
             break;
         case QAbstractSocket::NetworkError:
             //spdlog::debug("NetworkError: an error occurred with the network.");
+            std::cerr << "NetworkError: an error occurred with the network." << std::endl;
             break;
         case QAbstractSocket::OperationError:
             //spdlog::debug("OperationError: an operation was attempted while the socket was in a state that did not permit it.");
+            std::cerr
+                    << "OperationError: an operation was attempted while the socket was in a state that did not permit it."
+                    << std::endl;
             break;
         case QAbstractSocket::UnknownSocketError:
             //spdlog::debug("UnknownSocketError: an unidentified error occurred..");
+            std::cerr << "UnknownSocketError: an unidentified error occurred.." << std::endl;
             break;
     }
-
 }
 
 bool ClientSocket::operator==(const ClientSocket &b) {
@@ -345,16 +357,16 @@ bool ClientSocket::operator==(const ClientSocket *b) {
     return this->clientID == b->clientID;
 }
 
-void ClientSocket::send(QByteArray &data) {
-    this->write(data);
-}
-
 void ClientSocket::setClientID(quintptr clientId) {
     this->clientID = clientId;
 }
 
 quint32 ClientSocket::getClientID() {
     return this->clientID;
+}
+
+void ClientSocket::send(QByteArray &data) {
+    this->write(data);
 }
 
 void ClientSocket::send(_int code, BasicMessage basicMessage) {
@@ -367,23 +379,23 @@ void ClientSocket::send(_int code, BasicMessage basicMessage) {
     this->write(arrBlock);
 }
 
-void ClientSocket::send(_int res) {
+void ClientSocket::send(_int code) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(Q_DATA_STREAM_VERSION);
 
-    out << res;
+    out << code;
     this->write(arrBlock);
 }
 
-void ClientSocket::send(_int res, UserMessage userMessage) {
-    QByteArray blocco;
-    QDataStream out(&blocco, QIODevice::WriteOnly);
+void ClientSocket::send(_int code, UserMessage userMessage) {
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(Q_DATA_STREAM_VERSION);
 
-    out << res;
+    out << code;
     out << userMessage;
-    this->write(blocco);
+    this->write(arrBlock);
 }
 
 void ClientSocket::send(_int code, std::vector<FilesMessage> filesMessage) {

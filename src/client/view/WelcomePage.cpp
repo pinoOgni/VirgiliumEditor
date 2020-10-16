@@ -18,7 +18,11 @@ WelcomePage::WelcomePage(QWidget *parent) :
     QPixmap pix(":/Icons/virgilium.png");
     int w = ui->label_3->width();
     int h = ui->label_3->height();
-    ui->label_3->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+    ui->label_3->setPixmap(pix.scaled(w, h, Qt::KeepAspectRatio));
+    this->setWindowTitle("Virgilium");
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/Icons/v.png"), QSize(), QIcon::Normal, QIcon::On);
+    this->setWindowIcon(icon);
 
     client = new ClientStuff("127.0.0.1", LISTENING_PORT);
 

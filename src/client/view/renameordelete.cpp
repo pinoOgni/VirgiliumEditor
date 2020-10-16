@@ -8,10 +8,13 @@
 #include "renamefile.h"
 
 
-renameOrDelete::renameOrDelete(QWidget *parent) :
-        QDialog(parent),
-        ui(new Ui::renameOrDelete) {
+renameOrDelete::renameOrDelete(QWidget *parent) : QDialog(parent), ui(new Ui::renameOrDelete) {
     ui->setupUi(this);
+
+    this->setWindowTitle("Virgilium");
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/Icons/v.png"), QSize(), QIcon::Normal, QIcon::On);
+    this->setWindowIcon(icon);
 }
 
 renameOrDelete::~renameOrDelete() {

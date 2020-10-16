@@ -107,6 +107,12 @@ QList<User> Model::removeActiveUserForDocument(const User &user, const QString &
         return QList<User>();
 
     activeClientsForDocument.at(idFilename).removeOne(user);
+
+    if (activeClientsForDocument.at(idFilename).empty()) {
+        activeClientsForDocument.erase(idFilename);
+        return QList<User>();
+    }
+
     return activeClientsForDocument[idFilename];
 }
 
@@ -197,21 +203,6 @@ bool Model::requestToCollaborate(InvitationMessage invitationMessage) {
     return Database::getInstance().requestToCollaborateDB(invitationMessage);
 }
 
-/*void Model::removeUserFromEditor(ClientSocket *socket) {
-    auto toRemove = std::find_if(fileToClients.begin(), fileToClients.end(),
-                                 [socket](auto &pair) {
-                                     return socket == pair.second;
-                                 }
-    );
-    fileToClients.erase(toRemove);
-}
-
-void Model::insertUserIntoEditor(ServerDocument *serverDocument, ClientSocket *socket) {
-    this->fileToClients.insert(
-            std::pair<ServerDocument *, ClientSocket *>(serverDocument, socket)
-    );
-}*/
-
 void Model::insertMessage(const CrdtMessage &message) {
     this->messages.push_back(message);
 }
@@ -281,12 +272,11 @@ QVector<Symbol> Model::getFileFromFileSystem(const QString &filename) {
 
 
 _int Model::getIdFilename(QString email_owner, QString filename) {
-    return Database::getInstance().getIdFilenameDB(email_owner,filename);
+    return Database::getInstance().getIdFilenameDB(email_owner, filename);
 }
 
-
 bool Model::updateLastAcces(QString email, _int idFilename) {
-    return Database::getInstance().updateLastAccessDB(email,idFilename);
+    return Database::getInstance().updateLastAccessDB(email, idFilename);
 }
 
 

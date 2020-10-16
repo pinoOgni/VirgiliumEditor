@@ -55,7 +55,11 @@ private:
 
     void loadRequest(const QString &fileName, User user);
 
-    void insertOneChar(_int pos, const QString &character, const Symbol::CharFormat &font, _int siteId);
+    void insertOneChar(_int pos, const QString &character, const Symbol::CharFormat &font);
+
+    void multipleUpdate(_int pos, _int size);
+
+    void sendBlockFormatChange();
 
 private slots:
 
@@ -109,11 +113,13 @@ private slots:
 
     void changeCursorPosition(_int position, _int siteId);
 
-    void loadResponse(_int code, const QVector<Symbol> &symbols, QList<User> users);
+    void loadResponse(_int code, const QVector<Symbol> &symbols, const QList<User> &users);
 
     void changeActiveUser(const QList<User> &activeUsers);
 
     void changeBlockFormat(const QString &font, _int startPos, _int finalPos);
+
+    void changeCharFormat(_int pos, const Symbol::CharFormat &charData);
 
 };
 

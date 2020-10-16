@@ -37,6 +37,11 @@ PersonalPage::PersonalPage(QWidget *parent) : QMainWindow(parent), ui(new Ui::Pe
     theme.append("eff0f6");
     this->setStyleSheet(theme);
 
+    this->setWindowTitle("Virgilium");
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/Icons/v.png"), QSize(), QIcon::Normal, QIcon::On);
+    this->setWindowIcon(icon);
+
     //date and time
     QDateTime dateTime = dateTime.currentDateTime();
     QString dateTimeString = dateTime.toString("dd/MM/yyyy  hh:mm:ss");

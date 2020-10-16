@@ -52,10 +52,15 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
         } else if (m.getAction() == "CURSOR_CHANGED") {
             emit change_cursor_position(symbol.getPosition().at(1), m.getSender());
         } else if (m.getAction() == "CHANGE_BLOCK_FORMAT") {
+            if (m.getSymbol().getPosition().at(0) == -1 && m.getSymbol().getPosition().at(1) == -1) {
+                if (m.getMode())
+                        emit change_block_format(m.getSymbol().getFont().font, m.getSymbol().getPosition().at(0),
+                                                 m.getSymbol().getPosition().at(1));
+                return;
+            }
 
             int i = m.getSymbol().getPosition().at(0);
             for (i; i <= m.getSymbol().getPosition().at(1); i++) {
-                //spdlog::debug("i: {}", i);
                 Symbol s = this->_symbols.at(i);
                 Symbol::CharFormat format = m.getSymbol().getFont();
                 Symbol newSymbol(s.getLetter(), s.getSiteId(), s.getCounterId(), s.getPosition(), format);
@@ -66,10 +71,50 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
             }
             if (m.getMode() && i < this->_symbols.size())
                     emit change_block_format(this->_symbols.at(i).getFont().font, i, i + 1);
+        } else if (m.getAction() == "UPDATE") {
+            Symbol s = m.getSymbol();
 
-            /*if (m.getMode())
-                    emit change_block_format(m.getSymbol().getFont().font, m.getSymbol().getPosition().at(0),
-                                             m.getSymbol().getPosition().at(1));*/
+            _int i = -1;
+            for (i = 0; i < this->_symbols.size(); i++) {
+                if (this->_symbols[i] == s)
+                    break;
+            }
+
+            if (i == this->_symbols.size()) return;
+
+            Symbol oldSymbol = this->_symbols.at(i);
+
+            QRegExp tagExp(",");
+            QStringList newList = s.getFont().font.split(tagExp);
+            QStringList oldList = oldSymbol.getFont().font.split(tagExp);
+
+            QString newFont;
+            bool changed = true;
+            for (int i = 0; i < 10; i++) {
+                if (newList.at(i) == "-1") {
+                    newFont += oldList.at(i) + ",";
+                } else {
+                    changed = false;
+                    newFont += newList.at(i) + ",";
+                }
+
+                if (i == 9) newFont.remove(newFont.lastIndexOf(","), 1);
+            }
+
+            Symbol::CharFormat charData;
+            charData.font = newFont;
+            if (changed)
+                charData.foreground = s.getFont().foreground;
+            else
+                charData.foreground = oldSymbol.getFont().foreground;
+
+            Symbol newSymbol(oldSymbol.getLetter(), oldSymbol.getSiteId(), oldSymbol.getCounterId(),
+                             oldSymbol.getPosition(), charData);
+            this->_symbols.remove(i);
+            this->_symbols.insert(i, newSymbol);
+
+            if (m.getMode())
+                    emit change_char_format(i, charData);
         }
     }
 }
@@ -204,8 +249,6 @@ void Crdt_editor::loadRequest(const QString &name, User user) {
 
 void Crdt_editor::loadResponse(_int code, StorageMessage storageMessage) {
     this->_symbols = storageMessage.getSymbols();
-    /*for (const Symbol &symbol : storageMessage.getSymbols())
-        this->_symbols.push_back(symbol);*/
 
     QList<User> users;
     for (User u : storageMessage.getActiveUsers()) {
@@ -225,4 +268,33 @@ void Crdt_editor::deleteFromActive(const User &user, const QString &name) {
 
 void Crdt_editor::activeUserChanged(_int code, ActiveUserMessage activeUserMessage) {
     emit change_active_users(activeUserMessage.getActiveUsers());
+}
+
+void Crdt_editor::localUpdate(_int pos, const Symbol::CharFormat &charData) {
+    QRegExp tagExp(",");
+    QStringList newList = charData.font.split(tagExp);
+
+    Symbol s = this->_symbols.at(pos);
+    QStringList oldList = s.getFont().font.split(tagExp);
+
+    QString newFont;
+    for (int i = 0; i < 10; i++) {
+        if (newList.at(i) == oldList.at(i))
+            newFont += "-1,";
+        else
+            newFont += newList.at(i) + ",";
+
+        if (i == 9) newFont.remove(newFont.lastIndexOf(","), 1);
+    }
+
+    Symbol newSymbol(s.getLetter(), s.getSiteId(), s.getCounterId(), s.getPosition(), charData);
+    this->_symbols.remove(pos);
+    this->_symbols.insert(pos, newSymbol);
+
+    Symbol::CharFormat charDataToSend;
+    charDataToSend.font = newFont;
+    charDataToSend.foreground = charData.foreground;
+    Symbol symbolToSend(s.getLetter(), s.getSiteId(), s.getCounterId(), s.getPosition(), charDataToSend);
+    CrdtMessage m(this->_siteId, symbolToSend, false, "UPDATE", this->fileName);
+    this->socket->send(SYMBOL_INSERT_OR_ERASE, m);
 }
