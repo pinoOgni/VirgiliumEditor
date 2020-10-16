@@ -10,7 +10,6 @@
 #include "managecollaborators.h"
 #include "unsubscribefile.h"
 #include <QCloseEvent>
-#include <spdlog/spdlog.h>
 
 
 void PersonalPage::closeEvent(QCloseEvent *event)
@@ -55,7 +54,7 @@ PersonalPage::PersonalPage(QWidget *parent) : QMainWindow(parent), ui(new Ui::Pe
 }
 
 PersonalPage::~PersonalPage() {
-    spdlog::debug( "~PersonalPage");
+    //spdlog::debug( "~PersonalPage");
     disconnect(timer, SIGNAL(timeout()), this, SLOT(time_label()));
     disconnect(updateTimer, SIGNAL(timeout()), this, SLOT(updateTimerSlot()));
     delete ui;
@@ -81,7 +80,7 @@ void PersonalPage::receiveData(QString string, ClientStuff *client) {
     email = string;
     this->client = client;
 
-    spdlog::debug("receiveData");
+    //spdlog::debug("receiveData");
     connect(client, &ClientStuff::getFilesOwner, this, &PersonalPage::getFilesOwner2);
     connect(client, &ClientStuff::getInfoUser, this, &PersonalPage::getInfoUser2);
     connect(client, &ClientStuff::getUserFiles, this, &PersonalPage::getUserFiles2);
@@ -102,7 +101,7 @@ void PersonalPage::getAllData() {
 
 void PersonalPage::getAllData2(UserMessage &u, _int row1, std::vector<FilesMessage> &filesMessage1, _int row2,
                                std::vector<FilesMessage> &filesMessage2) {
-    spdlog::debug("PersonalPage::getAllData2");
+    //spdlog::debug("PersonalPage::getAllData2");
     this->currentUser = u.getUser();
     getInfoUser2(u);
     getFilesOwner2(row1, filesMessage1);
@@ -118,7 +117,7 @@ void PersonalPage::getInfoUser() {
 }
 
 void PersonalPage::getInfoUser2(UserMessage &u) {
-    spdlog::debug("PersonalPage::getInfoUser2");
+    //spdlog::debug("PersonalPage::getInfoUser2");
     QFont serifFont("Times", 14, QFont::Bold);
     ui->firstName->setText(u.getUser().getEmail());
     ui->firstName->setFont(serifFont);
@@ -138,7 +137,7 @@ void PersonalPage::getFilesOwner() {
 
 //receive data from mainwindow who receive data from clientstuff who recevice data from the server
 void PersonalPage::getFilesOwner2(_int row, std::vector<FilesMessage> &filesMessage) {
-    spdlog::debug("PersonalPage::getFilesOwner2");
+    //spdlog::debug("PersonalPage::getFilesOwner2");
     ui->tableWidget->clearContents();
 
     ui->tableWidget->setRowCount(row);
@@ -167,7 +166,7 @@ void PersonalPage::getUserFiles() {
 }
 
 void PersonalPage::getUserFiles2(_int row, std::vector<FilesMessage> &filesMessage) {
-    spdlog::debug("PersonalPage::getUserFiles2");
+    //spdlog::debug("PersonalPage::getUserFiles2");
     ui->tableWidget_2->clearContents();
     ui->tableWidget_2->setRowCount(row);
     QTableWidgetItem *temp;
@@ -206,7 +205,7 @@ void PersonalPage::on_tableWidget_cellDoubleClicked(int row, int column) {
         emit sendData_2(this->client, email, ui->tableWidget->item(row, column)->text(), this->currentUser);
 
         newRenameOrDelete->show();
-        spdlog::debug("RENAME OR DELETE FILE");
+        //spdlog::debug("RENAME OR DELETE FILE");
 
         //close renameordelete and refresh table files
         connect(newRenameOrDelete, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
@@ -220,7 +219,7 @@ void PersonalPage::on_tableWidget_cellDoubleClicked(int row, int column) {
         emit sendData_2(this->client, email, ui->tableWidget->item(row, 0)->text(), this->currentUser);
 
         manageC->show();
-        spdlog::debug("ADD OR REMOVE COLLABORATOR");
+        //spdlog::debug("ADD OR REMOVE COLLABORATOR");
 
         connect(manageC, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
     }
@@ -259,7 +258,7 @@ void PersonalPage::newFile(QString email, QString filename) {
                                   ""); //password is not used to create a new file. Change??
     client->getSocket()->send(NEW_FILE, fileManagementMessage);
 
-    spdlog::debug("PersonalPage::newFile ");
+    //spdlog::debug("PersonalPage::newFile ");
 }
 
 void PersonalPage::on_newFile_clicked() {
@@ -317,7 +316,7 @@ void PersonalPage::on_tableWidget_2_cellDoubleClicked(int row, int column) {
                     ui->tableWidget_2->item(row, 1)->text(), this->currentUser);
 
     unsubscribe->show();
-    spdlog::debug("REMOVE MYSELF FROM A FILE");
+    //spdlog::debug("REMOVE MYSELF FROM A FILE");
 
     connect(unsubscribe, SIGNAL(Want2Close2()), this, SLOT(getUserFiles()));
 }

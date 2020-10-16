@@ -6,7 +6,7 @@
 #ifndef VIRGILIUM_CONSTANTS_H
 #define VIRGILIUM_CONSTANTS_H
 
-#include <spdlog/spdlog.h>
+// #include <spdlog/spdlog.h>
 
 #define _int qint64
 #define FILE_IDENTIFIER 993

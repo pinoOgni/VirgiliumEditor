@@ -33,7 +33,7 @@ ClientStuff::ClientStuff(
 void ClientStuff::processAllData(_int code, UserMessage userMessage,
                                  _int row1, std::vector<FilesMessage> filesOwner,
                                  _int row2, std::vector<FilesMessage> filesCollabs) {
-    spdlog::debug("processAllData");
+    //spdlog::debug("processAllData");
     switch (code) {
     case GET_ALL_DATA_OK: {
         FilesMessage temp1 = FilesMessage();
@@ -44,7 +44,7 @@ void ClientStuff::processAllData(_int code, UserMessage userMessage,
             item.printUserInfo();
 
         emit getAllData(userMessage,row1,filesOwner,row2,filesCollabs);
-        spdlog::debug("emit getAllData");
+        //spdlog::debug("emit getAllData");
     }
     break;
     }
@@ -65,7 +65,7 @@ void ClientStuff::processRequestToCollaborate(_int code) {
 void ClientStuff::processInvitation(_int code, InvitationMessage invitationMessage) {
     switch (code) {
         case INVITE_CREATED: {
-            spdlog::debug("invite created client stuff");
+            //spdlog::debug("invite created client stuff");
             emit isInviteCreated(invitationMessage);
         }
     }
@@ -76,7 +76,7 @@ void ClientStuff::processFilesMessage(_int code, std::vector<FilesMessage> files
     case GET_FILES_OWNER_OK:
     case GET_FILES_OWNER_KO:{
         FilesMessage temp = FilesMessage();
-        spdlog::debug("GET_FILES_OWNER ");
+        //spdlog::debug("GET_FILES_OWNER ");
         for(auto item: filesMessage)
             item.printUserInfo();
         emit getFilesOwner(filesMessage.size(),filesMessage);
@@ -85,7 +85,7 @@ void ClientStuff::processFilesMessage(_int code, std::vector<FilesMessage> files
     case GET_FILES_COLLABORATOR_OK:
     case GET_FILES_COLLABORATOR_KO:{
         FilesMessage temp = FilesMessage();
-        spdlog::debug("GET_FILES_COLLABORATOR ");
+        //spdlog::debug("GET_FILES_COLLABORATOR ");
         for(auto item: filesMessage)
             item.printUserInfo();
         emit getUserFiles(filesMessage.size(),filesMessage);
@@ -99,7 +99,7 @@ void ClientStuff::processUserMessage(_int code, UserMessage um) {
     case GET_INFO_USER: {
         this->clientSocket->setClientID(um.getSender());
         emit getInfoUser(um);
-        spdlog::debug("get_info_user ");
+        //spdlog::debug("get_info_user ");
     }
     break;
     }
@@ -109,7 +109,7 @@ void ClientStuff::processBasicMessage(_int code, BasicMessage bm) {
     switch (code) {
     case CLIENT_CONNECTED: {
         this->clientSocket->setClientID(bm.getSender());
-        spdlog::debug("client_connected  {}" ,this->clientSocket->getClientID());
+        //spdlog::debug("client_connected  {}" ,this->clientSocket->getClientID());
     }
     break;
     }
@@ -119,27 +119,27 @@ void ClientStuff::processLoginAndSignup(_int code) {
     switch (code) {
     case LOGIN_OK: {
         emit tryToLogin(true);
-        spdlog::debug("login ok  {}", this->clientSocket->getClientID());
+        //spdlog::debug("login ok  {}", this->clientSocket->getClientID());
     }
     break;
     case LOGIN_KO: {
         emit tryToLogin(false);
-        spdlog::debug("login ko {}", this->clientSocket->getClientID());
+        //spdlog::debug("login ko {}", this->clientSocket->getClientID());
     }
     break;
     case SIGNUP_OK: {
         emit tryToSignup(true);
-        spdlog::debug("signup ok  {}", this->clientSocket->getClientID());
+        //spdlog::debug("signup ok  {}", this->clientSocket->getClientID());
     }
     break;
     case SIGNUP_KO: {
         emit tryToSignup(false);
-        spdlog::debug("signup ko {}", this->clientSocket->getClientID());
+        //spdlog::debug("signup ko {}", this->clientSocket->getClientID());
     }
     break;
     case ALREADY_LOGGED: {
         emit userAlreadyLogged();
-        spdlog::debug("userAlreadyLogged  {}", this->clientSocket->getClientID());
+        //spdlog::debug("userAlreadyLogged  {}", this->clientSocket->getClientID());
     }
     break;
     }
@@ -148,32 +148,32 @@ void ClientStuff::processLoginAndSignup(_int code) {
 void ClientStuff::processFileManagement(_int code) {
     switch (code) {
     case RENAME_FILE_OK: {
-        spdlog::debug("rename file OK");
+        //spdlog::debug("rename file OK");
         emit isFileRenamed(true);
     }
     break;
     case RENAME_FILE_KO: {
-        spdlog::debug("rename file KO");
+        //spdlog::debug("rename file KO");
         emit isFileRenamed(false);
     }
     break;
     case DELETE_FILE_OK: {
-        spdlog::debug("delete file OK");
+        //spdlog::debug("delete file OK");
         emit isFileDeleted(true);
     }
     break;
     case DELETE_FILE_KO: {
-        spdlog::debug("delete file KO");
+        //spdlog::debug("delete file KO");
         emit isFileDeleted(false);
     }
     break;
     case NEW_FILE_OK: {
-        spdlog::debug("new file OK");
+        //spdlog::debug("new file OK");
         emit isFileCreated(true);
     }
     break;
     case NEW_FILE_KO: {
-        spdlog::debug("new file KO");
+        //spdlog::debug("new file KO");
         emit isFileCreated(false);
     }
     break;
@@ -184,12 +184,12 @@ void ClientStuff::processFileManagement(_int code) {
 void ClientStuff::processChangePassword(_int code) {
     switch (code) {
     case CHANGE_PASSWORD_OK: {
-        spdlog::debug("change password OK");
+        //spdlog::debug("change password OK");
         emit isPswChanged(true);
     }
     break;
     case CHANGE_PASSWORD_KO: {
-        spdlog::debug("change password KO");
+        //spdlog::debug("change password KO");
         emit isPswChanged(false);
     }
     break;
@@ -199,32 +199,32 @@ void ClientStuff::processChangePassword(_int code) {
 void ClientStuff::processUserManagement(_int code) {
     switch (code) {
     case ADD_COLLABORATOR_OK: {
-        spdlog::debug("add collaborator ok");
+        //spdlog::debug("add collaborator ok");
         emit isCollaboratorAdded(true);
     }
     break;
     case ADD_COLLABORATOR_KO: {
-        spdlog::debug("add collaborator ko");
+        //spdlog::debug("add collaborator ko");
         emit isCollaboratorAdded(false);
     }
     break;
     case REMOVE_COLLABORATOR_OK: {
-        spdlog::debug("remove collaborator ok");
+        //spdlog::debug("remove collaborator ok");
         emit isCollaboratorRemoved(true);
     }
     break;
     case REMOVE_COLLABORATOR_KO: {
-        spdlog::debug("remove collaborator ko");
+        //spdlog::debug("remove collaborator ko");
         emit isCollaboratorRemoved(false);
     }
     break;
     case UNSUBSCRIBE_OK: {
-        spdlog::debug(" unsubscribe ok");
+        //spdlog::debug(" unsubscribe ok");
         isUnsubscribed(true);
     }
     break;
     case UNSUBSCRIBE_KO: {
-        spdlog::debug(" unsubscribe ko");
+        //spdlog::debug(" unsubscribe ko");
         isUnsubscribed(false);
     }
     break;
@@ -238,5 +238,5 @@ ClientSocket * ClientStuff::getSocket() {
 ClientStuff::~ClientStuff() {
     this->clientSocket->close();
     delete this->clientSocket; //svolge le operazioni dentro il distruttore della classe ClientSocket
-    spdlog::debug("client stuff ~");
+    //spdlog::debug("client stuff ~");
 }

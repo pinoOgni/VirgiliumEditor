@@ -106,7 +106,7 @@ void manageCollaborators::receiveData_2(ClientStuff *client, QString email, QStr
     QString displayText = "You can add or remove collaborator to ' ";
     displayText.append(filename).append(" ' file!");
     ui->label->setText(displayText);
-    spdlog::debug("receiveData_2 managecollaborators");
+    //spdlog::debug("receiveData_2 managecollaborators");
 }
 
 void manageCollaborators::on_cancel_clicked()

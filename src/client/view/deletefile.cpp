@@ -29,7 +29,7 @@ void deleteFile::receiveData_2(ClientStuff *client,QString email,QString filenam
     QString displayText = "Are you sure to delete ' ";
     displayText.append(filename).append(" ' file? \n No collaborator can access it anymore. ");
     ui->label->setText(displayText);
-    spdlog::debug("receiveData_2 deletefile");
+    //spdlog::debug("receiveData_2 deletefile");
 
 }
 

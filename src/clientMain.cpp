@@ -8,7 +8,8 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    if (argc < 1) {
+ /*
+  *    if (argc < 1) {
         spdlog::info("Usage: {} [-d/--debug]", argv[0]);
         exit(-1);
     }
@@ -18,6 +19,7 @@ int main(int argc, char *argv[])
         spdlog::set_level(spdlog::level::debug);
     }
 
+  */
     WelcomePage w;
     w.show();
     return a.exec();

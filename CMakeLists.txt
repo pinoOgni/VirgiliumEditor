@@ -15,7 +15,7 @@ find_package(Qt5Sql REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Charts REQUIRED)
 
-include_directories(src/include/)
+# include_directories(src/include/)
 
 qt5_add_resources(PROJECT_RESOURCE src/client/Resources/Icons.qrc)
 

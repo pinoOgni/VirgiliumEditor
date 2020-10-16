@@ -37,7 +37,7 @@ void renameFile::on_pushButton_clicked()
                                   QCryptographicHash::hash(password.toUtf8(),QCryptographicHash::Sha224));
 
     client->getSocket()->send(RENAME_FILE,fileManagementMessage);
-        spdlog::debug("rename file push button clicked ");
+        //spdlog::debug("rename file push button clicked ");
     }
 }
 
@@ -64,7 +64,7 @@ void renameFile::receiveData_2(ClientStuff *client,QString email,QString oldFile
     QString displayText = "You are renaming the ' ";
     displayText.append(oldFilename).append(" ' file!");
     ui->label->setText(displayText);
-    spdlog::debug("receiveData_2 renamefile email");
+    //spdlog::debug("receiveData_2 renamefile email");
 }
 
 void renameFile::isFileRenamed(bool res) {

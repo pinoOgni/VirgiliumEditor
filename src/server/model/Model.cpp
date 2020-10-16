@@ -23,7 +23,7 @@ void Model::removeLoggedUser(ClientSocket *socket) {
 }
 
 bool Model::isUserOnline(const QString email) {
-    spdlog::debug("isUserOnline");
+    //spdlog::debug("isUserOnline");
     bool find = false;
     for (auto it = onlineUsers.begin(); it != onlineUsers.end(); ++it) {
         if (QString::compare(*it,email)==0) {
@@ -35,7 +35,7 @@ bool Model::isUserOnline(const QString email) {
 
 void Model::insertUserOnline(const QString email) {
     onlineUsers.emplace_back(email);
-    spdlog::debug("insertUserOnline");
+    //spdlog::debug("insertUserOnline");
 }
 
 void Model::removeUserOnline(const QString email) {
