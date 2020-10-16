@@ -93,6 +93,12 @@ QList<User> Model::removeActiveUser(const User &user, const QString &fileName) {
         return QList<User>();
 
     activeClientsForDocument.at(fileName).removeOne(user);
+
+    if (activeClientsForDocument.at(fileName).empty()) {
+        activeClientsForDocument.erase(fileName);
+        return QList<User>();
+    }
+
     return activeClientsForDocument[fileName];
 }
 

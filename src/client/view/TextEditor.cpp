@@ -127,7 +127,6 @@ void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, const Q
     if (code == LOAD_RESPONSE) {
         for (const Symbol &symbol : symbols) {
             //spdlog::debug("{0}, {1}, {2}", symbol.getLetter().toStdString(), symbols.indexOf(symbol), symbol.getFont().font.toStdString());
-            insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
             insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont());
             changeBlockFormat(symbol.getFont().font, symbols.indexOf(symbol), symbols.indexOf(symbol) + 1);
         }
@@ -696,7 +695,7 @@ void TextEditor::change(int pos, int del, int add) {
                     indentation == QString::number(textBlockFormat.indent())) {
                     /*multipleErase(pos, removed.size());
                     multipleInsert(pos, added);*/
-                    multipleUpdate(pos, removed.size(), charData);
+                    multipleUpdate(pos, removed.size());
                 } else {
                     alignment = QString::number(textBlockFormat.alignment());
                     indentation = QString::number(textBlockFormat.indent());
@@ -778,8 +777,21 @@ void TextEditor::sendBlockFormatChange() {
     this->client->changeBlockFormat(charData, -1, -1);
 }
 
-void TextEditor::multipleUpdate(_int pos, _int size, const Symbol::CharFormat &charData) {
+void TextEditor::multipleUpdate(_int pos, _int size) {
     for (int i = 0; i < size; i++) {
+        QTextCursor cursor(ui->textEdit->textCursor());
+        cursor.setPosition(pos + 1, QTextCursor::MoveAnchor);
+        QTextCharFormat textCharFormat = cursor.charFormat();
+        QTextBlockFormat textBlockFormat = cursor.block().blockFormat();
+
+        QString result = textCharFormat.font().toString() + "/"
+                         + QString::number(textBlockFormat.alignment()) + "/"
+                         + QString::number(textBlockFormat.indent());
+
+        Symbol::CharFormat charData;
+        charData.foreground = textCharFormat.foreground().color();
+        charData.font = result;
+
         this->client->localUpdate(pos, charData);
         pos++;
     }

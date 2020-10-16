@@ -20,6 +20,8 @@ int main(int argc, char *argv[])
     }
 
   */
+
+    freopen("clientLog.txt", "w", stderr);
     WelcomePage w;
     w.show();
     return a.exec();

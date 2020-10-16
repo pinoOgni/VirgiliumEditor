@@ -242,6 +242,7 @@ void ClientSocket::onReadyRead() {
             break;
         default: {
             //spdlog::debug("Default case in ReadyRead");
+            std::cerr << "Error: default case" << std::endl;
         }
     }
 
@@ -303,32 +304,44 @@ void ClientSocket::onBytesWritten(_int bytes) {
 //add gli altri switch case
 void ClientSocket::onDisplayError(QTcpSocket::SocketError error) {
     switch (error) {
-        case QAbstractSocket::RemoteHostClosedError:  //l'host cade
+        case QAbstractSocket::RemoteHostClosedError:
             //spdlog::debug("RemoteHostClosedError: the remote host closed the connection.");
+            std::cerr << "RemoteHostClosedError: the remote host closed the connection." << std::endl;
             break;
-        case QAbstractSocket::HostNotFoundError: //address ""
+        case QAbstractSocket::HostNotFoundError:
             //spdlog::debug("HostNotFoundError: the host address was not found.");
+            std::cerr << "HostNotFoundError: the host address was not found." << std::endl;
             break;
         case QAbstractSocket::SocketAccessError:
             //spdlog::debug("SocketAccessError: the socket operation failed because the application lacked the required privileges.");
+            std::cerr
+                    << "SocketAccessError: the socket operation failed because the application lacked the required privileges."
+                    << std::endl;
             break;
         case QAbstractSocket::SocketResourceError:
             //spdlog::debug("SocketResourceError: the local system ran out of resources (e.g., too many sockets).");
+            std::cerr << "SocketResourceError: the local system ran out of resources (e.g., too many sockets)."
+                      << std::endl;
             break;
-        case QAbstractSocket::ConnectionRefusedError: //se provo a connetermi ma il server è down
+        case QAbstractSocket::ConnectionRefusedError:
             //spdlog::debug("ConnectionRefusedError: the connection was refused by the peer (or timed out).");
+            std::cerr << "ConnectionRefusedError: the connection was refused by the peer (or timed out)." << std::endl;
             break;
         case QAbstractSocket::NetworkError:
             //spdlog::debug("NetworkError: an error occurred with the network.");
+            std::cerr << "NetworkError: an error occurred with the network." << std::endl;
             break;
         case QAbstractSocket::OperationError:
             //spdlog::debug("OperationError: an operation was attempted while the socket was in a state that did not permit it.");
+            std::cerr
+                    << "OperationError: an operation was attempted while the socket was in a state that did not permit it."
+                    << std::endl;
             break;
         case QAbstractSocket::UnknownSocketError:
             //spdlog::debug("UnknownSocketError: an unidentified error occurred..");
+            std::cerr << "UnknownSocketError: an unidentified error occurred.." << std::endl;
             break;
     }
-
 }
 
 bool ClientSocket::operator==(const ClientSocket &b) {

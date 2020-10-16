@@ -89,12 +89,12 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
             QStringList oldList = oldSymbol.getFont().font.split(tagExp);
 
             QString newFont;
-            bool changed = false;
+            bool changed = true;
             for (int i = 0; i < 10; i++) {
                 if (newList.at(i) == "-1") {
                     newFont += oldList.at(i) + ",";
                 } else {
-                    changed = true;
+                    changed = false;
                     newFont += newList.at(i) + ",";
                 }
 
@@ -103,7 +103,7 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
 
             Symbol::CharFormat charData;
             charData.font = newFont;
-            if (!changed)
+            if (changed)
                 charData.foreground = s.getFont().foreground;
             else
                 charData.foreground = oldSymbol.getFont().foreground;

@@ -57,7 +57,7 @@ private:
 
     void insertOneChar(_int pos, const QString &character, const Symbol::CharFormat &font);
 
-    void multipleUpdate(_int pos, _int size, const Symbol::CharFormat &charData);
+    void multipleUpdate(_int pos, _int size);
 
     void sendBlockFormatChange();
 
