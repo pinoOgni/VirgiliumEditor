@@ -25,7 +25,7 @@ class Model {
 
     std::map<_int, ClientSocket *> clientToUser;
     std::vector<QString> onlineUsers;
-    std::map<QString, QList<User>> activeClientsForDocument;
+    std::map<_int, QList<User>> activeClientsForDocument;
     QMutex symbolsForDocumentMutex;
     std::map<QString, QVector<Symbol>> symbolsForDocument;
     std::atomic<quint32> IDSeed;
@@ -50,13 +50,13 @@ public:
     void removeUserOnline(const QString email);
 
     /* Manage activeClientsForDocument */
-    QList<User> addActiveUser(const User &user, const QString &fileName);
+    QList<User> addActiveUserForDocument(const User &user, const QString &fileName);
 
-    QList<User> removeActiveUser(const User &user, const QString &fileName);
+    QList<User> removeActiveUserForDocument(const User &user, const QString &fileName);
 
     void removeActiveUser(_int siteId);
 
-    std::map<QString, QList<User>> &getActiveClientsForDocument();
+    std::map<_int, QList<User>> &getActiveClientsForDocument();
 
     /* Manage messages */
     void insertMessage(const CrdtMessage &message);
@@ -114,6 +114,9 @@ public:
     //pino 12 ottobre
     _int getIdFilename(QString email_owner, QString filename);
     bool updateLastAcces(QString email, _int idFilename);
+
+    bool canOpenFile(UserManagementMessage userManagementMessage);
+
 
 };
 

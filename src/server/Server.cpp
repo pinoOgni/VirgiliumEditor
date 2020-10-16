@@ -92,13 +92,21 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
     while (!this->model.getMessages().empty()) {
         auto message = this->model.getMessages().dequeue();
         auto activeUsersForDocument = this->model.getActiveClientsForDocument();
-        auto it = activeUsersForDocument.find(crdtMessage.getFileName());
+
+        //fileName is email_owner/filename
+        QRegExp tagExp("/");
+        QStringList firstList = crdtMessage.getFileName().split(tagExp);
+        QString email_owner = firstList.at(0);
+        QString filename = firstList.at(1);
+        _int idFilename = model.getIdFilename(email_owner,filename);
+
+        auto it = activeUsersForDocument.find(idFilename);
         if (it == activeUsersForDocument.end())
             return;
 
         /* It is a kind of dispatch messages */
         try {
-            QList<User> users = activeUsersForDocument[crdtMessage.getFileName()];
+            QList<User> users = activeUsersForDocument[idFilename];
             for (auto &user : users) {
                 if (message.getSender() != user.getSiteId()) {
                     message.setMode(true);
@@ -124,7 +132,7 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     if (code == LOAD_REQUEST) {
         try {
-            QList<User> users = model.addActiveUser(storageMessage.getActiveUsers().at(0),
+            QList<User> users = model.addActiveUserForDocument(storageMessage.getActiveUsers().at(0),
                                                     storageMessage.getFileName());
 
             QVector<Symbol> symbols;
@@ -243,7 +251,9 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
         }
             break;
         case DELETE_ACTIVE: {
-            QList<User> users = this->model.removeActiveUser(userMessage.getUser(), userMessage.getFileName());
+            qDebug() << "DELETE_ACTIVE";
+            this->model.removeActiveUser(sender->getClientID());
+            QList<User> users = this->model.removeActiveUserForDocument(userMessage.getUser(), userMessage.getFileName());
 
             QRegExp tagExp("/");
             QStringList firstList = userMessage.getFileName().split(tagExp);
@@ -300,10 +310,20 @@ void Server::onFileManagementMessageReceived(_int code, const FileManagementMess
             break;
         case DELETE_FILE: {
             //spdlog::debug("delete_file: {} ", fileManagementMessage.getEmail().toStdString());
-            if (model.deleteFile(fileManagementMessage))
-                sender->send(DELETE_FILE_OK);
-            else
-                sender->send(DELETE_FILE_KO);
+            auto activeUsersForDocument = this->model.getActiveClientsForDocument();
+            //getEmail in thi case return the email_owner
+            _int idFilename = model.getIdFilename(fileManagementMessage.getEmail(),fileManagementMessage.getFilename());
+
+            auto it = activeUsersForDocument.find(idFilename);
+            if (it != activeUsersForDocument.end()) {
+                qDebug() << idFilename << " " << fileManagementMessage.getEmail() << " " << fileManagementMessage.getFilename();
+                sender->send(CANNOT_DELETE_FILE);
+            } else {
+                if (model.deleteFile(fileManagementMessage))
+                    sender->send(DELETE_FILE_OK);
+                else
+                    sender->send(DELETE_FILE_KO);
+            }
         }
             break;
         case NEW_FILE: {
@@ -355,10 +375,19 @@ void Server::onUserManagementMessageReceived(_int code, const UserManagementMess
             break;
         case REMOVE_COLLABORATOR: {
             //spdlog::debug("remove_collaborator: {} ", userManagementMessage.getEmail_owner().toStdString());
-            if (model.removeCollaborator(userManagementMessage))
-                sender->send(REMOVE_COLLABORATOR_OK);
-            else
-                sender->send(REMOVE_COLLABORATOR_KO);
+
+            auto activeUsersForDocument = this->model.getActiveClientsForDocument();
+            _int idFilename = model.getIdFilename(userManagementMessage.getEmail_owner(),userManagementMessage.getFilename());
+
+            auto it = activeUsersForDocument.find(idFilename);
+            if (it != activeUsersForDocument.end()) {
+                sender->send(CANNOT_REMOVE_COLL);
+            } else {
+                if (model.removeCollaborator(userManagementMessage))
+                    sender->send(REMOVE_COLLABORATOR_OK);
+                else
+                    sender->send(REMOVE_COLLABORATOR_KO);
+            }
         }
             break;
         case UNSUBSCRIBE: {
@@ -367,6 +396,14 @@ void Server::onUserManagementMessageReceived(_int code, const UserManagementMess
                 sender->send(UNSUBSCRIBE_OK);
             else
                 sender->send(UNSUBSCRIBE_KO);
+        }
+            break;
+        case CAN_OPEN_FILE: {
+            //spdlog::debug("can open file");
+            if (model.canOpenFile(userManagementMessage))
+                sender->send(CAN_OPEN_FILE_OK);
+            else
+                sender->send(CAN_OPEN_FILE_KO);
         }
             break;
     }

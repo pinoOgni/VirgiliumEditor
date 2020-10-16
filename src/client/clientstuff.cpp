@@ -167,6 +167,11 @@ void ClientStuff::processFileManagement(_int code) {
         emit isFileDeleted(false);
     }
     break;
+    case CANNOT_DELETE_FILE: {
+        qDebug("cannot delete file");
+            emit canDeleteFile(false);
+    }
+    break;
     case NEW_FILE_OK: {
         //spdlog::debug("new file OK");
         emit isFileCreated(true);
@@ -220,12 +225,27 @@ void ClientStuff::processUserManagement(_int code) {
     break;
     case UNSUBSCRIBE_OK: {
         //spdlog::debug(" unsubscribe ok");
-        isUnsubscribed(true);
+        emit isUnsubscribed(true);
     }
     break;
     case UNSUBSCRIBE_KO: {
         //spdlog::debug(" unsubscribe ko");
-        isUnsubscribed(false);
+        emit isUnsubscribed(false);
+    }
+    break;
+    case CANNOT_REMOVE_COLL: {
+        //spdlog::debug(" cannot remove collaborato");
+        emit canRemoveCollaborator(false);
+    }
+    break;
+    case CAN_OPEN_FILE_OK: {
+        //spdlog::debug(" cannot open file");
+        emit canOpenFile(true);
+    }
+    break;
+    case CAN_OPEN_FILE_KO: {
+        //spdlog::debug(" cannot open file");
+        emit canOpenFile(false);
     }
     break;
    }

@@ -45,6 +45,7 @@ private slots:
 
     void on_cancel_clicked();
     void isUnsubscribed(bool);
+    void canOpenFile(bool);
 
     void on_pushButton_clicked();
 

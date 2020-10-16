@@ -52,6 +52,8 @@ void deleteFile::on_pushButton_clicked()
 
     //every time the user push on "delete" I connect a signal
     connect(client, &ClientStuff::isFileDeleted,this,&deleteFile::isFileDeleted);
+    connect(client, &ClientStuff::canDeleteFile,this,&deleteFile::canDeleteFile);
+
 
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
@@ -68,12 +70,23 @@ void deleteFile::isFileDeleted(bool res) {
 
     if(res) {
         QMessageBox::information(this,"Deleted","File deleted");
-        disconnect(client, &ClientStuff::isFileDeleted,this,&deleteFile::isFileDeleted);
+        disconnect(client, &ClientStuff::canDeleteFile,this,&deleteFile::canDeleteFile);
         this->close();
         emit Want2Close3();
     } else {
         QMessageBox::information(this,"Deleted","Errore while deleteing file");
+        disconnect(client, &ClientStuff::canDeleteFile,this,&deleteFile::canDeleteFile);
         disconnect(client, &ClientStuff::isFileDeleted,this,&deleteFile::isFileDeleted);
     }
 }
 
+void deleteFile::canDeleteFile(bool res) {
+    //res should be always false, but for safety we control it
+
+    if(!res) {
+        QMessageBox::warning(this,"Attention","There is someone online for this document, retry later");
+        disconnect(client, &ClientStuff::isFileDeleted,this,&deleteFile::isFileDeleted);
+        disconnect(client, &ClientStuff::canDeleteFile,this,&deleteFile::canDeleteFile);
+        this->close();
+    }
+}
