@@ -42,6 +42,7 @@ private slots:
     void isInviteCreated(InvitationMessage);
     //void isCollaboratorAdded(bool);
     void isCollaboratorRemoved(bool);
+    void canRemoveCollaborator(bool);
 
     void on_cancel_clicked();
 signals:

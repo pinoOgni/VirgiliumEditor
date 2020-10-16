@@ -168,7 +168,8 @@ void ClientSocket::onReadyRead() {
         case DELETE_FILE_OK:
         case DELETE_FILE_KO:
         case NEW_FILE_OK:
-        case NEW_FILE_KO: {
+        case NEW_FILE_KO:
+        case CANNOT_DELETE_FILE: {
             if (!this->in.commitTransaction()) return;
             emit fileManagementMessageResponse(code);
         }
@@ -190,7 +191,8 @@ void ClientSocket::onReadyRead() {
         case CREATE_INVITE:
         case ADD_COLLABORATOR:
         case REMOVE_COLLABORATOR:
-        case UNSUBSCRIBE: {
+        case UNSUBSCRIBE:
+        case CAN_OPEN_FILE: {
             UserManagementMessage userManagementMessage;
             this->in >> userManagementMessage;
 
@@ -212,7 +214,10 @@ void ClientSocket::onReadyRead() {
         case REMOVE_COLLABORATOR_OK:
         case REMOVE_COLLABORATOR_KO:
         case UNSUBSCRIBE_OK:
-        case UNSUBSCRIBE_KO: {
+        case UNSUBSCRIBE_KO:
+        case CANNOT_REMOVE_COLL:
+        case CAN_OPEN_FILE_KO:
+        case CAN_OPEN_FILE_OK: {
             if (!this->in.commitTransaction()) return;
             emit userManagementMessageResponse(code);
         }

@@ -75,41 +75,57 @@ QVector<Symbol> Model::getSymbolsForDocument(const QString &fileName) {
     return symbolsForDocument[fileName];
 }
 
-QList<User> Model::addActiveUser(const User &user, const QString &fileName) {
-    auto it = activeClientsForDocument.find(fileName); //TODO sostituire filename con id del file
+QList<User> Model::addActiveUserForDocument(const User &user, const QString &fileName) {
+    //fileName is email_owner/filename
+    QRegExp tagExp("/");
+    QStringList firstList = fileName.split(tagExp);
+    QString email_owner = firstList.at(0);
+    QString filename = firstList.at(1);
+    _int idFilename = getIdFilename(email_owner,filename);
+
+    auto it = activeClientsForDocument.find(idFilename);
     if (it != activeClientsForDocument.end()) { /* file already opened */
-        activeClientsForDocument.at(fileName).push_back(user);
-        return activeClientsForDocument.at(fileName);
+        activeClientsForDocument.at(idFilename).push_back(user);
+        return activeClientsForDocument.at(idFilename);
     } else {
         QList<User> users = {user};
-        activeClientsForDocument.insert(std::pair<QString, QList<User>>(fileName, users));
+        activeClientsForDocument.insert(std::pair<_int, QList<User>>(idFilename, users));
         return users;
     }
 }
 
-QList<User> Model::removeActiveUser(const User &user, const QString &fileName) {
-    auto it = activeClientsForDocument.find(fileName);
+QList<User> Model::removeActiveUserForDocument(const User &user, const QString &fileName) {
+    //fileName is email_owner/filename
+    QRegExp tagExp("/");
+    QStringList firstList = fileName.split(tagExp);
+    QString email_owner = firstList.at(0);
+    QString filename = firstList.at(1);
+    _int idFilename = getIdFilename(email_owner,filename);
+
+    auto it = activeClientsForDocument.find(idFilename);
     if (it == activeClientsForDocument.end())
         return QList<User>();
 
-    activeClientsForDocument.at(fileName).removeOne(user);
-    return activeClientsForDocument[fileName];
+    activeClientsForDocument.at(idFilename).removeOne(user);
+    return activeClientsForDocument[idFilename];
 }
 
 void Model::removeActiveUser(_int siteId) {
-    QString filename = "";
+
+    _int idFilename = 0;
+
     for (auto &it : this->activeClientsForDocument) {
         for (auto it1 = it.second.begin(); it1 != it.second.end(); it1++) {
             if (it1->getSiteId() == siteId) {
-                filename = it.first;
+                idFilename = it.first;
                 it.second.erase(it1);
                 break;
             }
         }
     }
 
-    if (filename != "" && activeClientsForDocument.at(filename).empty())
-        activeClientsForDocument.erase(filename);
+    if (idFilename != 0 && activeClientsForDocument.at(idFilename).empty())
+        activeClientsForDocument.erase(idFilename);
 }
 
 bool Model::loginUser(User user) {
@@ -204,7 +220,7 @@ QQueue<CrdtMessage> &Model::getMessages() {
     return this->messages;
 }
 
-std::map<QString, QList<User>> &Model::getActiveClientsForDocument() {
+std::map<_int, QList<User>> &Model::getActiveClientsForDocument() {
     return this->activeClientsForDocument;
 }
 
@@ -264,9 +280,6 @@ QVector<Symbol> Model::getFileFromFileSystem(const QString &filename) {
 }
 
 
-
-//pino 12 ottobre
-
 _int Model::getIdFilename(QString email_owner, QString filename) {
     return Database::getInstance().getIdFilenameDB(email_owner,filename);
 }
@@ -275,3 +288,10 @@ _int Model::getIdFilename(QString email_owner, QString filename) {
 bool Model::updateLastAcces(QString email, _int idFilename) {
     return Database::getInstance().updateLastAccessDB(email,idFilename);
 }
+
+
+bool Model::canOpenFile(UserManagementMessage userManagementMessage) {
+    return Database::getInstance().canOpenFileDB(userManagementMessage);
+}
+
+
