@@ -126,6 +126,8 @@ void TextEditor::loadRequest(const QString &f, User user) {
 void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, const QList<User> &users) {
     if (code == LOAD_RESPONSE) {
         for (const Symbol &symbol : symbols) {
+            //spdlog::debug("{0}, {1}, {2}", symbol.getLetter().toStdString(), symbols.indexOf(symbol), symbol.getFont().font.toStdString());
+            insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont(), symbol.getSiteId());
             insertOneChar(symbols.indexOf(symbol), symbol.getLetter(), symbol.getFont());
             changeBlockFormat(symbol.getFont().font, symbols.indexOf(symbol), symbols.indexOf(symbol) + 1);
         }
