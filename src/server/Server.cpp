@@ -12,7 +12,7 @@
 
 //ADD quint16 port è un unsigned short
 Server::Server(unsigned short port, Model &model) : model(model) {
-    freopen("serverLog.txt", "w", stderr);
+    //freopen("serverLog.txt", "w", stderr);
     if (!listen(QHostAddress::LocalHost, port)) {
         //spdlog::error("Error: server is not listening");
         std::cerr << "Error: server is not listening" << std::endl;
@@ -82,6 +82,7 @@ void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
             auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
             this->model.removeLoggedUser(sender);
             this->model.removeActiveUser(sender->getClientID());
+            this->model.removeUserOnline(sender->getClientID());
             break;
         }
         case QAbstractSocket::ListeningState:
@@ -91,6 +92,32 @@ void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
             std::cerr << "Unknown state" << std::endl;
             //spdlog::debug("Unknown State.");
     }
+}
+
+bool Server::checkUpdate(CrdtMessage crdtMessage){
+
+    if(crdtMessage.getAction() != "UPDATE")
+        return false;
+
+    auto font = crdtMessage.getSymbol().getFont().font;
+
+    QRegExp tagExp(",");
+    QStringList l = font.split(tagExp);
+    if(l.at(0) != "-1" || l.at(1) != "-1"){
+        return true;
+    }
+
+
+    for(QString s:l){
+
+        if(s!="-1"){
+            return false;
+        }
+
+    }
+    return true;
+
+
 }
 
 void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
@@ -114,8 +141,10 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
         /* It is a kind of dispatch messages */
         try {
             QList<User> users = activeUsersForDocument[idFilename];
+            bool flag = checkUpdate(crdtMessage);
+            qDebug() << "flag: " << flag;
             for (auto &user : users) {
-                if (message.getSender() != user.getSiteId()) {
+                if (message.getSender() != user.getSiteId()  || flag) {
                     message.setMode(true);
                     ClientSocket *socket = this->model.getLoggedUser(user);
                     if (message.getAction() == "CURSOR_CHANGED")
@@ -184,7 +213,7 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
             } else {
                 if (Model::loginUser(userMessage.getUser())) {
                     this->model.insertLoggedUser(sender, userMessage.getUser());
-                    this->model.insertUserOnline(userMessage.getUser().getEmail());
+                    this->model.insertUserOnline(sender->getClientID(), userMessage.getUser().getEmail());
                     sender->send(LOGIN_OK);
                     //spdlog::debug("readClient L true");
                 } else {
@@ -426,7 +455,7 @@ void Server::onLogoutReceived(_int code, UserMessage userMessage) {
             model.closeConnectionDB();
             //this->model.removeUserFromEditor(sender);
             this->model.removeLoggedUser(sender);
-            this->model.removeUserOnline(userMessage.getUser().getEmail());
+            this->model.removeUserOnline(sender->getClientID());
         }
             break;
     }
