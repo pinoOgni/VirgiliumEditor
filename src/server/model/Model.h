@@ -21,7 +21,7 @@
 
 class Model {
     std::map<_int, ClientSocket *> clientToUser;
-    std::vector<QString> onlineUsers;
+    std::map<_int, QString> onlineUsers;
     std::map<_int, QList<User>> activeClientsForDocument;
     QMutex symbolsForDocumentMutex;
     std::map<QString, QVector<Symbol>> symbolsForDocument;
@@ -42,9 +42,9 @@ public:
 
     bool isUserOnline(const QString email);
 
-    void insertUserOnline(const QString email);
+    void insertUserOnline(_int, const QString email);
 
-    void removeUserOnline(const QString email);
+    void removeUserOnline(_int);
 
     /* Manage activeClientsForDocument */
     QList<User> addActiveUserForDocument(const User &user, const QString &fileName);

@@ -25,25 +25,29 @@ void Model::removeLoggedUser(ClientSocket *socket) {
 bool Model::isUserOnline(const QString email) {
     //spdlog::debug("isUserOnline");
     bool find = false;
+
     for (auto it = onlineUsers.begin(); it != onlineUsers.end(); ++it) {
-        if (QString::compare(*it,email)==0) {
+        if (QString::compare(it->second,email)==0) {
             find = true;
+            break;
         }
     }
     return find;
 }
 
-void Model::insertUserOnline(const QString email) {
-    onlineUsers.emplace_back(email);
-    //spdlog::debug("insertUserOnline");
+/*void Model::insertLoggedUser(ClientSocket *socket, const User &user) {
+    clientToUser.insert(std::pair<_int, ClientSocket *>(user.getSiteId(), socket));
+}*/
+
+void Model::insertUserOnline(_int id, const QString email) {
+    onlineUsers.insert(std::pair<_int, QString>(id, email));
 }
 
-void Model::removeUserOnline(const QString email) {
-    for (auto it = onlineUsers.begin(); it != onlineUsers.end(); ++it) {
-        if (QString::compare(*it,email)==0) {
-            it = onlineUsers.erase(it);
-            break;
-        }
+void Model::removeUserOnline(_int id) {
+
+    auto it = onlineUsers.find(id);
+    if(it!=onlineUsers.end()) {
+        onlineUsers.erase(it);
     }
 }
 
@@ -103,8 +107,10 @@ QList<User> Model::removeActiveUserForDocument(const User &user, const QString &
     _int idFilename = getIdFilename(email_owner,filename);
 
     auto it = activeClientsForDocument.find(idFilename);
-    if (it == activeClientsForDocument.end())
+    if (it == activeClientsForDocument.end()) {
         return QList<User>();
+
+    }
 
     activeClientsForDocument.at(idFilename).removeOne(user);
 
@@ -120,11 +126,18 @@ void Model::removeActiveUser(_int siteId) {
 
     _int idFilename = 0;
 
+
     for (auto &it : this->activeClientsForDocument) {
         for (auto it1 = it.second.begin(); it1 != it.second.end(); it1++) {
             if (it1->getSiteId() == siteId) {
                 idFilename = it.first;
                 it.second.erase(it1);
+
+                for(User user : this->activeClientsForDocument.at(idFilename)) {
+                    ActiveUserMessage activeUserMessage(0,this->activeClientsForDocument.at(idFilename));
+                    this->getLoggedUser(user)->send(UPDATE_ACTIVE_USERS, activeUserMessage);
+                }
+
                 break;
             }
         }
