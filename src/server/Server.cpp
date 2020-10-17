@@ -94,30 +94,21 @@ void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
     }
 }
 
-bool Server::checkUpdate(CrdtMessage crdtMessage){
-
-    if(crdtMessage.getAction() != "UPDATE")
+bool Server::checkUpdate(CrdtMessage crdtMessage) {
+    if (crdtMessage.getAction() != "UPDATE")
         return false;
 
     auto font = crdtMessage.getSymbol().getFont().font;
 
     QRegExp tagExp(",");
     QStringList l = font.split(tagExp);
-    if(l.at(0) != "-1" || l.at(1) != "-1"){
+    if (l.at(0) != "-1" || l.at(1) != "-1")
         return true;
-    }
 
+    for (QString s:l)
+        if (s != "-1") return false;
 
-    for(QString s:l){
-
-        if(s!="-1"){
-            return false;
-        }
-
-    }
     return true;
-
-
 }
 
 void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
@@ -132,7 +123,7 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
         QStringList firstList = crdtMessage.getFileName().split(tagExp);
         QString email_owner = firstList.at(0);
         QString filename = firstList.at(1);
-        _int idFilename = model.getIdFilename(email_owner,filename);
+        _int idFilename = model.getIdFilename(email_owner, filename);
 
         auto it = activeUsersForDocument.find(idFilename);
         if (it == activeUsersForDocument.end())
@@ -142,9 +133,8 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
         try {
             QList<User> users = activeUsersForDocument[idFilename];
             bool flag = checkUpdate(crdtMessage);
-            qDebug() << "flag: " << flag;
             for (auto &user : users) {
-                if (message.getSender() != user.getSiteId()  || flag) {
+                if (message.getSender() != user.getSiteId() || flag) {
                     message.setMode(true);
                     ClientSocket *socket = this->model.getLoggedUser(user);
                     if (message.getAction() == "CURSOR_CHANGED")
@@ -170,7 +160,7 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
     if (code == LOAD_REQUEST) {
         try {
             QList<User> users = model.addActiveUserForDocument(storageMessage.getActiveUsers().at(0),
-                                                    storageMessage.getFileName());
+                                                               storageMessage.getFileName());
 
             QVector<Symbol> symbols;
             if (users.size() == 1) {
@@ -288,25 +278,25 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
         }
             break;
         case DELETE_ACTIVE: {
-            qDebug() << "DELETE_ACTIVE";
             this->model.removeActiveUser(sender->getClientID());
-            QList<User> users = this->model.removeActiveUserForDocument(userMessage.getUser(), userMessage.getFileName());
+            QList<User> users = this->model.removeActiveUserForDocument(userMessage.getUser(),
+                                                                        userMessage.getFileName());
 
             QRegExp tagExp("/");
             QStringList firstList = userMessage.getFileName().split(tagExp);
             QString email_owner = firstList.at(0);
             QString filename = firstList.at(1);
 
-            if(model.updateLastAcces(userMessage.getUser().getEmail(),
-                                     model.getIdFilename(email_owner, filename))) {
-                if(QString::compare(email_owner,userMessage.getUser().getEmail())==0) {
+            if (model.updateLastAcces(userMessage.getUser().getEmail(),
+                                      model.getIdFilename(email_owner, filename))) {
+                if (QString::compare(email_owner, userMessage.getUser().getEmail()) == 0) {
                     User user = User(email_owner);
-                    UserMessage userMessage = UserMessage(sender->getClientID(),user);
-                    onProcessUserMessage(GET_FILES_OWNER,userMessage);
+                    UserMessage userMessage = UserMessage(sender->getClientID(), user);
+                    onProcessUserMessage(GET_FILES_OWNER, userMessage);
                 } else {
                     User user = User(userMessage.getUser().getEmail());
-                    UserMessage userMessage = UserMessage(sender->getClientID(),user);
-                    onProcessUserMessage(GET_FILES_COLLABORATOR,userMessage);
+                    UserMessage userMessage = UserMessage(sender->getClientID(), user);
+                    onProcessUserMessage(GET_FILES_COLLABORATOR, userMessage);
                 }
             } else {
                 //spdlog::error("update last_access ERROR");
@@ -334,7 +324,7 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
 }
 
 
-void Server::onFileManagementMessageReceived(_int code, const FileManagementMessage& fileManagementMessage) {
+void Server::onFileManagementMessageReceived(_int code, const FileManagementMessage &fileManagementMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     //spdlog::debug("onFileManagementMessageReceived ");
     switch (code) {
@@ -350,11 +340,13 @@ void Server::onFileManagementMessageReceived(_int code, const FileManagementMess
             //spdlog::debug("delete_file: {} ", fileManagementMessage.getEmail().toStdString());
             auto activeUsersForDocument = this->model.getActiveClientsForDocument();
             //getEmail in thi case return the email_owner
-            _int idFilename = model.getIdFilename(fileManagementMessage.getEmail(),fileManagementMessage.getFilename());
+            _int idFilename = model.getIdFilename(fileManagementMessage.getEmail(),
+                                                  fileManagementMessage.getFilename());
 
             auto it = activeUsersForDocument.find(idFilename);
             if (it != activeUsersForDocument.end()) {
-                qDebug() << idFilename << " " << fileManagementMessage.getEmail() << " " << fileManagementMessage.getFilename();
+                qDebug() << idFilename << " " << fileManagementMessage.getEmail() << " "
+                         << fileManagementMessage.getFilename();
                 sender->send(CANNOT_DELETE_FILE);
             } else {
                 if (model.deleteFile(fileManagementMessage))
@@ -376,7 +368,7 @@ void Server::onFileManagementMessageReceived(_int code, const FileManagementMess
 }
 
 
-void Server::onChangePasswordMessageReceived(_int code, const ChangePasswordMessage& changePasswordMessage) {
+void Server::onChangePasswordMessageReceived(_int code, const ChangePasswordMessage &changePasswordMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch (code) {
         case CHANGE_PASSWORD: {
@@ -390,7 +382,7 @@ void Server::onChangePasswordMessageReceived(_int code, const ChangePasswordMess
     }
 }
 
-void Server::onUserManagementMessageReceived(_int code, const UserManagementMessage& userManagementMessage) {
+void Server::onUserManagementMessageReceived(_int code, const UserManagementMessage &userManagementMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
     switch (code) {
         case CREATE_INVITE: {
@@ -415,7 +407,8 @@ void Server::onUserManagementMessageReceived(_int code, const UserManagementMess
             //spdlog::debug("remove_collaborator: {} ", userManagementMessage.getEmail_owner().toStdString());
 
             auto activeUsersForDocument = this->model.getActiveClientsForDocument();
-            _int idFilename = model.getIdFilename(userManagementMessage.getEmail_owner(),userManagementMessage.getFilename());
+            _int idFilename = model.getIdFilename(userManagementMessage.getEmail_owner(),
+                                                  userManagementMessage.getFilename());
 
             auto it = activeUsersForDocument.find(idFilename);
             if (it != activeUsersForDocument.end()) {

@@ -2,13 +2,8 @@
     <qresource prefix="/Icons">
         <file>Copy.png</file>
         <file>Cut.png</file>
-        <file>New.png</file>
-        <file>Open.png</file>
         <file>Paste.png</file>
-        <file>Save.png</file>
         <file>close.png</file>
-        <file>undo.png</file>
-        <file>redo.png</file>
         <file>right-align.png</file>
         <file>left-align.png</file>
         <file>center-align.png</file>
@@ -21,15 +16,6 @@
         <file>indent.png</file>
         <file>pdf.png</file>
         <file>preview.png</file>
-        <file>list.png</file>
-        <file>Disc2.png</file>
-        <file>Circle.png</file>
-        <file>Square.png</file>
-        <file>Decimal.png</file>
-        <file>UpperAlpha.png</file>
-        <file>UpperRoman.png</file>
-        <file>table.png</file>
-        <file>photograph.png</file>
         <file>color.png</file>
         <file>highlighter.png</file>
         <file>virgilium.png</file>
