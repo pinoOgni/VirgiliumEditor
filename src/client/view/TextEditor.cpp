@@ -58,13 +58,6 @@ TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fil
     btnLayout->setAlignment(Qt::AlignLeft);
     buttonsLayout->setLayout(btnLayout);
 
-    //QRegExp tagExp("/");
-    //QStringList dataList = fileName.split(tagExp);
-    //auto *userPage = new QPushButton(dataList[0]); //TODO forse possiamo pure togliere
-    //userPage->setMaximumWidth(100);
-    //userPage->setStyleSheet("background: #F0F0F0;");
-    //buttonsLayout->layout()->addWidget(userPage);
-
     comboUsers = new QComboBox();
     comboUsers->setObjectName("comboUsers");
     comboUsers->setEditable(false);
@@ -296,14 +289,6 @@ void TextEditor::on_actionPaste_triggered() {
 
 void TextEditor::on_actionCut_triggered() {
     ui->textEdit->cut();
-}
-
-void TextEditor::on_actionUndo_triggered() { //TODO fanno danno con il doppio client
-    ui->textEdit->undo();
-}
-
-void TextEditor::on_actionRedo_triggered() { //TODO fanno danno con il doppio client
-    ui->textEdit->redo();
 }
 
 void TextEditor::on_actionSelect_all_triggered() {

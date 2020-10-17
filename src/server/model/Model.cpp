@@ -279,9 +279,33 @@ bool Model::updateLastAcces(QString email, _int idFilename) {
     return Database::getInstance().updateLastAccessDB(email, idFilename);
 }
 
-
 bool Model::canOpenFile(UserManagementMessage userManagementMessage) {
-    return Database::getInstance().canOpenFileDB(userManagementMessage);
+    bool isCollaborator = true;
+    if (userManagementMessage.getEmail_owner() != userManagementMessage.getEmail_collaborator())
+        isCollaborator = Database::getInstance().canOpenFileDB(userManagementMessage);
+    bool isFileNotOpen = true;
+
+    /*_int idFilename = getIdFilename(userManagementMessage.getEmail_owner(), userManagementMessage.getFilename());
+
+    auto it = this->activeClientsForDocument.find(idFilename);
+    if(it == this->activeClientsForDocument.end())
+        return isCollaborator && isFileNotOpen;
+
+    for(const User& user : this->activeClientsForDocument.at(idFilename)) {
+        if(user.getEmail() == userManagementMessage.getEmail_collaborator())
+            isFileNotOpen = false;
+    }*/
+
+    for (auto &it : this->activeClientsForDocument) {
+        for (auto &it1 : it.second) {
+            if (it1.getEmail() == userManagementMessage.getEmail_collaborator()) {
+                isFileNotOpen = false;
+                break;
+            }
+        }
+    }
+
+    return isCollaborator && isFileNotOpen;
 }
 
 

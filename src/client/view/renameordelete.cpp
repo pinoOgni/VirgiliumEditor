@@ -81,9 +81,29 @@ void renameOrDelete::slotWant2Close2() {
 }
 
 void renameOrDelete::on_openTextEditor_clicked() {
-    QString path = this->email + "/" + this->filename;
-    textEditor = new TextEditor(nullptr, client->getSocket(), path, this->currentUser);
-    textEditor->setAttribute(Qt::WA_DeleteOnClose);
-    this->close();
-    textEditor->show();
+    connect(client, &ClientStuff::canOpenFile, this, &renameOrDelete::canOpenFile);
+
+    QByteArray arrBlock;
+    QDataStream out(&arrBlock, QIODevice::WriteOnly);
+    UserManagementMessage userManagementMessage = UserManagementMessage(client->getSocket()->getClientID(), email,
+                                                                        email,
+                                                                        filename, "");
+
+    client->getSocket()->send(CAN_OPEN_FILE, userManagementMessage);
+}
+
+void renameOrDelete::canOpenFile(bool res) {
+    if (!res) {
+        QMessageBox::warning(this, "Error", "You cannot access this file");
+        this->close();
+        disconnect(client, &ClientStuff::canOpenFile, this, &renameOrDelete::canOpenFile);
+
+        emit Want2Close2();
+    } else {
+        QString path = this->email + "/" + this->filename;
+        textEditor = new TextEditor(nullptr, client->getSocket(), path, this->currentUser);
+        textEditor->setAttribute(Qt::WA_DeleteOnClose);
+        this->close();
+        textEditor->show();
+    }
 }

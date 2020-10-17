@@ -49,7 +49,10 @@ private slots:
 
     void slotWant2Close2();
 
+    void canOpenFile(bool res);
+
 signals:
+
     void sendDataToEditor(ClientSocket *);
 
     //send client, email and password to deletefile dialog or to renamefile dialog

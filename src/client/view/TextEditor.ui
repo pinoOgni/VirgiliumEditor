@@ -56,9 +56,6 @@
     <addaction name="actionPaste"/>
     <addaction name="actionSelect_all"/>
     <addaction name="separator"/>
-    <addaction name="actionUndo"/>
-    <addaction name="actionRedo"/>
-    <addaction name="separator"/>
     <addaction name="actionFind_and_replace"/>
    </widget>
    <widget class="QMenu" name="menuParagraph">
@@ -108,8 +105,6 @@
    <addaction name="actionCopy"/>
    <addaction name="actionPaste"/>
    <addaction name="actionCut"/>
-   <addaction name="actionUndo"/>
-   <addaction name="actionRedo"/>
       <addaction name="separator"/>
       <addaction name="actionRight_alignment"/>
       <addaction name="actionCenter_alignment"/>
@@ -153,26 +148,6 @@
    </property>
    <property name="text">
     <string>Paste</string>
-   </property>
-  </action>
-  <action name="actionUndo">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/undo.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Undo</string>
-   </property>
-  </action>
-  <action name="actionRedo">
-   <property name="icon">
-    <iconset>
-     <normalon>:/Icons/redo.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>Redo</string>
    </property>
   </action>
   <action name="actionExit">
