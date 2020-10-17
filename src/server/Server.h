@@ -23,6 +23,8 @@ public:
 
     void incomingConnection(qintptr handle) override;
 
+    bool  checkUpdate(CrdtMessage crdtMessage);
+
 private slots:
 
     void onSocketStateChanged(QTcpSocket::SocketState state);
