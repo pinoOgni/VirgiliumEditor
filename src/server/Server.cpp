@@ -14,7 +14,8 @@ Server::Server(quint16 port, Model &model) : model(model) {
         exit(-1);
     }
 
-    if (TESTDB == true) {
+    //spdlog::info("Server is listening on address: {0}, {1} ", this->serverAddress().toString().toStdString(), this->serverPort());
+    if (TESTDB) {
         QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(
                 VIRGILIUM_STORAGE)).removeRecursively();
         QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).mkdir("VIRGILIUM_STORAGE");
@@ -25,6 +26,7 @@ Server::~Server() {
     fclose(stderr);
 };
 
+/* This function is called when a new client is active and the client call the connectToHost method */
 void Server::incomingConnection(_int handle) {
     auto newSocket = new ClientSocket(this);
     if (!newSocket->setSocketDescriptor(handle)) {
@@ -47,12 +49,15 @@ void Server::incomingConnection(_int handle) {
     newSocket->setClientID(handle);
 
     BasicMessage basicMessage(handle);
+    //spdlog::debug("Sending: {} ", handle);
     newSocket->send(CLIENT_CONNECTED, basicMessage);
 }
 
+/* Every time the socket state change, this method is invoked */
 void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
     switch (state) {
         case QAbstractSocket::ClosingState: {
+            //spdlog::debug("The socket is about to close.");
             auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
             this->model.removeActiveUser(sender->getClientID());
             this->model.removeUserOnline(sender->getClientID());
@@ -64,7 +69,7 @@ void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
     }
 }
 
-bool Server::checkUpdate(CrdtMessage crdtMessage) {
+bool Server::checkUpdate(const CrdtMessage &crdtMessage) {
     if (crdtMessage.getAction() != "UPDATE")
         return false;
 
@@ -75,7 +80,7 @@ bool Server::checkUpdate(CrdtMessage crdtMessage) {
     if (l.at(0) != "-1" || l.at(1) != "-1")
         return true;
 
-    for (QString s:l)
+    for (const QString &s:l)
         if (s != "-1") return false;
 
     return true;
@@ -88,7 +93,6 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
         auto message = this->model.getMessages().dequeue();
         auto activeUsersForDocument = this->model.getActiveClientsForDocument();
 
-        //fileName is email_owner/filename
         QRegExp tagExp("/");
         QStringList firstList = crdtMessage.getFileName().split(tagExp);
         QString email_owner = firstList.at(0);
@@ -118,7 +122,7 @@ void Server::onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage) {
             if (code == SYMBOL_INSERT_OR_ERASE)
                 this->model.save(crdtMessage);
         } catch (std::exception &e) {
-            //spdlog::error(e.what()); //TODO mettere in un file di log
+            //spdlog::error(e.what());
             std::cerr << e.what() << std::endl;
             throw;
         }
@@ -151,7 +155,7 @@ void Server::onProcessStorageMessage(_int code, StorageMessage storageMessage) {
                 }
             }
         } catch (std::exception &e) {
-            //spdlog::error(e.what()); //TODO mettere in un file di log
+            //spdlog::error(e.what());
             std::cerr << e.what() << std::endl;
             throw;
         }
@@ -202,30 +206,28 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
             break;
         case GET_FILES_OWNER: {
             std::vector<FilesMessage> filesMessage = model.getFilesOwner(userMessage.getUser());
-            if (filesMessage.size() == 0) {
+            if (filesMessage.empty()) {
                 //spdlog::debug("get_files_owner ko");
                 sender->send(GET_FILES_OWNER_KO, filesMessage);
             } else {
                 //spdlog::debug("get_files_owner ok");
-
-                //problema con sender dove lo metto?
-                for (int i = 0; i < filesMessage.size(); i++)
-                    filesMessage[i].setSender(sender->getClientID());
+                //TODO problema con sender dove lo metto?
+                for (auto &i : filesMessage)
+                    i.setSender(sender->getClientID());
                 sender->send(GET_FILES_OWNER_OK, filesMessage);
             }
         }
             break;
         case GET_FILES_COLLABORATOR: {
             std::vector<FilesMessage> filesMessage = model.getUserFiles(userMessage.getUser());
-            if (filesMessage.size() == 0) {
+            if (filesMessage.empty()) {
                 //spdlog::debug("get_user_files ko");
                 sender->send(GET_FILES_COLLABORATOR_OK, filesMessage);
             } else {
                 //spdlog::debug("get_user_files ok");
-
-                //problema con sender dove lo metto?
-                for (int i = 0; i < filesMessage.size(); i++)
-                    filesMessage[i].setSender(sender->getClientID());
+                //TODO problema con sender dove lo metto?
+                for (auto &i : filesMessage)
+                    i.setSender(sender->getClientID());
                 sender->send(GET_FILES_COLLABORATOR_KO, filesMessage);
             }
         }
@@ -236,62 +238,66 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
             UserMessage userMessageReturn = UserMessage(sender->getClientID(), userReturn);
 
             std::vector<FilesMessage> filesOwner = model.getFilesOwner(userMessage.getUser());
-            for (int i = 0; i < filesOwner.size(); i++)
-                filesOwner[i].setSender(sender->getClientID());
+            for (auto &i : filesOwner)
+                i.setSender(sender->getClientID());
 
             std::vector<FilesMessage> filesCollabs = model.getUserFiles(userMessage.getUser());
-            for (int i = 0; i < filesCollabs.size(); i++)
-                filesCollabs[i].setSender(sender->getClientID());
+            for (auto &filesCollab : filesCollabs)
+                filesCollab.setSender(sender->getClientID());
 
             sender->send(GET_ALL_DATA_OK, userMessageReturn, filesOwner, filesCollabs);
             //spdlog::debug("GET_ALL_DATA_OK ");
         }
             break;
         case DELETE_ACTIVE: {
-            this->model.removeActiveUser(sender->getClientID());
-            QList<User> users = this->model.removeActiveUserForDocument(userMessage.getUser(),
-                                                                        userMessage.getFileName());
+            try {
+                this->model.removeActiveUser(sender->getClientID());
+                QList<User> users = this->model.removeActiveUserForDocument(userMessage.getUser(),
+                                                                            userMessage.getFileName());
 
-            QRegExp tagExp("/");
-            QStringList firstList = userMessage.getFileName().split(tagExp);
-            QString email_owner = firstList.at(0);
-            QString filename = firstList.at(1);
+                QRegExp tagExp("/");
+                QStringList firstList = userMessage.getFileName().split(tagExp);
+                QString email_owner = firstList.at(0);
+                QString filename = firstList.at(1);
 
-            if (model.updateLastAcces(userMessage.getUser().getEmail(),
-                                      model.getIdFilename(email_owner, filename))) {
-                if (QString::compare(email_owner, userMessage.getUser().getEmail()) == 0) {
-                    User user = User(email_owner);
-                    UserMessage userMessage = UserMessage(sender->getClientID(), user);
-                    onProcessUserMessage(GET_FILES_OWNER, userMessage);
+                if (model.updateLastAccess(userMessage.getUser().getEmail(),
+                                           model.getIdFilename(email_owner, filename))) {
+                    if (QString::compare(email_owner, userMessage.getUser().getEmail()) == 0) {
+                        User user = User(email_owner);
+                        UserMessage userMessage1 = UserMessage(sender->getClientID(), user);
+                        onProcessUserMessage(GET_FILES_OWNER, userMessage1);
+                    } else {
+                        User user = User(userMessage.getUser().getEmail());
+                        UserMessage userMessage1 = UserMessage(sender->getClientID(), user);
+                        onProcessUserMessage(GET_FILES_COLLABORATOR, userMessage1);
+                    }
                 } else {
-                    User user = User(userMessage.getUser().getEmail());
-                    UserMessage userMessage = UserMessage(sender->getClientID(), user);
-                    onProcessUserMessage(GET_FILES_COLLABORATOR, userMessage);
+                    //spdlog::error("update last_access ERROR");
+                    std::cerr << "update last_access ERROR" << std::endl;
                 }
-            } else {
-                //spdlog::error("update last_access ERROR");
-                std::cerr << "update last_access ERROR" << std::endl;
-            }
 
-            if (users.empty()) {
-                this->model.removeSymbolsForDocument(userMessage.getFileName());
-                return;
-            }
+                if (users.empty()) {
+                    this->model.removeSymbolsForDocument(userMessage.getFileName());
+                    return;
+                }
 
-            ActiveUserMessage activeUserMessage(0, users);
-            for (auto &user : users) {
-                ClientSocket *socket = this->model.getLoggedUser(user);
-                if (socket == nullptr) return;
-                socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
+                ActiveUserMessage activeUserMessage(0, users);
+                for (auto &user : users) {
+                    ClientSocket *socket = this->model.getLoggedUser(user);
+                    if (socket == nullptr) return;
+                    socket->send(UPDATE_ACTIVE_USERS, activeUserMessage);
+                }
+            } catch (std::exception &e) {
+                std::cerr << e.what() << std::endl;
+                throw;
             }
         }
             break;
         default: {
-
+            std::cerr << "Default case" << std::endl;
         }
     }
 }
-
 
 void Server::onFileManagementMessageReceived(_int code, const FileManagementMessage &fileManagementMessage) {
     auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
@@ -314,8 +320,6 @@ void Server::onFileManagementMessageReceived(_int code, const FileManagementMess
 
             auto it = activeUsersForDocument.find(idFilename);
             if (it != activeUsersForDocument.end()) {
-                qDebug() << idFilename << " " << fileManagementMessage.getEmail() << " "
-                         << fileManagementMessage.getFilename();
                 sender->send(CANNOT_DELETE_FILE);
             } else {
                 if (model.deleteFile(fileManagementMessage))
@@ -333,6 +337,9 @@ void Server::onFileManagementMessageReceived(_int code, const FileManagementMess
                 sender->send(NEW_FILE_KO);
         }
             break;
+        default: {
+            std::cerr << "Default case" << std::endl;
+        }
     }
 }
 
@@ -406,6 +413,9 @@ void Server::onUserManagementMessageReceived(_int code, const UserManagementMess
                 sender->send(CAN_OPEN_FILE_KO);
         }
             break;
+        default: {
+            std::cerr << "Default case" << std::endl;
+        }
     }
 }
 

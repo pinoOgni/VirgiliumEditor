@@ -108,7 +108,6 @@ QList<User> Model::removeActiveUserForDocument(const User &user, const QString &
     auto it = activeClientsForDocument.find(idFilename);
     if (it == activeClientsForDocument.end()) {
         return QList<User>();
-
     }
 
     activeClientsForDocument.at(idFilename).removeOne(user);
@@ -280,31 +279,19 @@ QVector<Symbol> Model::getFileFromFileSystem(const QString &filename) {
     return symbols;
 }
 
-
 _int Model::getIdFilename(QString email_owner, QString filename) {
     return Database::getInstance().getIdFilenameDB(email_owner, filename);
 }
 
-bool Model::updateLastAcces(QString email, _int idFilename) {
+bool Model::updateLastAccess(QString email, _int idFilename) {
     return Database::getInstance().updateLastAccessDB(email, idFilename);
 }
 
-bool Model::canOpenFile(UserManagementMessage userManagementMessage) {
+bool Model::canOpenFile(const UserManagementMessage &userManagementMessage) {
     bool isCollaborator = true;
     if (userManagementMessage.getEmail_owner() != userManagementMessage.getEmail_collaborator())
         isCollaborator = Database::getInstance().canOpenFileDB(userManagementMessage);
     bool isFileNotOpen = true;
-
-    /*_int idFilename = getIdFilename(userManagementMessage.getEmail_owner(), userManagementMessage.getFilename());
-
-    auto it = this->activeClientsForDocument.find(idFilename);
-    if(it == this->activeClientsForDocument.end())
-        return isCollaborator && isFileNotOpen;
-
-    for(const User& user : this->activeClientsForDocument.at(idFilename)) {
-        if(user.getEmail() == userManagementMessage.getEmail_collaborator())
-            isFileNotOpen = false;
-    }*/
 
     for (auto &it : this->activeClientsForDocument) {
         for (auto &it1 : it.second) {
@@ -317,5 +304,3 @@ bool Model::canOpenFile(UserManagementMessage userManagementMessage) {
 
     return isCollaborator && isFileNotOpen;
 }
-
-

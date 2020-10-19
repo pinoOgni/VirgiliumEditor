@@ -12,6 +12,10 @@
 #include <QtGui/QColor>
 #include "constants.h"
 
+/*
+ * The user class is used in order to keep all data related to a single client, for example firstName and lastName
+ */
+
 class User {
     QString email;
     QString password;
@@ -30,17 +34,15 @@ public:
 
     User();
 
-    void writeStream(QDataStream &out);
-
+    /* write on stream (this client is the sender) */
     friend QDataStream &operator<<(QDataStream &stream, const User &myClass);
 
+    /* read from stream (this client is the receiver) */
     friend QDataStream &operator>>(QDataStream &stream, User &myClass);
 
     bool operator==(const User &other);
 
     bool operator<(const User &other) const;
-
-    QString printMessage();
 
     QString getEmail() const;
 

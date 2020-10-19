@@ -5,7 +5,6 @@
 #ifndef VIRGILIUM_SAVEFILESERVICE_H
 #define VIRGILIUM_SAVEFILESERVICE_H
 
-
 #include <QtCore/QRunnable>
 #include "Model.h"
 

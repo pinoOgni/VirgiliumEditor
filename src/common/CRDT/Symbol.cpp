@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Symbol.h"
 #include <QDataStream>
 #include <utility>

@@ -30,7 +30,7 @@ public:
      */
     void incomingConnection(qintptr handle) override;
 
-    bool checkUpdate(CrdtMessage crdtMessage);
+    static bool checkUpdate(const CrdtMessage &crdtMessage);
 
 private slots:
 
@@ -41,6 +41,11 @@ private slots:
      */
     void onSocketStateChanged(QTcpSocket::SocketState state);
 
+    /*
+     * The following slot are invoked every time a message is received from the client. There
+     * is a different slot for each message managed inside the application and most of them
+     * contains a switch - case statement in which different operations are performed.
+     * */
     void onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage);
 
     void onProcessUserMessage(_int code, UserMessage userMessage);
@@ -55,7 +60,7 @@ private slots:
 
     void onInvitationReceived(_int code, InvitationMessage invitationMessage);
 
-    void onLogoutReceived(_int code, UserMessage userMessage); //pino close connection  DB user "logout"
+    void onLogoutReceived(_int code, UserMessage userMessage);
 
 signals:
 
