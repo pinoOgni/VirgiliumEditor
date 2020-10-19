@@ -1,7 +1,3 @@
-//
-// Created by alex, pinoOgni on 10/08/20.
-//
-
 #include <common/ClientSocket.h>
 #include <common/constants.h>
 #include <common/messages/CrdtMessage.h>
@@ -10,7 +6,7 @@
 #include <common/messages/ActiveUserMessage.h>
 #include "Server.h"
 
-Server::Server(unsigned short port, Model &model) : model(model) {
+Server::Server(quint16 port, Model &model) : model(model) {
     freopen("serverLog.txt", "w", stderr);
     if (!listen(QHostAddress::LocalHost, port)) {
         //spdlog::error("Error: server is not listening");
@@ -52,7 +48,6 @@ void Server::incomingConnection(_int handle) {
 
     newSocket->setClientID(handle);
 
-    //client is connected
     BasicMessage basicMessage(handle);
     //spdlog::debug("Sending: {} ", handle);
     newSocket->send(CLIENT_CONNECTED, basicMessage);
@@ -61,21 +56,6 @@ void Server::incomingConnection(_int handle) {
 /* Every time the socket state change, this method is invoked */
 void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
     switch (state) {
-        case QAbstractSocket::UnconnectedState:
-            //spdlog::debug("The socket is not connected.");
-            break;
-        case QAbstractSocket::HostLookupState:
-            //spdlog::debug("The socket is performing a hostname lookup.");
-            break;
-        case QAbstractSocket::ConnectedState:
-            //spdlog::debug("A connection is established.");
-            break;
-        case QAbstractSocket::ConnectingState:
-            //spdlog::debug("The socket has started establishing a connection.");
-            break;
-        case QAbstractSocket::BoundState:
-            //spdlog::debug("The socket is bound to an address and port.");
-            break;
         case QAbstractSocket::ClosingState: {
             //spdlog::debug("The socket is about to close.");
             auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
@@ -84,12 +64,8 @@ void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
             this->model.removeLoggedUser(sender);
             break;
         }
-        case QAbstractSocket::ListeningState:
-            //spdlog::debug("The socket is listening.");
-            break;
         default:
-            std::cerr << "Unknown state" << std::endl;
-            //spdlog::debug("Unknown State.");
+            break;
     }
 }
 

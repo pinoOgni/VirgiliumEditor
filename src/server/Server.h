@@ -1,7 +1,3 @@
-//
-// Created by alex on 10/08/20.
-//
-
 #ifndef VIRGILIUM_SERVER_H
 #define VIRGILIUM_SERVER_H
 
@@ -11,22 +7,38 @@
 #include "../common/messages/FilesMessage.h"
 #include "../common/messages/CrdtMessage.h"
 
+/*
+ * The Server class extends the QTcpServer class which provides a TCP-based server.
+ */
+
 class Server : public QTcpServer {
 Q_OBJECT
 
     Model &model;
 
 public:
-    Server(unsigned short port, Model &model);
+    Server(quint16 port, Model &model);
 
     ~Server();
 
+    /*
+     * This function is called by QTcpServer when a new connection is available.
+     * The socketDescriptor argument is the native socket descriptor for the accepted connection.
+     * The implementation creates a QTcpSocket and sets the socket descriptor; if it doesn't, deleteLater() function is called.
+     * At the end a message with the identification code CLIENT_CONNECTED is sent to the data stream to notify the client
+     * and populate the clientID field of the client side socket.
+     */
     void incomingConnection(qintptr handle) override;
 
     static bool checkUpdate(const CrdtMessage &crdtMessage);
 
 private slots:
 
+    /*
+     * Every time the socket state change stateChanged() signal is emitted and the onSocketStateChanged slot called.
+     * This slot is used to intercept the ClosingState of the server side socket and to update the tables relating
+     * to active and logged-in users in the event of unexpected closures.
+     */
     void onSocketStateChanged(QTcpSocket::SocketState state);
 
     void onProcessCrdtMessage(_int code, const CrdtMessage &crdtMessage);

@@ -1,52 +1,38 @@
-//
-// Created by alex, pinoOgni & simod on 10/08/20.
-//
-
 #include "ClientSocket.h"
 #include "constants.h"
 
-/* server side constructor */
 ClientSocket::ClientSocket(QObject *parent) : QTcpSocket(parent), clientID(-1), in(this) {
-    //connect(this, &QTcpSocket::stateChanged, this, &ClientSocket::onSocketStateChanged);
+
     connect(this, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error), this, &ClientSocket::onDisplayError);
     connect(this, &QTcpSocket::disconnected, this, &ClientSocket::onDisconnectedSocketServer);
-    connect(this, &QTcpSocket::bytesWritten, this, &ClientSocket::onBytesWritten);
     connect(this, &QTcpSocket::readyRead, this, &ClientSocket::onReadyRead);
 
     this->in.setVersion(Q_DATA_STREAM_VERSION);
 }
 
-/* client side constructor */
 ClientSocket::ClientSocket(const QString &hostName, quint16 port, QObject *parent) :
         QTcpSocket(parent),
         clientID(-1),
         in(this) {
-    connect(this, &QTcpSocket::connected, this, &ClientSocket::onConnected);
-    connect(this, &QTcpSocket::disconnected, this, &ClientSocket::onDisconnected);
-    connect(this, &QTcpSocket::bytesWritten, this, &ClientSocket::onBytesWritten);
+
     connect(this, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error), this,
             &ClientSocket::onDisplayError);   //need to overload the QAbstractSocket error:
     connect(this, &QTcpSocket::readyRead, this, &ClientSocket::onReadyRead);
 
     this->connectToHost(hostName, port);
 
-    if (!this->waitForConnected(ConnectionWaitingTime)) { //5s
-        //this->error();
-    };
+    this->waitForConnected(ConnectionWaitingTime);
 
     this->in.setVersion(Q_DATA_STREAM_VERSION);
 }
 
 ClientSocket::~ClientSocket() {
-    /*this->disconnectFromHost();
-    this->waitForDisconnected(3000);*/
 }
 
 void ClientSocket::onReadyRead() {
     this->in.startTransaction();
     _int code;
     this->in >> code;
-    //spdlog::debug("ClientSocket onReadyRead {} ", code);
 
     switch (code) {
         case UPDATE_ACTIVE_USERS: {
@@ -56,7 +42,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit activeUserMessageReceived(code, activeUserMessage);
         }
-            break;
+        break;
         case LOAD_RESPONSE: {
             StorageMessage storageMessage;
             this->in >> storageMessage;
@@ -64,7 +50,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit storageMessageReceivedLoad(code, storageMessage);
         }
-            break;
+        break;
         case LOAD_REQUEST: {
             StorageMessage storageMessage;
             this->in >> storageMessage;
@@ -72,7 +58,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit storageMessageReceived(code, storageMessage);
         }
-            break;
+        break;
         case CLIENT_CONNECTED: {
             BasicMessage basicMessage;
             this->in >> basicMessage;
@@ -80,7 +66,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit basicMessageReceived(code, basicMessage);
         }
-            break;
+        break;
         case LOGIN:
         case SIGNUP:
         case GET_INFO_USER:
@@ -103,7 +89,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit loginSignupReceived(code);
         }
-            break;
+        break;
         case GET_FILES_OWNER_OK:
         case GET_FILES_OWNER_KO:
         case GET_FILES_COLLABORATOR_OK:
@@ -119,7 +105,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit filesMessageReceived(code, filesMessage);
         }
-            break;
+        break;
         case GET_ALL_DATA_OK: {
             UserMessage um = UserMessage();
             in >> um;
@@ -132,7 +118,6 @@ void ClientSocket::onReadyRead() {
                 in >> temp1;
                 filesOwner.push_back(temp1);
             }
-            //spdlog::debug("GET_ALL_DATA row1 ");
             for (auto item: filesOwner)
                 item.printUserInfo();
 
@@ -145,13 +130,12 @@ void ClientSocket::onReadyRead() {
                 filesCollabs.push_back(temp2);
             }
 
-            //spdlog::debug("GET_ALL_DATA row2 ");
             for (auto item: filesCollabs)
                 item.printUserInfo();
             if (!this->in.commitTransaction()) return;
             emit allDataReceived(code, um, row1, filesOwner, row2, filesCollabs);
         }
-            break;
+        break;
         case RENAME_FILE:
         case DELETE_FILE:
         case NEW_FILE: {
@@ -161,7 +145,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit fileManagementMessageReceived(code, fileManagementMessage);
         }
-            break;
+        break;
         case RENAME_FILE_OK:
         case RENAME_FILE_KO:
         case DELETE_FILE_OK:
@@ -172,7 +156,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit fileManagementMessageResponse(code);
         }
-            break;
+        break;
         case CHANGE_PASSWORD: {
             ChangePasswordMessage changePasswordMessage;
             this->in >> changePasswordMessage;
@@ -180,13 +164,13 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit changePasswordMessageReceived(code, changePasswordMessage);
         }
-            break;
+        break;
         case CHANGE_PASSWORD_OK:
         case CHANGE_PASSWORD_KO: {
             if (!this->in.commitTransaction()) return;
             emit changePasswordMessageResponse(code);
         }
-            break;
+        break;
         case CREATE_INVITE:
         case ADD_COLLABORATOR:
         case REMOVE_COLLABORATOR:
@@ -198,7 +182,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit userManagementMessageReceived(code, userManagementMessage);
         }
-            break;
+        break;
         case INVITE_CREATED:
         case REQUEST_TO_COLLABORATE: {
             InvitationMessage invitationMessage;
@@ -207,7 +191,7 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit invitationReceived(code, invitationMessage);
         }
-            break;
+        break;
         case ADD_COLLABORATOR_OK:
         case ADD_COLLABORATOR_KO:
         case REMOVE_COLLABORATOR_OK:
@@ -220,34 +204,31 @@ void ClientSocket::onReadyRead() {
             if (!this->in.commitTransaction()) return;
             emit userManagementMessageResponse(code);
         }
-            break;
+        break;
         case LOGOUT: {
             UserMessage userMessage;
             this->in >> userMessage;
             if (!this->in.commitTransaction()) return;
             emit logoutReceived(LOGOUT, userMessage);
         }
-            break;
+        break;
         case REQUEST_TO_COLLABORATE_OK:
         case REQUEST_TO_COLLABORATE_KO: {
             if (!this->in.commitTransaction()) return;
             emit requestToCollaborateReceived(code);
         }
-            break;
+        break;
         case CURSOR_CHANGED:
         case SYMBOL_INSERT_OR_ERASE: {
             CrdtMessage crdtMessage;
             this->in >> crdtMessage;
-
-            //spdlog::debug("SYMBOL {} ", crdtMessage.getSymbol().getLetter().toStdString());
 
             if (!this->in.commitTransaction()) return;
             emit crdtMessageReceived(code, crdtMessage);
         }
             break;
         default: {
-            //spdlog::debug("Default case in ReadyRead");
-            std::cerr << "Error: default case" << std::endl;
+            std::cerr << "onReadyRead_error: unknown code" << std::endl;
         }
     }
 
@@ -255,96 +236,45 @@ void ClientSocket::onReadyRead() {
             emit readyRead();
 }
 
-/*void ClientSocket::onSocketStateChanged(QTcpSocket::SocketState state) {
-    switch (state) {
-        case QAbstractSocket::ListeningState:
-            //spdlog::debug("The socket is listening.");
-            break;
-        case QAbstractSocket::UnconnectedState: {
-            //spdlog::debug("The socket is not connected.");
-            //ADD SPIA ROSSA
-            break;
-        }
-        case QAbstractSocket::HostLookupState:
-            //spdlog::debug("The socket is performing a hostname lookup.");
-            break;
-        case QAbstractSocket::ConnectedState: {
-            //spdlog::debug("A connection is established.");
-            //ADD SPIA VERDE
-            break;
-        }
-        case QAbstractSocket::ConnectingState:
-            //spdlog::debug("The socket has started establishing a connection.");
-            break;
-        case QAbstractSocket::ClosingState: {
-            //spdlog::debug("The socket is about to close.");
-            auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
-            BasicMessage msg(sender->getClientID());
-            break;
-        }
-        default:
-            //spdlog::debug("Unknown State.");
-    }
-}*/
-
-//solo per debug
-void ClientSocket::onConnected() {
-    //spdlog::debug("Connected.");
-}
-
-void ClientSocket::onDisconnected() {
-    //spdlog::debug("disconnected.");
-}
-
 void ClientSocket::onDisconnectedSocketServer() {
-    //spdlog::debug("disconnected.");
     this->deleteLater();
 }
 
-//solo per debug
-void ClientSocket::onBytesWritten(_int bytes) {
-    //spdlog::debug("bytes {} written ", bytes );
-}
-
-//add gli altri switch case
 void ClientSocket::onDisplayError(QTcpSocket::SocketError error) {
     switch (error) {
         case QAbstractSocket::RemoteHostClosedError:
-            //spdlog::debug("RemoteHostClosedError: the remote host closed the connection.");
             std::cerr << "RemoteHostClosedError: the remote host closed the connection." << std::endl;
             break;
         case QAbstractSocket::HostNotFoundError:
-            //spdlog::debug("HostNotFoundError: the host address was not found.");
             std::cerr << "HostNotFoundError: the host address was not found." << std::endl;
             break;
         case QAbstractSocket::SocketAccessError:
-            //spdlog::debug("SocketAccessError: the socket operation failed because the application lacked the required privileges.");
             std::cerr
                     << "SocketAccessError: the socket operation failed because the application lacked the required privileges."
                     << std::endl;
             break;
         case QAbstractSocket::SocketResourceError:
-            //spdlog::debug("SocketResourceError: the local system ran out of resources (e.g., too many sockets).");
             std::cerr << "SocketResourceError: the local system ran out of resources (e.g., too many sockets)."
                       << std::endl;
             break;
         case QAbstractSocket::ConnectionRefusedError:
-            //spdlog::debug("ConnectionRefusedError: the connection was refused by the peer (or timed out).");
             std::cerr << "ConnectionRefusedError: the connection was refused by the peer (or timed out)." << std::endl;
             break;
         case QAbstractSocket::NetworkError:
-            //spdlog::debug("NetworkError: an error occurred with the network.");
             std::cerr << "NetworkError: an error occurred with the network." << std::endl;
             break;
         case QAbstractSocket::OperationError:
-            //spdlog::debug("OperationError: an operation was attempted while the socket was in a state that did not permit it.");
             std::cerr
                     << "OperationError: an operation was attempted while the socket was in a state that did not permit it."
                     << std::endl;
             break;
-        case QAbstractSocket::UnknownSocketError:
-            //spdlog::debug("UnknownSocketError: an unidentified error occurred..");
-            std::cerr << "UnknownSocketError: an unidentified error occurred.." << std::endl;
+        case QAbstractSocket::SocketTimeoutError:
+            std::cerr
+                    << "SocketTimeoutError: the socket operation timed out."
+                    << std::endl;
+            break;
+        default:
+            std::cerr << "UnknownSocketError: an unidentified error occurred." << std::endl;
             break;
     }
 }
@@ -357,11 +287,11 @@ bool ClientSocket::operator==(const ClientSocket *b) {
     return this->clientID == b->clientID;
 }
 
-void ClientSocket::setClientID(quintptr clientId) {
+void ClientSocket::setClientID(_int clientId) {
     this->clientID = clientId;
 }
 
-quint32 ClientSocket::getClientID() {
+_int ClientSocket::getClientID() {
     return this->clientID;
 }
 

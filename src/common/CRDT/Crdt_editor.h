@@ -1,19 +1,3 @@
-//
-// Created by alex on 07/12/19.
-//
-/*   BENVENUTO nel codice sorgente del client di Virgilium!
- *  qua una breve descrizione dei membri privati di questa classe che modella una istanza del client
- *
- *  this->server è una classa che incaspula un socket verso il server (più un buffer per leggere i dati
- *  in ingresso).
-*   Quando viene istanziato un oggetto di classe Crdt_editor questo socket contatta il server il
- *   cui indirizzo è hard-coded (per ora) in questi sorgenti. Il server ascolta sulla interfaccia di
- *   loopback (per ora).
- *   this->_siteId è lo stesso siteId del lab3
- *   this->_symbols è lo stesso vettore di simboli del lab3
- *   this->counter è lo stesso counter del lab3
- *
- * */
 #ifndef VIRGILIUMCLIENT_VIRGILIUM_CLIENT_H
 #define VIRGILIUMCLIENT_VIRGILIUM_CLIENT_H
 
@@ -35,7 +19,7 @@ class symbol;
 class Crdt_editor : public QObject {
 Q_OBJECT
 
-    ClientSocket *socket{};
+    ClientSocket *socket;
     QString fileName;
     _int _siteId;
     QVector<Symbol> _symbols;
@@ -50,17 +34,6 @@ public:
 
     Crdt_editor();
 
-    /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-     * Questo è il costruttore del client, è un oggetto QT, prende in input una stringa con l'ip del
-     * server (hard-coded(per ora)) e la porta (hard-coded(per ora)).
-     * Per come ho fatto il server ora quest'ultimo appena vede che un client si vuole connettere
-     * lo aggiunge alla propria lista e gli manda il suo siteID.
-     * Quindi a costruttore chiamato noi abbiamo il nostro bel client con il suo site_id e con il socket connesso
-     * al server
-     * Quando verrà il momento bisognerà farcire tutto di eccezioni.
-     *
-     *
-     * */
     ~Crdt_editor();
 
     void localInsert(_int index, QString value, const Symbol::CharFormat &font);
