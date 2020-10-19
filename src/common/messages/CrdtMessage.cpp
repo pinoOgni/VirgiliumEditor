@@ -39,7 +39,7 @@ QString CrdtMessage::getFileName() const {
 void CrdtMessage::printMessage() {
     //std::cout<<"messaggio inviato da: "<<this->mode<<"action=\""<<this->action.toStdString()<<"\""<<std::endl;
     std::cout << "symbol:\n";
-    this->s.printSymbol();
+    //this->s.printSymbol();
 }
 
 QDataStream &operator<<(QDataStream &stream, const CrdtMessage &myClass) {

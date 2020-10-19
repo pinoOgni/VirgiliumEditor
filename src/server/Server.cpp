@@ -1,7 +1,3 @@
-//
-// Created by alex, pinoOgni on 10/08/20.
-//
-
 #include <common/ClientSocket.h>
 #include <common/constants.h>
 #include <common/messages/CrdtMessage.h>
@@ -10,8 +6,7 @@
 #include <common/messages/ActiveUserMessage.h>
 #include "Server.h"
 
-//ADD quint16 port è un unsigned short
-Server::Server(unsigned short port, Model &model) : model(model) {
+Server::Server(quint16 port, Model &model) : model(model) {
     freopen("serverLog.txt", "w", stderr);
     if (!listen(QHostAddress::LocalHost, port)) {
         //spdlog::error("Error: server is not listening");
@@ -19,7 +14,6 @@ Server::Server(unsigned short port, Model &model) : model(model) {
         exit(-1);
     }
 
-    //spdlog::info("Server is listening on address: {0}, {1} ", this->serverAddress().toString().toStdString(), this->serverPort());
     if (TESTDB == true) {
         QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(
                 VIRGILIUM_STORAGE)).removeRecursively();
@@ -31,7 +25,6 @@ Server::~Server() {
     fclose(stderr);
 };
 
-/* This function is called when a new client is active and the client call the connectToHost method */
 void Server::incomingConnection(_int handle) {
     auto newSocket = new ClientSocket(this);
     if (!newSocket->setSocketDescriptor(handle)) {
@@ -53,44 +46,21 @@ void Server::incomingConnection(_int handle) {
 
     newSocket->setClientID(handle);
 
-    //client is connected
     BasicMessage basicMessage(handle);
-    //spdlog::debug("Sending: {} ", handle);
     newSocket->send(CLIENT_CONNECTED, basicMessage);
 }
 
-/* Every time the socket state change, this method is invoked */
 void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
     switch (state) {
-        case QAbstractSocket::UnconnectedState:
-            //spdlog::debug("The socket is not connected.");
-            break;
-        case QAbstractSocket::HostLookupState:
-            //spdlog::debug("The socket is performing a hostname lookup.");
-            break;
-        case QAbstractSocket::ConnectedState:
-            //spdlog::debug("A connection is established.");
-            break;
-        case QAbstractSocket::ConnectingState:
-            //spdlog::debug("The socket has started establishing a connection.");
-            break;
-        case QAbstractSocket::BoundState:
-            //spdlog::debug("The socket is bound to an address and port.");
-            break;
         case QAbstractSocket::ClosingState: {
-            //spdlog::debug("The socket is about to close.");
             auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
             this->model.removeActiveUser(sender->getClientID());
             this->model.removeUserOnline(sender->getClientID());
             this->model.removeLoggedUser(sender);
             break;
         }
-        case QAbstractSocket::ListeningState:
-            //spdlog::debug("The socket is listening.");
-            break;
         default:
-            std::cerr << "Unknown state" << std::endl;
-            //spdlog::debug("Unknown State.");
+            break;
     }
 }
 
@@ -466,10 +436,3 @@ void Server::onInvitationReceived(_int code, InvitationMessage invitationMessage
             break;
     }
 }
-
-/*void Server::onClosePendingSocket(_int clientID, ClientSocket *cs){
-    if(clientID==cs->getClientID()){
-       //spdlog::debug(cs->getClientID() << "ciao2!");
-       cs->deleteLater();
-    }
-}*/
