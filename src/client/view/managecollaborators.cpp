@@ -68,8 +68,8 @@ void manageCollaborators::on_remove_clicked() {
     client->getSocket()->send(REMOVE_COLLABORATOR, userManagementMessage);
 
     //every time the user push on "rename" I connect a signal
-    connect(client, &ClientStuff::isCollaboratorRemoved,this,&manageCollaborators::isCollaboratorRemoved);
-    connect(client, &ClientStuff::canRemoveCollaborator,this,&manageCollaborators::canRemoveCollaborator);
+    connect(client, &ClientStuff::isCollaboratorRemoved, this, &manageCollaborators::isCollaboratorRemoved);
+    connect(client, &ClientStuff::canRemoveCollaborator, this, &manageCollaborators::canRemoveCollaborator);
 
 }
 
@@ -81,8 +81,8 @@ void manageCollaborators::isCollaboratorRemoved(bool res) {
         QMessageBox::information(this, "Error", "Errore while removing collaborator");
 
         //If there is an error, the signal is disconnected so only one message will be show to the user
-        disconnect(client, &ClientStuff::isCollaboratorRemoved,this,&manageCollaborators::isCollaboratorRemoved);
-        disconnect(client, &ClientStuff::canRemoveCollaborator,this,&manageCollaborators::canRemoveCollaborator);
+        disconnect(client, &ClientStuff::isCollaboratorRemoved, this, &manageCollaborators::isCollaboratorRemoved);
+        disconnect(client, &ClientStuff::canRemoveCollaborator, this, &manageCollaborators::canRemoveCollaborator);
 
     }
     ui->remove_password->clear();
@@ -91,11 +91,11 @@ void manageCollaborators::isCollaboratorRemoved(bool res) {
 }
 
 void manageCollaborators::canRemoveCollaborator(bool res) {
-    if(!res) {
-        QMessageBox::warning(this,"Error","Someone has the text editor open, retry later");
+    if (!res) {
+        QMessageBox::warning(this, "Error", "Someone has the text editor open, retry later");
         //If there is an error, the signal is disconnected so only one message will be show to the user
-        disconnect(client, &ClientStuff::isCollaboratorRemoved,this,&manageCollaborators::isCollaboratorRemoved);
-        disconnect(client, &ClientStuff::canRemoveCollaborator,this,&manageCollaborators::canRemoveCollaborator);
+        disconnect(client, &ClientStuff::isCollaboratorRemoved, this, &manageCollaborators::isCollaboratorRemoved);
+        disconnect(client, &ClientStuff::canRemoveCollaborator, this, &manageCollaborators::canRemoveCollaborator);
         this->close();
     }
 }

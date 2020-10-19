@@ -4,6 +4,7 @@
 
 #include "BasicMessage.h"
 #include <QDataStream>
+
 BasicMessage::BasicMessage(_int sender) : sender(sender) {
 
 }

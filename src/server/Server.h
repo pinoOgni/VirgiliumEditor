@@ -23,7 +23,7 @@ public:
 
     void incomingConnection(qintptr handle) override;
 
-    bool  checkUpdate(CrdtMessage crdtMessage);
+    bool checkUpdate(CrdtMessage crdtMessage);
 
 private slots:
 
@@ -35,11 +35,11 @@ private slots:
 
     void onProcessStorageMessage(_int code, StorageMessage storageMessage);
 
-    void onFileManagementMessageReceived(_int code, const FileManagementMessage& fileManagementMessage);
+    void onFileManagementMessageReceived(_int code, const FileManagementMessage &fileManagementMessage);
 
-    void onChangePasswordMessageReceived(_int code, const ChangePasswordMessage& changePasswordMessage);
+    void onChangePasswordMessageReceived(_int code, const ChangePasswordMessage &changePasswordMessage);
 
-    void onUserManagementMessageReceived(_int code, const UserManagementMessage& userManagementMessage);
+    void onUserManagementMessageReceived(_int code, const UserManagementMessage &userManagementMessage);
 
     void onInvitationReceived(_int code, InvitationMessage invitationMessage);
 

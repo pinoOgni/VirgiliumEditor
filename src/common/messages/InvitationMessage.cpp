@@ -8,25 +8,25 @@
 InvitationMessage::InvitationMessage(
         quintptr sender,
         QString email,
-        QString invitationCode):
+        QString invitationCode) :
         BasicMessage(sender),
         email(std::move(email)),
-        invitationCode(std::move(invitationCode))
-{}
+        invitationCode(std::move(invitationCode)) {}
 
-QDataStream &operator <<(QDataStream &stream, const InvitationMessage &myclass) {
+QDataStream &operator<<(QDataStream &stream, const InvitationMessage &myclass) {
     stream << myclass.email;
     stream << myclass.invitationCode;
     return stream;
 }
-QDataStream &operator >>(QDataStream &stream, InvitationMessage &myclass) {
+
+QDataStream &operator>>(QDataStream &stream, InvitationMessage &myclass) {
     stream >> myclass.email;
     stream >> myclass.invitationCode;
     return stream;
 }
 
 
-QString InvitationMessage::getEmail() const {    return email; }
+QString InvitationMessage::getEmail() const { return email; }
 
 
 QString InvitationMessage::getInvitationCode() const { return invitationCode; }

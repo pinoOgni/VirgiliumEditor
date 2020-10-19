@@ -8,9 +8,8 @@
 
 
 WelcomePage::WelcomePage(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::WelcomePage)
-{
+        QMainWindow(parent),
+        ui(new Ui::WelcomePage) {
     ui->setupUi(this);
 
     //setup style
@@ -32,8 +31,7 @@ WelcomePage::WelcomePage(QWidget *parent) :
 }
 
 
-WelcomePage::~WelcomePage()
-{
+WelcomePage::~WelcomePage() {
     //spdlog::debug("~WelcomePage");
     delete client;
     delete ui;
@@ -46,8 +44,8 @@ void WelcomePage::userAlreadyLogged() {
 
 void WelcomePage::loggedIn(const bool logged) {
     //spdlog::debug("loggedIn {} ", logged);
-    if(logged) {
-        QMessageBox::information(this,"Login","Logged in");
+    if (logged) {
+        QMessageBox::information(this, "Login", "Logged in");
         QString email = ui->email_accedi->text();
 
         personalPage = new PersonalPage;
@@ -69,76 +67,73 @@ void WelcomePage::loggedIn(const bool logged) {
 
 
 void WelcomePage::registered(const bool registered) {
-    if(registered) {
+    if (registered) {
         ui->email_iscriviti->setText("");
         ui->password_iscriviti->setText("");
         ui->nome_iscriviti->setText("");
         ui->cognome_iscriviti->setText("");
-        QMessageBox::information(this,"Iscriviti","Now you can login");
+        QMessageBox::information(this, "Iscriviti", "Now you can login");
     } else {
-        QMessageBox::information(this,"Iscriviti","Email already in the DB");
+        QMessageBox::information(this, "Iscriviti", "Email already in the DB");
         ui->email_iscriviti->setText("");
         ui->password_iscriviti->setText("");
     }
 }
 
-void WelcomePage::getFilesOwner(int row,std::vector<FilesMessage>& filesMessage) {
+void WelcomePage::getFilesOwner(int row, std::vector<FilesMessage> &filesMessage) {
     //spdlog::debug("getFilesOwner welcomepage");
-    emit getFilesOwner2(row,filesMessage);
+    emit getFilesOwner2(row, filesMessage);
 }
 
-void WelcomePage::getInfoUser(UserMessage& um) {
+void WelcomePage::getInfoUser(UserMessage &um) {
     emit getInfoUser2(um);
 }
 
-void WelcomePage::getUserFiles(int row,std::vector<FilesMessage>& filesMessage) {
+void WelcomePage::getUserFiles(int row, std::vector<FilesMessage> &filesMessage) {
     //spdlog::debug("getUserFiles welcomepage");
 
-    emit getUserFiles2(row,filesMessage);
+    emit getUserFiles2(row, filesMessage);
 }
 
-void WelcomePage::on_accedi_clicked()
-{
+void WelcomePage::on_accedi_clicked() {
     QString email = ui->email_accedi->text();
     QString password = ui->password_accedi->text();
 
-    if(email.isEmpty() || password.isEmpty()) {
-        QMessageBox::warning(this,"Error","Email and/or password empty");
-    }
-    else {
-        if(!validaEmail(email))
-            QMessageBox::warning(this,"Login","Wrong email format, please try again with email@domain");
+    if (email.isEmpty() || password.isEmpty()) {
+        QMessageBox::warning(this, "Error", "Email and/or password empty");
+    } else {
+        if (!validaEmail(email))
+            QMessageBox::warning(this, "Login", "Wrong email format, please try again with email@domain");
         else {
-            loginDB(email,password);
-         }
+            loginDB(email, password);
+        }
     }
 }
 
-void WelcomePage::on_iscriviti_clicked()
-{
+void WelcomePage::on_iscriviti_clicked() {
     QString email = ui->email_iscriviti->text();
     QString password = ui->password_iscriviti->text();
     QString firstname = ui->nome_iscriviti->text();
     QString lastname = ui->cognome_iscriviti->text();
 
-    if(email.isEmpty() || password.isEmpty() || firstname.isEmpty() || lastname.isEmpty()) {
-        QMessageBox::warning(this,"Error","One or more fields are empty");
+    if (email.isEmpty() || password.isEmpty() || firstname.isEmpty() || lastname.isEmpty()) {
+        QMessageBox::warning(this, "Error", "One or more fields are empty");
     } else {
-        if(!validaEmail(email))
-            QMessageBox::warning(this,"Iscriviti","Formato email errato, riprova con email@dominio");
-        else if(!validaNome_Cognome(firstname) || !validaNome_Cognome(lastname)) {
-            QMessageBox::warning(this,"Iscriviti","Formato nome o cognome errati, solo lettere");
-         }
-        else {
-            signinDB(email,password,firstname,lastname);
+        if (!validaEmail(email))
+            QMessageBox::warning(this, "Iscriviti", "Formato email errato, riprova con email@dominio");
+        else if (!validaNome_Cognome(firstname) || !validaNome_Cognome(lastname)) {
+            QMessageBox::warning(this, "Iscriviti", "Formato nome o cognome errati, solo lettere");
+        } else {
+            signinDB(email, password, firstname, lastname);
         }
     }
 }
 
 
 bool WelcomePage::validaEmail(QString email) {
-    QRegularExpression regex("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", QRegularExpression::CaseInsensitiveOption);
-    if(!regex.match(email).hasMatch())
+    QRegularExpression regex("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
+                             QRegularExpression::CaseInsensitiveOption);
+    if (!regex.match(email).hasMatch())
         return false;
 
     return true;
@@ -147,22 +142,19 @@ bool WelcomePage::validaEmail(QString email) {
 
 bool WelcomePage::validaNome_Cognome(QString valore) {
     QRegularExpression regex("^[a-zA-Z]+$", QRegularExpression::CaseInsensitiveOption);
-    if(!regex.match(valore).hasMatch())
+    if (!regex.match(valore).hasMatch())
         return false;
 
     return true;
 }
 
 
-void WelcomePage::on_password_accedi_returnPressed()
-{
+void WelcomePage::on_password_accedi_returnPressed() {
     this->on_accedi_clicked();
 }
 
 
-
-void WelcomePage::on_password_iscriviti_returnPressed()
-{
+void WelcomePage::on_password_iscriviti_returnPressed() {
     this->on_iscriviti_clicked();
 }
 
@@ -175,9 +167,9 @@ void WelcomePage::loginDB(QString email, QString password) {
 }
 
 void WelcomePage::signinDB(QString email, QString password, QString firstname, QString lastname) {
-    User u = User(email,password,firstname,lastname);
-    UserMessage um = UserMessage(client->getSocket()->getClientID(),u);
-    client->getSocket()->send(SIGNUP,um);
+    User u = User(email, password, firstname, lastname);
+    UserMessage um = UserMessage(client->getSocket()->getClientID(), u);
+    client->getSocket()->send(SIGNUP, um);
 }
 
 

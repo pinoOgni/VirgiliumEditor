@@ -7,28 +7,28 @@
 #include <utility>
 
 FileManagementMessage::FileManagementMessage() {};
+
 FileManagementMessage::FileManagementMessage(
         quintptr sender,
         QString email,
         QString filename,
         QString oldfilename,
-        QString password):
+        QString password) :
         BasicMessage(sender),
         email(std::move(email)),
         filename(std::move(filename)),
         oldfilename(std::move(oldfilename)),
-        password(password)
-        {};
+        password(password) {};
+
 FileManagementMessage::FileManagementMessage(
         quintptr sender,
         QString email,
         QString filename,
-        QString password):
+        QString password) :
         BasicMessage(sender),
         email(std::move(email)),
         filename(std::move(filename)),
-        password(std::move(password))
-        {};
+        password(std::move(password)) {};
 
 
 QString FileManagementMessage::getEmail() const { return email; }
@@ -40,18 +40,18 @@ QString FileManagementMessage::getOldfilename() const { return oldfilename; }
 QString FileManagementMessage::getPassword() const { return password; }
 
 
-QDataStream &operator <<(QDataStream &stream, const FileManagementMessage &myclass) {
+QDataStream &operator<<(QDataStream &stream, const FileManagementMessage &myclass) {
     stream << myclass.sender;
     stream << myclass.email;
     stream << myclass.filename;
 
     stream << myclass.password;
     stream << myclass.oldfilename;
- 
+
     return stream;
 }
 
-QDataStream &operator >>(QDataStream &stream, FileManagementMessage &myclass) {
+QDataStream &operator>>(QDataStream &stream, FileManagementMessage &myclass) {
     stream >> myclass.sender;
     stream >> myclass.email;
     stream >> myclass.filename;

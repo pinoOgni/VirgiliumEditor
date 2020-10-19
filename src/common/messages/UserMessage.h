@@ -8,7 +8,7 @@
 #include <common/User.h>
 #include "BasicMessage.h"
 
-class UserMessage: public BasicMessage {
+class UserMessage : public BasicMessage {
     User user;
     QString fileName;
 public:
@@ -22,8 +22,9 @@ public:
 
     QString getFileName();
 
-    friend QDataStream &operator <<(QDataStream &stream, const UserMessage &myclass);
-    friend QDataStream &operator >>(QDataStream &stream, UserMessage &myclass);
+    friend QDataStream &operator<<(QDataStream &stream, const UserMessage &myclass);
+
+    friend QDataStream &operator>>(QDataStream &stream, UserMessage &myclass);
 
 };
 

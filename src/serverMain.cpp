@@ -1,10 +1,8 @@
-#include <iostream>
 #include <QtWidgets/QApplication>
 #include <server/model/Model.h>
 #include <server/Server.h>
-#include <common/constants.h>
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
 
 /*
  *     if (argc < 1) {
@@ -19,7 +17,7 @@ int main(int argc, char** argv) {
  */
     QApplication app(argc, argv);
     Model model;
-    Server server(9999,model);
+    Server server(9999, model);
 
     return app.exec();
 }

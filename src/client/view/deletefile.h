@@ -8,17 +8,16 @@
 #include "renameordelete.h"
 
 
-
 namespace Ui {
-class deleteFile;
+    class deleteFile;
 }
 
-class deleteFile : public QDialog
-{
-    Q_OBJECT
+class deleteFile : public QDialog {
+Q_OBJECT
 
 public:
     explicit deleteFile(QWidget *parent = nullptr);
+
     ~deleteFile() override;
 
 private:
@@ -26,17 +25,23 @@ private:
 
     QString email;
     QString filename;
-    ClientStuff * client;
+    ClientStuff *client;
 
 signals:
-        void Want2Close3();
-private slots:
-        void keyPressEvent(QKeyEvent *) override;
-        void receiveData_2(ClientStuff *,QString,QString);
-        void on_pushButton_clicked();
 
-        void isFileDeleted(bool);
-        void canDeleteFile(bool);
+    void Want2Close3();
+
+private slots:
+
+    void keyPressEvent(QKeyEvent *) override;
+
+    void receiveData_2(ClientStuff *, QString, QString);
+
+    void on_pushButton_clicked();
+
+    void isFileDeleted(bool);
+
+    void canDeleteFile(bool);
 };
 
 #endif // DELETEFILE_H

@@ -54,7 +54,7 @@ void Model::insertUserOnline(_int id, const QString email) {
 
 void Model::removeUserOnline(_int id) {
     auto it = onlineUsers.find(id);
-    if(it!=onlineUsers.end()) {
+    if (it != onlineUsers.end()) {
         onlineUsers.erase(it);
     }
 }
@@ -84,7 +84,7 @@ QList<User> Model::addActiveUserForDocument(const User &user, const QString &fil
     QStringList firstList = fileName.split(tagExp);
     QString email_owner = firstList.at(0);
     QString filename = firstList.at(1);
-    _int idFilename = getIdFilename(email_owner,filename);
+    _int idFilename = getIdFilename(email_owner, filename);
 
     auto it = activeClientsForDocument.find(idFilename);
     if (it != activeClientsForDocument.end()) { /* file already opened */
@@ -103,7 +103,7 @@ QList<User> Model::removeActiveUserForDocument(const User &user, const QString &
     QStringList firstList = fileName.split(tagExp);
     QString email_owner = firstList.at(0);
     QString filename = firstList.at(1);
-    _int idFilename = getIdFilename(email_owner,filename);
+    _int idFilename = getIdFilename(email_owner, filename);
 
     auto it = activeClientsForDocument.find(idFilename);
     if (it == activeClientsForDocument.end()) {

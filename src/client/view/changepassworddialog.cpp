@@ -14,68 +14,65 @@ ChangePasswordDialog::ChangePasswordDialog(QWidget *parent) : QDialog(parent), u
     this->setWindowIcon(icon);
 }
 
-ChangePasswordDialog::~ChangePasswordDialog()
-{
+ChangePasswordDialog::~ChangePasswordDialog() {
     delete ui;
 }
 
 
-void ChangePasswordDialog::on_ok_clicked()
-{
+void ChangePasswordDialog::on_ok_clicked() {
     QString oldPsw = ui->old_password->text();
     QString newPsw = ui->new_password->text();
 
-    if(oldPsw.isEmpty() || newPsw.isEmpty()) {
-        QMessageBox::warning(this,"Error","Old or new password are empty");
+    if (oldPsw.isEmpty() || newPsw.isEmpty()) {
+        QMessageBox::warning(this, "Error", "Old or new password are empty");
     } else {
         QByteArray arrBlock;
         QDataStream out(&arrBlock, QIODevice::WriteOnly);
         ChangePasswordMessage changePasswordMessage =
-                ChangePasswordMessage (client->getSocket()->getClientID(),email,
-                                    QCryptographicHash::hash(oldPsw.toUtf8(),QCryptographicHash::Sha224),
-                                    QCryptographicHash::hash(newPsw.toUtf8(),QCryptographicHash::Sha224));
+                ChangePasswordMessage(client->getSocket()->getClientID(), email,
+                                      QCryptographicHash::hash(oldPsw.toUtf8(), QCryptographicHash::Sha224),
+                                      QCryptographicHash::hash(newPsw.toUtf8(), QCryptographicHash::Sha224));
 
-        client->getSocket()->send(CHANGE_PASSWORD,changePasswordMessage);
+        client->getSocket()->send(CHANGE_PASSWORD, changePasswordMessage);
     }
 }
 
 
-void ChangePasswordDialog::on_cancel_clicked()
-{
+void ChangePasswordDialog::on_cancel_clicked() {
     this->close();
 }
 
-void ChangePasswordDialog::receiveData(ClientStuff * client,QString email) {
+void ChangePasswordDialog::receiveData(ClientStuff *client, QString email) {
     this->email = email;
     this->client = client;
     //spdlog::debug("receiveData changepassworddialog");
 
     //every time the user push on "change" I connect a signal
-    connect(client, &ClientStuff::isPswChanged,this,&ChangePasswordDialog::isPswChanged);
+    connect(client, &ClientStuff::isPswChanged, this, &ChangePasswordDialog::isPswChanged);
 }
 
 void ChangePasswordDialog::keyPressEvent(QKeyEvent *e) {
- switch (e->key ()) {
+    switch (e->key()) {
         case Qt::Key_Return:
         case Qt::Key_Enter:
-                on_ok_clicked();
-        break;
+            on_ok_clicked();
+            break;
 
         default:
-            QDialog::keyPressEvent (e);
-        }
+            QDialog::keyPressEvent(e);
+    }
 }
 
 
 void ChangePasswordDialog::isPswChanged(bool res) {
     //spdlog::debug("isPswChanged");
-    if(res) {
-        QMessageBox::information(this,"Done","Password changed");
+    if (res) {
+        QMessageBox::information(this, "Done", "Password changed");
         this->close();
-        disconnect(client, &ClientStuff::isPswChanged,this,&ChangePasswordDialog::isPswChanged);
+        disconnect(client, &ClientStuff::isPswChanged, this, &ChangePasswordDialog::isPswChanged);
     } else {
-        QMessageBox::warning(this,"Error","Old password is not correct!");
-        disconnect(client, &ClientStuff::isPswChanged,this,&ChangePasswordDialog::isPswChanged);
+        QMessageBox::warning(this, "Error", "Old password is not correct!");
+        disconnect(client, &ClientStuff::isPswChanged, this, &ChangePasswordDialog::isPswChanged);
 
         // called when already looking up or connecting/connected to "localhost"
     }
