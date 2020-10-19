@@ -22,11 +22,11 @@ class Model {
     std::map<_int, ClientSocket *> clientToUser;
     std::map<_int, QString> onlineUsers;
     std::map<_int, QList<User>> activeClientsForDocument;
-    QMutex symbolsForDocumentMutex;
+    QMutex symbolsForDocumentMutex; //TODO forse non serve più
     std::map<QString, QVector<Symbol>> symbolsForDocument;
     std::atomic<quint32> IDSeed;
     QQueue<CrdtMessage> messages;
-    QMutex editorMutex;
+    QMutex editorMutex; //TODO forse non serve più
     Crdt_editor *editor;
     QMutex fileMutex;
 public:
@@ -107,9 +107,9 @@ public:
 
     _int getIdFilename(QString email_owner, QString filename);
 
-    bool updateLastAcces(QString email, _int idFilename);
+    bool updateLastAccess(QString email, _int idFilename);
 
-    bool canOpenFile(UserManagementMessage userManagementMessage);
+    bool canOpenFile(const UserManagementMessage &userManagementMessage);
 
 
 };

@@ -251,6 +251,7 @@ void Crdt_editor::loadResponse(_int code, StorageMessage storageMessage) {
                                   QRandomGenerator::global()->bounded(64, 192)));
         users.push_back(u);
     }
+    this->activeUsers = users;
 
     emit load_response(code, storageMessage.getSymbols(), users);
 }
@@ -263,7 +264,24 @@ void Crdt_editor::deleteFromActive(const User &user, const QString &name) {
 
 /* This slot is invoked every time the list of active users is changed. */
 void Crdt_editor::activeUserChanged(_int code, ActiveUserMessage activeUserMessage) {
-    emit change_active_users(activeUserMessage.getActiveUsers());
+    if (activeUserMessage.getActiveUsers().size() > this->activeUsers.size()) {
+        for (User user : activeUserMessage.getActiveUsers()) {
+            if (!this->activeUsers.contains(user)) {
+                user.setAssignedColor(QColor(QRandomGenerator::global()->bounded(64, 192),
+                                             QRandomGenerator::global()->bounded(64, 192),
+                                             QRandomGenerator::global()->bounded(64, 192)));
+                user.setLastCursorPos(0);
+                this->activeUsers.push_back(user);
+            }
+        }
+    } else if (activeUserMessage.getActiveUsers().size() < this->activeUsers.size()) {
+        for (const User &user : this->activeUsers) {
+            if (!activeUserMessage.getActiveUsers().contains(user))
+                this->activeUsers.removeOne(user);
+        }
+    }
+
+    emit change_active_users(this->activeUsers);
 }
 
 /* This method is used to update the font of the char in position pos */

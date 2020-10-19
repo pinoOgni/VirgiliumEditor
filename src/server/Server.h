@@ -23,7 +23,7 @@ public:
 
     void incomingConnection(qintptr handle) override;
 
-    bool checkUpdate(CrdtMessage crdtMessage);
+    static bool checkUpdate(const CrdtMessage &crdtMessage);
 
 private slots:
 

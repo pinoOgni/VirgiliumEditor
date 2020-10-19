@@ -10,7 +10,6 @@
 #include <QColorDialog>
 #include <QPrinter>
 #include <utility>
-#include <client/clientstuff.h>
 
 TextEditor::TextEditor(QWidget *parent, ClientSocket *socket, const QString &fileName, User user,
                        PersonalPage *personalPage)
@@ -134,26 +133,16 @@ void TextEditor::loadResponse(_int code, const QVector<Symbol> &symbols, const Q
 
 /* This slot is used to change the actual active users */
 void TextEditor::changeActiveUser(const QList<User> &users) {
-    if (users.size() > this->activeUsers.size()) { //TODO spostare questa cosa nel model
-        for (User user : users) {
-            if (!this->activeUsers.contains(user)) {
-                user.setAssignedColor(QColor(QRandomGenerator::global()->bounded(64, 192),
-                                             QRandomGenerator::global()->bounded(64, 192),
-                                             QRandomGenerator::global()->bounded(64, 192)));
-                user.setLastCursorPos(0);
-                this->activeUsers.push_back(user);
-            }
-        }
-    } else if (users.size() < this->activeUsers.size()) {
+    if (users.size() < this->activeUsers.size()) {
         for (const User &user : this->activeUsers) {
             if (!users.contains(user)) {
-                this->activeUsers.removeOne(user);
                 if (user.getLastCursorPos() != 0)
                     changeBackground(user.getLastCursorPos(), Qt::white);
             }
         }
     }
 
+    this->activeUsers = users;
     this->comboUsers->clear();
     auto *model = dynamic_cast< QStandardItemModel * >( comboUsers->model());
     for (int i = 0; i < this->activeUsers.size(); i++) {
@@ -394,26 +383,6 @@ void TextEditor::changeIndentSpacing(int num) {
     cursor.setBlockFormat(blockFmt);
     cursor.clearSelection();
     ui->textEdit->setTextCursor(cursor);
-
-    /*if (cursor.currentList()) {
-        QTextListFormat listFmt = cursor.currentList()->format();
-        QTextCursor above(cursor);
-        above.movePosition(QTextCursor::Up);
-        if (above.currentList() && listFmt.indent() + num == above.currentList()->format().indent()) {
-            above.currentList()->add(cursor.block());
-        } else {
-            listFmt.setIndent(listFmt.indent() + num);
-            cursor.createList(listFmt);
-        }
-    } else {
-        ui->textEdit->selectAll();
-        QTextBlockFormat blockFmt = cursor.blockFormat();
-        blockFmt.setIndent(blockFmt.indent() + num);
-        cursor.setBlockFormat(blockFmt);
-        cursor.clearSelection();
-        ui->textEdit->setTextCursor(cursor);
-    }*/
-    //cursor.endEditBlock();
 }
 
 void TextEditor::on_actionExport_PDF_triggered() {
@@ -603,39 +572,26 @@ void TextEditor::changeBlockFormat(const QString &font) {
     ui->textEdit->document()->blockSignals(true);
     QTextCursor cursor(ui->textEdit->textCursor());
     ui->textEdit->selectAll();
-    /*if (startPos != -1 && finalPos != -1) {
-        cursor.setPosition(startPos, QTextCursor::MoveAnchor);
-        cursor.setPosition(finalPos - 1, QTextCursor::KeepAnchor);
-    }
-    QTextBlockFormat textBlockFormat = cursor.block().blockFormat();*/
     switch (firstList.at(1).toInt()) {
         case 1:
-            //textBlockFormat.setAlignment(Qt::AlignLeft);
             if (alignment != "1")
                 ui->textEdit->setAlignment(Qt::AlignLeft);
             break;
         case 2:
-            //textBlockFormat.setAlignment(Qt::AlignRight);
             if (alignment != "2")
                 ui->textEdit->setAlignment(Qt::AlignRight);
             break;
         case 8:
-            //textBlockFormat.setAlignment(Qt::AlignJustify);
             if (alignment != "8")
                 ui->textEdit->setAlignment(Qt::AlignJustify);
             break;
         case 132:
-            //textBlockFormat.setAlignment(Qt::AlignHCenter);
             if (alignment != "132")
                 ui->textEdit->setAlignment(Qt::AlignCenter);
             break;
     }
     this->changeIndentSpacing(firstList.at(2).toInt());
-    //textBlockFormat.setIndent(firstList.at(2).toInt());
-    //cursor.setBlockFormat(textBlockFormat);
 
-    //alignment = QString::number(textBlockFormat.alignment());
-    //indentation = QString::number(textBlockFormat.indent());
     alignment = firstList.at(1);
     indentation = firstList.at(2);
     cursor.clearSelection();
@@ -735,10 +691,6 @@ void TextEditor::change(int pos, int del, int add) {
                     indentation = QString::number(textBlockFormat.indent());
 
                     this->client->changeBlockFormat(charData);
-                    /*if (pos + add < cursor.document()->characterCount())
-                        this->client->changeBlockFormat(charData, pos, pos + add);
-                    else
-                        this->client->changeBlockFormat(charData, pos, pos + add - 2);*/
                 }
                 return;
             }

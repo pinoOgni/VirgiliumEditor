@@ -41,6 +41,7 @@ Q_OBJECT
     QVector<Symbol> _symbols;
     _int _counter;
     bool sendCursor = true;
+    QList<User> activeUsers;
 
     void changeFirstSymbol(_int index);
 
