@@ -12,8 +12,7 @@
 #include <QCloseEvent>
 
 
-void PersonalPage::closeEvent(QCloseEvent *event)
-{
+void PersonalPage::closeEvent(QCloseEvent *event) {
     /*
      QMessageBox::StandardButton resBtn = QMessageBox::question( this, "Virgilium Client",
                                                                 tr("Are you sure?\n"),
@@ -23,9 +22,10 @@ void PersonalPage::closeEvent(QCloseEvent *event)
 
     //se facciamo così si chiude tutto il client
     User u = User(email);
-    UserMessage userMessage = UserMessage(client->getSocket()->getClientID(),u);
-    client->getSocket()->send(LOGOUT,userMessage);
+    UserMessage userMessage = UserMessage(client->getSocket()->getClientID(), u);
+    client->getSocket()->send(LOGOUT, userMessage);
 
+    emit closeEditor();
     event->accept();
 }
 
@@ -300,7 +300,8 @@ void PersonalPage::isRequestToCollaboratedReceived(bool res) {
                    &PersonalPage::isRequestToCollaboratedReceived);
         getUserFiles();
     } else {
-        QMessageBox::warning(this, "Error", "Error while adding you as collaborator, maybe yout url is wrong or it is expired");
+        QMessageBox::warning(this, "Error",
+                             "Error while adding you as collaborator, maybe yout url is wrong or it is expired");
         disconnect(client, &ClientStuff::isRequestToCollaboratedReceived, this,
                    &PersonalPage::isRequestToCollaboratedReceived);
     }

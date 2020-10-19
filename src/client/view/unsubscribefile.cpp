@@ -10,6 +10,7 @@ unsubscribeFile::unsubscribeFile(QWidget *parent) :
         ui(new Ui::unsubscribeFile) {
     ui->setupUi(this);
 
+    this->personalPage = dynamic_cast<PersonalPage *>(parent);
     this->setWindowTitle("Virgilium");
     QIcon icon;
     icon.addFile(QString::fromUtf8(":/Icons/v.png"), QSize(), QIcon::Normal, QIcon::On);
@@ -94,7 +95,7 @@ void unsubscribeFile::canOpenFile(bool res) {
         emit Want2Close2();
     } else {
         QString path = this->email_owner + "/" + this->filename;
-        textEditor = new TextEditor(nullptr, this->client->getSocket(), path, this->currentUser);
+        textEditor = new TextEditor(nullptr, this->client->getSocket(), path, this->currentUser, this->personalPage);
         textEditor->setAttribute(Qt::WA_DeleteOnClose);
         close();
         textEditor->show();

@@ -14,15 +14,15 @@
 
 
 namespace Ui {
-class manageCollaborators;
+    class manageCollaborators;
 }
 
-class manageCollaborators : public QDialog
-{
-    Q_OBJECT
+class manageCollaborators : public QDialog {
+Q_OBJECT
 
 public:
     explicit manageCollaborators(QWidget *parent = nullptr);
+
     ~manageCollaborators() override;
 
 private:
@@ -30,22 +30,28 @@ private:
 
     QString email;
     QString filename;
-    ClientStuff * client;
+    ClientStuff *client;
 private slots:
+
     void keyPressEvent(QKeyEvent *) override;
 
     void receiveData_2(ClientStuff *, QString, QString, User);
 
     void on_add_clicked();
+
     void on_remove_clicked();
 
     void isInviteCreated(InvitationMessage);
+
     //void isCollaboratorAdded(bool);
     void isCollaboratorRemoved(bool);
+
     void canRemoveCollaborator(bool);
 
     void on_cancel_clicked();
+
 signals:
+
     void Want2Close2();
 };
 

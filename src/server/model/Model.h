@@ -8,7 +8,6 @@
 #include <QString>
 #include <map>
 #include <common/ClientSocket.h>
-#include "ServerDocument.h"
 #include <atomic>
 #include <memory>
 #include <QtCore/QMutex>
@@ -40,7 +39,7 @@ public:
 
     ClientSocket *getLoggedUser(const User &user);
 
-    bool isUserOnline(const QString email);
+    bool isUserOnline(const QString &email);
 
     void insertUserOnline(_int, const QString email);
 

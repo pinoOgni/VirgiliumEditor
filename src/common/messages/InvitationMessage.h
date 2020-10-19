@@ -14,16 +14,21 @@
 #include "BasicMessage.h"
 #include <iostream>
 
-class InvitationMessage: public BasicMessage {
+class InvitationMessage : public BasicMessage {
     QString email;
     QString invitationCode;
 
 public:
     InvitationMessage();
+
     InvitationMessage(quintptr sender, QString email, QString invitationCode);
-    friend QDataStream &operator <<(QDataStream &stream, const InvitationMessage &myclass);
-    friend QDataStream &operator >>(QDataStream &stream, InvitationMessage &myclass);
+
+    friend QDataStream &operator<<(QDataStream &stream, const InvitationMessage &myclass);
+
+    friend QDataStream &operator>>(QDataStream &stream, InvitationMessage &myclass);
+
     QString getEmail() const;
+
     QString getInvitationCode() const;
 
 };

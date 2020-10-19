@@ -8,15 +8,15 @@
 #include "renameordelete.h"
 
 namespace Ui {
-class renameFile;
+    class renameFile;
 }
 
-class renameFile : public QDialog
-{
-    Q_OBJECT
+class renameFile : public QDialog {
+Q_OBJECT
 
 public:
     explicit renameFile(QWidget *parent = nullptr);
+
     ~renameFile() override;
 
 private:
@@ -24,17 +24,21 @@ private:
 
     QString email;
     QString oldFilename;
-    ClientStuff * client;
+    ClientStuff *client;
 
 signals:
-        void Want2Close3();
+
+    void Want2Close3();
 
 private slots:
-        void keyPressEvent(QKeyEvent *) override;
-        void receiveData_2(ClientStuff *,QString,QString);
 
-        void on_pushButton_clicked();
-        void isFileRenamed(bool);
+    void keyPressEvent(QKeyEvent *) override;
+
+    void receiveData_2(ClientStuff *, QString, QString);
+
+    void on_pushButton_clicked();
+
+    void isFileRenamed(bool);
 };
 
 #endif // RENAMEFILE_H

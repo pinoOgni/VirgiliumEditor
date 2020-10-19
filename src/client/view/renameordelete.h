@@ -11,8 +11,8 @@
 #include <QKeyEvent>
 #include "../clientstuff.h"
 #include "TextEditor.h"
+#include "PersonalPage.h"
 #include <QCryptographicHash>
-
 
 namespace Ui {
     class renameOrDelete;
@@ -33,6 +33,7 @@ private:
     ClientStuff *client;
     User currentUser;
     TextEditor *textEditor;
+    PersonalPage *personalPage;
 private slots:
 
     void keyPressEvent(QKeyEvent *) override;

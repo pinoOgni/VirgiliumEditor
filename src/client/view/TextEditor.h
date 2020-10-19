@@ -11,6 +11,7 @@
 #include <QComboBox>
 #include <client/clientstuff.h>
 #include "common/CRDT/Crdt_editor.h"
+#include "PersonalPage.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class TextEditor; }
@@ -19,7 +20,7 @@ class TextEditor : public QMainWindow {
 Q_OBJECT
 
 public:
-    TextEditor(QWidget *parent, ClientSocket *socket, const QString &fileName, User user);
+    TextEditor(QWidget *parent, ClientSocket *socket, const QString &fileName, User user, PersonalPage *personalPage);
 
     ~TextEditor();
 
@@ -113,9 +114,11 @@ private slots:
 
     void changeActiveUser(const QList<User> &activeUsers);
 
-    void changeBlockFormat(const QString &font, _int startPos, _int finalPos);
+    void changeBlockFormat(const QString &font);
 
     void changeCharFormat(_int pos, const Symbol::CharFormat &charData);
+
+    void closeEditor();
 
 };
 

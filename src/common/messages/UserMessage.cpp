@@ -28,6 +28,7 @@ QDataStream &operator<<(QDataStream &stream, const UserMessage &myclass) {
     stream << myclass.fileName;
     return stream;
 }
+
 //legge dallo stream (this client è il ricevente)
 QDataStream &operator>>(QDataStream &stream, UserMessage &myclass) {
     stream >> myclass.user;

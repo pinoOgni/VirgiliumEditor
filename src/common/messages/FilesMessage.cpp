@@ -13,22 +13,22 @@ FilesMessage::FilesMessage(
         QString filename,
         QString last_access,
         QStringList collaborators,
-        QString owner):
+        QString owner) :
         BasicMessage(sender),
         filename(std::move(filename)),
         last_access(std::move(last_access)),
         collaborators(std::move(collaborators)),
-        owner(std::move(owner))
-        {}
+        owner(std::move(owner)) {}
 
-QDataStream &operator <<(QDataStream &stream, const FilesMessage &myclass) {
+QDataStream &operator<<(QDataStream &stream, const FilesMessage &myclass) {
     stream << myclass.filename;
     stream << myclass.last_access;
     stream << myclass.collaborators;
     stream << myclass.owner;
     return stream;
 }
-QDataStream &operator >>(QDataStream &stream, FilesMessage &myclass) {
+
+QDataStream &operator>>(QDataStream &stream, FilesMessage &myclass) {
     stream >> myclass.filename;
     stream >> myclass.last_access;
     stream >> myclass.collaborators;
@@ -40,12 +40,12 @@ void FilesMessage::printUserInfo() {
     //spdlog::debug("{}, {}, {}",this->filename.toStdString(), this->last_access.toStdString(), this->owner.toStdString());
 }
 
-QString FilesMessage::getFilename() const {    return filename; }
+QString FilesMessage::getFilename() const { return filename; }
 
-QString FilesMessage::getLast_access() const {   return last_access; }
+QString FilesMessage::getLast_access() const { return last_access; }
 
-QStringList FilesMessage::getCollaborators() const {   return collaborators; }
+QStringList FilesMessage::getCollaborators() const { return collaborators; }
 
-QString FilesMessage::getOwner() const {   return owner; }
+QString FilesMessage::getOwner() const { return owner; }
 
 FilesMessage::FilesMessage() {}

@@ -42,6 +42,8 @@ Q_OBJECT
     _int _counter;
     bool sendCursor = true;
 
+    void changeFirstSymbol(_int index);
+
 public:
     Crdt_editor(QWidget *parent, ClientSocket *receivedSocket, QString fileName);
 
@@ -60,13 +62,15 @@ public:
      * */
     ~Crdt_editor();
 
-    void localInsert(_int index, QString value, Symbol::CharFormat font);
+    void localInsert(_int index, QString value, const Symbol::CharFormat &font);
 
     void localErase(_int index);
 
     void changeCursor(_int position);
 
-    void changeBlockFormat(const Symbol::CharFormat &font, _int startPos, _int finalPos);
+    void changeBlockFormat(const Symbol::CharFormat &font);
+
+    /*void changeBlockFormat(const Symbol::CharFormat &font, _int startPos, _int finalPos);*/
 
     void loadRequest(const QString &fileName, User user);
 
@@ -98,7 +102,8 @@ signals:
 
     void change_active_users(QList<User> users);
 
-    void change_block_format(QString font, _int startPos, _int finalPos);
+    /*void change_block_format(QString font, _int startPos, _int finalPos);*/
+    void change_block_format(QString font);
 
     void change_char_format(_int i, Symbol::CharFormat charData);
 };

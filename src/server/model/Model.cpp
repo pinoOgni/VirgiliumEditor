@@ -22,12 +22,21 @@ void Model::removeLoggedUser(ClientSocket *socket) {
         clientToUser.erase(it);
 }
 
-bool Model::isUserOnline(const QString email) {
+ClientSocket *Model::getLoggedUser(const User &user) {
+    auto it = clientToUser.find(user.getSiteId());
+    if (it == clientToUser.end()) {
+        throw std::runtime_error("User not logged!");
+    } else {
+        return it->second;
+    }
+}
+
+bool Model::isUserOnline(const QString &email) {
     //spdlog::debug("isUserOnline");
     bool find = false;
 
-    for (auto it = onlineUsers.begin(); it != onlineUsers.end(); ++it) {
-        if (QString::compare(it->second,email)==0) {
+    for (auto &onlineUser : onlineUsers) {
+        if (QString::compare(onlineUser.second, email) == 0) {
             find = true;
             break;
         }
@@ -44,19 +53,9 @@ void Model::insertUserOnline(_int id, const QString email) {
 }
 
 void Model::removeUserOnline(_int id) {
-
     auto it = onlineUsers.find(id);
-    if(it!=onlineUsers.end()) {
+    if (it != onlineUsers.end()) {
         onlineUsers.erase(it);
-    }
-}
-
-ClientSocket *Model::getLoggedUser(const User &user) {
-    auto it = clientToUser.find(user.getSiteId());
-    if (it == clientToUser.end()) {
-        throw std::runtime_error("User not logged!");
-    } else {
-        return it->second;
     }
 }
 
@@ -66,7 +65,7 @@ void Model::insertSymbolsForDocument(const QString &fileName, const QVector<Symb
 }
 
 void Model::removeSymbolsForDocument(const QString &fileName) {
-    QMutexLocker lock(&this->symbolsForDocumentMutex);
+    QMutexLocker lock(&this->symbolsForDocumentMutex); //TODO controllare se i lock stanno bene
     symbolsForDocument.erase(fileName);
 }
 
@@ -85,7 +84,7 @@ QList<User> Model::addActiveUserForDocument(const User &user, const QString &fil
     QStringList firstList = fileName.split(tagExp);
     QString email_owner = firstList.at(0);
     QString filename = firstList.at(1);
-    _int idFilename = getIdFilename(email_owner,filename);
+    _int idFilename = getIdFilename(email_owner, filename);
 
     auto it = activeClientsForDocument.find(idFilename);
     if (it != activeClientsForDocument.end()) { /* file already opened */
@@ -104,7 +103,7 @@ QList<User> Model::removeActiveUserForDocument(const User &user, const QString &
     QStringList firstList = fileName.split(tagExp);
     QString email_owner = firstList.at(0);
     QString filename = firstList.at(1);
-    _int idFilename = getIdFilename(email_owner,filename);
+    _int idFilename = getIdFilename(email_owner, filename);
 
     auto it = activeClientsForDocument.find(idFilename);
     if (it == activeClientsForDocument.end()) {
@@ -123,9 +122,7 @@ QList<User> Model::removeActiveUserForDocument(const User &user, const QString &
 }
 
 void Model::removeActiveUser(_int siteId) {
-
     _int idFilename = 0;
-
 
     for (auto &it : this->activeClientsForDocument) {
         for (auto it1 = it.second.begin(); it1 != it.second.end(); it1++) {
@@ -133,8 +130,8 @@ void Model::removeActiveUser(_int siteId) {
                 idFilename = it.first;
                 it.second.erase(it1);
 
-                for(User user : this->activeClientsForDocument.at(idFilename)) {
-                    ActiveUserMessage activeUserMessage(0,this->activeClientsForDocument.at(idFilename));
+                for (const User &user : this->activeClientsForDocument.at(idFilename)) {
+                    ActiveUserMessage activeUserMessage(0, this->activeClientsForDocument.at(idFilename));
                     this->getLoggedUser(user)->send(UPDATE_ACTIVE_USERS, activeUserMessage);
                 }
 

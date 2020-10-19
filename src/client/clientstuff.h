@@ -15,48 +15,81 @@
 #include "../common/ClientSocket.h"
 
 
-class ClientStuff : public QObject
-{
-    Q_OBJECT
+class ClientStuff : public QObject {
+Q_OBJECT
 
 public:
     ClientStuff(const QString &hostName, quint16 port, QObject *parent = 0);
+
     ~ClientStuff();
+
     ClientSocket *clientSocket;
+
     ClientSocket *getSocket();
 
 public slots:
+
     void processBasicMessage(_int, BasicMessage);
+
     void processLoginAndSignup(_int);
-    void processUserMessage(_int,UserMessage);
-    void processFilesMessage(_int,std::vector<FilesMessage>);
-    void processAllData(_int code, UserMessage userMessage, _int row1, std::vector<FilesMessage> filesOwner, _int row2, std::vector<FilesMessage> filesCollabs);
+
+    void processUserMessage(_int, UserMessage);
+
+    void processFilesMessage(_int, std::vector<FilesMessage>);
+
+    void processAllData(_int code, UserMessage userMessage, _int row1, std::vector<FilesMessage> filesOwner, _int row2,
+                        std::vector<FilesMessage> filesCollabs);
+
     void processFileManagement(_int);
+
     void processChangePassword(_int);
+
     void processUserManagement(_int);
-    void processInvitation(_int,InvitationMessage);
+
+    void processInvitation(_int, InvitationMessage);
+
     void processRequestToCollaborate(_int);
+
 signals:
+
     void hasReadSome(QString msg);
+
     void tryToLogin(bool logged);
+
     void tryToSignup(bool registered);
+
     void userAlreadyLogged();
 
-    void getFilesOwner(int row,std::vector<FilesMessage>& filesMessage);
+    void getFilesOwner(int row, std::vector<FilesMessage> &filesMessage);
+
     void getInfoUser(UserMessage &u);
-    void getUserFiles(int row,std::vector<FilesMessage>& filesMessage);
+
+    void getUserFiles(int row, std::vector<FilesMessage> &filesMessage);
+
     void isFileRenamed(bool);
+
     void isFileDeleted(bool);
+
     void isPswChanged(bool);
+
     void isFileCreated(bool);
+
     void canDeleteFile(bool);
+
     void canRemoveCollaborator(bool);
+
     void canOpenFile(bool);
+
     void isCollaboratorAdded(bool);
+
     void isInviteCreated(InvitationMessage);
+
     void isCollaboratorRemoved(bool);
+
     void isUnsubscribed(bool);
-    void getAllData(UserMessage &, _int ,std::vector<FilesMessage>&,_int,std::vector<FilesMessage>&);
+
+    void getAllData(UserMessage &, _int, std::vector<FilesMessage> &, _int, std::vector<FilesMessage> &);
+
     void isRequestToCollaboratedReceived(bool);
 
 
@@ -66,7 +99,7 @@ private:
     /*QString host;
     unsigned short port; //da modificare
     bool status;*/
-   // ClientSocket *clientSocket;
+    // ClientSocket *clientSocket;
 };
 
 #endif // VIRGILIUM_CLIENTSTUFF_H

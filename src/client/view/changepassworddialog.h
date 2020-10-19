@@ -13,30 +13,34 @@
 #include "../clientstuff.h"
 
 namespace Ui {
-class ChangePasswordDialog;
+    class ChangePasswordDialog;
 }
 
-class ChangePasswordDialog : public QDialog
-{
-    Q_OBJECT
+class ChangePasswordDialog : public QDialog {
+Q_OBJECT
 
 public:
     explicit ChangePasswordDialog(QWidget *parent = nullptr);
+
     ~ChangePasswordDialog() override;
 
 private slots:
 
     void on_ok_clicked();
+
     void on_cancel_clicked();
-    void receiveData(ClientStuff *,QString);
+
+    void receiveData(ClientStuff *, QString);
+
     void keyPressEvent(QKeyEvent *) override;
+
     void isPswChanged(bool);
 
 private:
     Ui::ChangePasswordDialog *ui;
     QString email;
     bool correctPsw;
-    ClientStuff * client;
+    ClientStuff *client;
 };
 
 #endif // CHANGEPASSWORDDIALOG_H

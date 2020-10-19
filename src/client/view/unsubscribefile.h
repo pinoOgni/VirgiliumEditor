@@ -14,15 +14,15 @@
 #include "TextEditor.h"
 
 namespace Ui {
-class unsubscribeFile;
+    class unsubscribeFile;
 }
 
-class unsubscribeFile : public QDialog
-{
-    Q_OBJECT
+class unsubscribeFile : public QDialog {
+Q_OBJECT
 
 public:
     explicit unsubscribeFile(QWidget *parent = nullptr);
+
     ~unsubscribeFile();
 
 private:
@@ -30,10 +30,11 @@ private:
 
     QString email;
     QString filename;
-    ClientStuff * client;
+    ClientStuff *client;
     QString email_owner;
     User currentUser;
     TextEditor *textEditor;
+    PersonalPage *personalPage;
 
 private slots:
 
@@ -44,12 +45,15 @@ private slots:
     void on_unsubscribe_clicked();
 
     void on_cancel_clicked();
+
     void isUnsubscribed(bool);
+
     void canOpenFile(bool);
 
     void on_pushButton_clicked();
 
 signals:
+
     void Want2Close2();
 };
 

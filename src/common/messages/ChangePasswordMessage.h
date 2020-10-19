@@ -11,20 +11,24 @@
 #include <QDataStream>
 #include "BasicMessage.h"
 
-class ChangePasswordMessage: public BasicMessage {
+class ChangePasswordMessage : public BasicMessage {
     QString email;
     QString oldPsw;
     QString newPsw;
 
 public:
     ChangePasswordMessage();
-    ChangePasswordMessage(quintptr sender,QString email, QString oldPsw, QString newPsw);
 
-    friend QDataStream &operator <<(QDataStream &stream, const ChangePasswordMessage &myclass);
-    friend QDataStream &operator >>(QDataStream &stream, ChangePasswordMessage &myclass);
+    ChangePasswordMessage(quintptr sender, QString email, QString oldPsw, QString newPsw);
+
+    friend QDataStream &operator<<(QDataStream &stream, const ChangePasswordMessage &myclass);
+
+    friend QDataStream &operator>>(QDataStream &stream, ChangePasswordMessage &myclass);
 
     QString getEmail() const;
+
     QString getOldPsw() const;
+
     QString getNewPsw() const;
 };
 
