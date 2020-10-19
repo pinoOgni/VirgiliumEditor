@@ -109,7 +109,6 @@ void ClientStuff::processBasicMessage(_int code, BasicMessage bm) {
     switch (code) {
         case CLIENT_CONNECTED: {
             this->clientSocket->setClientID(bm.getSender());
-            //spdlog::debug("client_connected  {}" ,this->clientSocket->getClientID());
         }
             break;
     }
