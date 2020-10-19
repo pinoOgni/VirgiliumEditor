@@ -1,7 +1,6 @@
 //
 // Created by alex on 10/08/20.
 //
-//ciao
 
 #ifndef VIRGILIUM_CONSTANTS_H
 #define VIRGILIUM_CONSTANTS_H
@@ -9,17 +8,11 @@
 // #include <spdlog/spdlog.h>
 
 #define _int qint64
-#define FILE_IDENTIFIER 993
-#define ConnectionWaitingTime 5000 // in millisecondi
+#define ConnectionWaitingTime 5000 // milliseconds
 #define Q_DATA_STREAM_VERSION QDataStream::Qt_5_1
 #define LISTENING_PORT 9999
 
-/*Lista di costanti che discrimina i segnali e quello che deve fare l'applicazione:
- * */
 
-#define BASIC_MESSAGE 1
-#define CRDT_MESSAGE 2
-#define SITE_ID_ASSIGNMENT 3
 #define SYMBOL_INSERT_OR_ERASE 4
 #define CLIENT_CONNECTED 5
 #define LOGIN_OK 6
@@ -80,8 +73,8 @@
 #define CAN_OPEN_FILE_KO 759
 
 
-//true --> ricrea i db vergini
-//false --> usa il DB con i dati che ci sono
+//true --> create db from scratch
+//false --> db is not create again but old data is used
 #define TESTDB true
 #define VIRGILIUM_STORAGE "/VIRGILIUM_STORAGE/"
 

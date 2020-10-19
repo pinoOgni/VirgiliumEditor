@@ -16,28 +16,26 @@ User::User(QString email) : email(std::move(email)) {};
 
 User::User() {};
 
-// write on stream (this client è il mittente)
-QDataStream &operator<<(QDataStream &stream, const User &myclass) {
-    stream << myclass.email;
-    stream << myclass.password;
-    stream << myclass.firstName;
-    stream << myclass.lastName;
-    stream << myclass.siteId;
-    stream << myclass.lastCursorPos;
-    stream << myclass.assignedColor;
+QDataStream &operator<<(QDataStream &stream, const User &myClass) {
+    stream << myClass.email;
+    stream << myClass.password;
+    stream << myClass.firstName;
+    stream << myClass.lastName;
+    stream << myClass.siteId;
+    stream << myClass.lastCursorPos;
+    stream << myClass.assignedColor;
 
     return stream;
 }
 
-// read from stream (this client è il ricevente)
-QDataStream &operator>>(QDataStream &stream, User &myclass) {
-    stream >> myclass.email;
-    stream >> myclass.password;
-    stream >> myclass.firstName;
-    stream >> myclass.lastName;
-    stream >> myclass.siteId;
-    stream >> myclass.lastCursorPos;
-    stream >> myclass.assignedColor;
+QDataStream &operator>>(QDataStream &stream, User &myClass) {
+    stream >> myClass.email;
+    stream >> myClass.password;
+    stream >> myClass.firstName;
+    stream >> myClass.lastName;
+    stream >> myClass.siteId;
+    stream >> myClass.lastCursorPos;
+    stream >> myClass.assignedColor;
 
     return stream;
 }
@@ -48,10 +46,6 @@ bool User::operator==(const User &other) {
 
 bool User::operator<(const User &other) const {
     return this->siteId < other.siteId;
-}
-
-QString User::printMessage() {
-    return this->firstName + " " + this->lastName + " " + this->email + " " + this->password;
 }
 
 QString User::getEmail() const {

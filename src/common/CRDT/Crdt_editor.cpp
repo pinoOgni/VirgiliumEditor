@@ -23,8 +23,6 @@ Crdt_editor::Crdt_editor() = default;
 
 Crdt_editor::~Crdt_editor() = default;
 
-/* This method is used to modify the _symbols vector when a new character is
- * inserted/removed or when the font of the symbol is changed. */
 void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
     if (code == 0 || this->fileName == m.getFileName()) {
         auto symbol = m.getSymbol();
@@ -34,7 +32,7 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
             auto newPos = m.getSymbol().getPosition();
 
             for (i = 0; i < this->_symbols.size(); i++)
-                if (symbol <= this->_symbols[i]) break; // position found
+                if (symbol <= this->_symbols[i]) break;
             auto it = this->_symbols.begin() + i;
             this->_symbols.insert(it, symbol);
 
@@ -115,14 +113,12 @@ void Crdt_editor::clientProcess(_int code, const CrdtMessage &m) {
     }
 }
 
-/* This method is used inside the process to get the new _symbols vector before to save. */
 QVector<Symbol> Crdt_editor::serverProcess(QVector<Symbol> symbols, const CrdtMessage &crdtMessage) {
     this->_symbols = std::move(symbols);
     this->clientProcess(0, crdtMessage);
     return this->_symbols;
 }
 
-/* This method is used to calculate the position of a new symbol. */
 QVector<_int> Crdt_editor::getPosition(QVector<_int> prec, QVector<_int> succ) {
     QVector<_int> newPos;
     _int i, prev, next, _max = (prec.size() > succ.size()) ? prec.size() : succ.size();
@@ -155,7 +151,6 @@ QVector<_int> Crdt_editor::getPosition(QVector<_int> prec, QVector<_int> succ) {
     return newPos;
 }
 
-/* This method is used to send to other clients the new position of my cursor. */
 void Crdt_editor::changeCursor(_int position) {
     QVector<_int> pos = {position - 1, position};
     Symbol::CharFormat font = Symbol::CharFormat();
@@ -167,7 +162,6 @@ void Crdt_editor::changeCursor(_int position) {
     sendCursor = true;
 }
 
-/* This method is used to say to the other clients that a char is deleted. */
 void Crdt_editor::localErase(_int index) {
     sendCursor = false;
 
@@ -179,7 +173,6 @@ void Crdt_editor::localErase(_int index) {
     this->socket->send(SYMBOL_INSERT_OR_ERASE, m);
 }
 
-/* This method is used to say to other clients that a char is inserted. */
 void Crdt_editor::localInsert(_int index, QString value, const Symbol::CharFormat &font) {
     sendCursor = false;
     QVector<_int> prev;
@@ -213,7 +206,6 @@ void Crdt_editor::localInsert(_int index, QString value, const Symbol::CharForma
     this->socket->send(SYMBOL_INSERT_OR_ERASE, m);
 }
 
-/* This method is used to sent to the other clients the new BlockFormat */
 void Crdt_editor::changeBlockFormat(const Symbol::CharFormat &font) {
     Symbol::CharFormat charData;
     Symbol first = this->_symbols[0];
@@ -229,7 +221,6 @@ void Crdt_editor::changeBlockFormat(const Symbol::CharFormat &font) {
     this->socket->send(SYMBOL_INSERT_OR_ERASE, m);
 }
 
-/* This method is used to request the vector of symbols and the list of active users. */
 void Crdt_editor::loadRequest(const QString &name, User user) {
     user.setSiteId(this->_siteId);
     user.setLastCursorPos(0);
@@ -240,7 +231,6 @@ void Crdt_editor::loadRequest(const QString &name, User user) {
     this->socket->send(LOAD_REQUEST, storageMessage);
 }
 
-/* This slot is used to update the vector of symbols and the list of active users. */
 void Crdt_editor::loadResponse(_int code, StorageMessage storageMessage) {
     this->_symbols = storageMessage.getSymbols();
 
@@ -256,13 +246,11 @@ void Crdt_editor::loadResponse(_int code, StorageMessage storageMessage) {
     emit load_response(code, storageMessage.getSymbols(), users);
 }
 
-/* This method is used to delete the current user from the list of active users. */
 void Crdt_editor::deleteFromActive(const User &user, const QString &name) {
     UserMessage userMessage(this->_siteId, user, name);
     this->socket->send(DELETE_ACTIVE, userMessage);
 }
 
-/* This slot is invoked every time the list of active users is changed. */
 void Crdt_editor::activeUserChanged(_int code, ActiveUserMessage activeUserMessage) {
     if (activeUserMessage.getActiveUsers().size() > this->activeUsers.size()) {
         for (User user : activeUserMessage.getActiveUsers()) {
@@ -284,7 +272,6 @@ void Crdt_editor::activeUserChanged(_int code, ActiveUserMessage activeUserMessa
     emit change_active_users(this->activeUsers);
 }
 
-/* This method is used to update the font of the char in position pos */
 void Crdt_editor::localUpdate(_int pos, const Symbol::CharFormat &charData) {
     QRegExp tagExp(",");
     QStringList newList = charData.font.split(tagExp);
@@ -314,7 +301,6 @@ void Crdt_editor::localUpdate(_int pos, const Symbol::CharFormat &charData) {
     this->socket->send(SYMBOL_INSERT_OR_ERASE, m);
 }
 
-/* This is a private method to modify the first symbol when the alignment/indentation is modified. */
 void Crdt_editor::changeFirstSymbol(_int index) {
     if (index == 0) {
         QString format = this->_symbols[0].getFont().font;
