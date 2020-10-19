@@ -43,7 +43,7 @@ bool Symbol::operator==(const Symbol &b) {
 
 //stessa cosa di prima solo per l'operatore "<"
 //serve perchè quando arriva una insert di un carattere da un altro client e devo mettere il carattere nella posizione giusta del testo di questo (this) client
-bool Symbol::operator<(const Symbol &b) {
+/*bool Symbol::operator<(const Symbol &b) {
     _int i;
     bool flag = false;
     //devo ritornare se this è  (strettamente) minore di b
@@ -57,7 +57,7 @@ bool Symbol::operator<(const Symbol &b) {
     if (i == _max && b.pos.size() > this->pos.size())
         flag = true;
     return flag;
-}
+}*/
 
 bool Symbol::operator<=(const Symbol &b) {
     if (this->pos == b.pos) {

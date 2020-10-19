@@ -12,7 +12,7 @@
 
 //ADD quint16 port è un unsigned short
 Server::Server(unsigned short port, Model &model) : model(model) {
-    //freopen("serverLog.txt", "w", stderr);
+    freopen("serverLog.txt", "w", stderr);
     if (!listen(QHostAddress::LocalHost, port)) {
         //spdlog::error("Error: server is not listening");
         std::cerr << "Error: server is not listening" << std::endl;
@@ -80,9 +80,9 @@ void Server::onSocketStateChanged(QTcpSocket::SocketState state) {
         case QAbstractSocket::ClosingState: {
             //spdlog::debug("The socket is about to close.");
             auto sender = dynamic_cast<ClientSocket *>(QObject::sender());
-            this->model.removeLoggedUser(sender);
             this->model.removeActiveUser(sender->getClientID());
             this->model.removeUserOnline(sender->getClientID());
+            this->model.removeLoggedUser(sender);
             break;
         }
         case QAbstractSocket::ListeningState:
@@ -302,7 +302,6 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
                 //spdlog::error("update last_access ERROR");
                 std::cerr << "update last_access ERROR" << std::endl;
             }
-            //fine pino
 
             if (users.empty()) {
                 this->model.removeSymbolsForDocument(userMessage.getFileName());
@@ -446,9 +445,9 @@ void Server::onLogoutReceived(_int code, UserMessage userMessage) {
         case LOGOUT: {
             //spdlog::debug("close connection DB");
             model.closeConnectionDB();
-            //this->model.removeUserFromEditor(sender);
-            this->model.removeLoggedUser(sender);
+            this->model.removeActiveUser(sender->getClientID());
             this->model.removeUserOnline(sender->getClientID());
+            this->model.removeLoggedUser(sender);
         }
             break;
     }

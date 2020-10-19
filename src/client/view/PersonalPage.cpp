@@ -23,9 +23,10 @@ void PersonalPage::closeEvent(QCloseEvent *event)
 
     //se facciamo così si chiude tutto il client
     User u = User(email);
-    UserMessage userMessage = UserMessage(client->getSocket()->getClientID(),u);
-    client->getSocket()->send(LOGOUT,userMessage);
+    UserMessage userMessage = UserMessage(client->getSocket()->getClientID(), u);
+    client->getSocket()->send(LOGOUT, userMessage);
 
+    emit closeEditor();
     event->accept();
 }
 

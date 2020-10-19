@@ -10,6 +10,7 @@
 
 renameOrDelete::renameOrDelete(QWidget *parent) : QDialog(parent), ui(new Ui::renameOrDelete) {
     ui->setupUi(this);
+    this->personalPage = dynamic_cast<PersonalPage *>(parent);
 
     this->setWindowTitle("Virgilium");
     QIcon icon;
@@ -101,7 +102,7 @@ void renameOrDelete::canOpenFile(bool res) {
         emit Want2Close2();
     } else {
         QString path = this->email + "/" + this->filename;
-        textEditor = new TextEditor(nullptr, client->getSocket(), path, this->currentUser);
+        textEditor = new TextEditor(nullptr, client->getSocket(), path, this->currentUser, this->personalPage);
         textEditor->setAttribute(Qt::WA_DeleteOnClose);
         this->close();
         textEditor->show();

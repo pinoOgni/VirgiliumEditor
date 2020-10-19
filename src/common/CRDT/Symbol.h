@@ -37,7 +37,7 @@ public:
 
     bool operator==(const Symbol &b);
 
-    bool operator<(const Symbol &b);
+    /*bool operator<(const Symbol &b);*/
 
     bool operator<=(const Symbol &b);
 

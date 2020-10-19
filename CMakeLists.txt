@@ -33,7 +33,6 @@ add_executable(VirgiliumServer src/serverMain.cpp src/common/constants.h
         src/common/messages/FileManagementMessage.cpp src/common/messages/FileManagementMessage.h
         src/common/messages/FilesMessage.cpp src/common/messages/FilesMessage.h
         src/common/messages/UserManagementMessage.cpp src/common/messages/UserManagementMessage.h
-        src/server/model/ServerDocument.cpp src/server/model/ServerDocument.h
         src/server/model/Database.h src/server/model/Database.cpp
         src/server/model/Model.h src/server/model/Model.cpp
         src/common/messages/StorageMessage.cpp src/common/messages/StorageMessage.h

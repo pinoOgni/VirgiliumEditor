@@ -73,6 +73,7 @@ signals:
 
     void sendData_3(ClientStuff *, QString, QString, QString, User);
 
+    void closeEditor();
 
 private:
     Ui::PersonalPage *ui;

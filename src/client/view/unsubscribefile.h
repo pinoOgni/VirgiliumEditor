@@ -34,6 +34,7 @@ private:
     QString email_owner;
     User currentUser;
     TextEditor *textEditor;
+    PersonalPage *personalPage;
 
 private slots:
 
