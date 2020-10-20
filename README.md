@@ -98,6 +98,6 @@ Poiché la maggior parte delle operazioni presenti all'interno dell'applicazioni
 # Gestione comunicazione client e server
 
 La comunicazione tra client e server avviene attraverso lo scambio di diverse tipologie di messaggi.
-Ciascuno di questi messaggi è individuato da un codice identificativo che specifica l’azione da svolgere, seguito dal contenuto del messaggio vero è proprio.
+Ciascuno di questi messaggi è individuato da un codice identificativo che specifica l’azione da svolgere, seguito dal contenuto del messaggio vero e proprio.
 Nella classe **ClientSocket** il ruolo centrale è svolto dalla funzione onReadyRead. Questo slot viene chiamato ogniqualvolta dei dati sono disponibili per essere letti. Appena ciò si verifica, viene emesso un segnale verso il client o il server destinazione. In questa stessa classe sono anche definiti altri metodi che specificano l’invio dei vari messaggi. Essendo le funzioni svolte da questa classe comuni sia per il server che per il client, la classe stessa è condivisa.
 In questa senso anche altre classi sono in comune: in particolare quelle relative alla definizione dei messaggi e il file costants.h dove sono elencate le costanti usate nel programma tra cui, appunto, i codici identificativi.
