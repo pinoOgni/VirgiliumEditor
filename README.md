@@ -42,7 +42,7 @@ Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte e
     * cambiare password
     
 
-# Text editor
+## Text editor
 
 * In alto a sinistra è possibile vedere gli utenti che stanno attualmente modificando il file, ad ognuno di questi è assegnato un colore con il quale è possibile distinguere i diversi cursori all'interno del foglio di lavoro.
 
@@ -58,7 +58,7 @@ Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte e
 
 
 
-## Struttura del progetto
+# Struttura del progetto
 
 Il progetto è diviso in 3 directory:
 * client: sono presenti tutte i file .h/.cpp/.ui che rappresentano le viste del client e la classe **clientStuff** che si occupa della gestione di tutto ciò che riguarda client e server, usando la classe **ClientSocket**. 
@@ -74,10 +74,11 @@ Il progetto è diviso in 3 directory:
     
 
 # Algoritmo CRDT
-ALESSANDRO/STEFANO/SIMONE
+Per l'implementazione della logica dell'applicazione è stato utilizzato l'algoritmo CRDT, per maggiori informazioni è possibile cliccare [qui](https://conclave-team.github.io/conclave-site/#what-is-a-real-time-collaborative-text-editor).
+In particolar modo sono state implementate diverse funzioni con lo scopo di raccogliere tutti i cambiamenti all'interno dell'editor di un client in modo tale da trasmettere queste informazioni al server, che ha lo scopo di distribuire i dati agli altri client interessati. Come descritto dall'algoritmo, lo sforzo è stato quello di ottenere in tutti i casi una situazione coerente nei diversi client, ottenuta rendendo l’operazione di inserimento commutativa e quella di cancellazione, oltre che commutativa, anche idempotente. Nello specifico commutabilità e idempotenza sono state ottenute aggiungendo alle proprietà base dell’oggetto (valore, posizione) proprietà quali il siteID (identificativo del client) e counterID (numero progressivo associato al carattere e assegnato dal client). Proprio per questo motivo due aspetti fondamentali sono quelli relativi alla posizione assoluta di un singolo carattere e al suo formato.
 
 # Threading
-ALESSANDRO/STEFANO/SIMONE
+Poiché la maggior parte delle operazioni presenti all'interno dell'applicazioni sono abbastanza veloci si è pensato di ridurre al minimo l'utilizzo dei thread. L'unico caso in cui si è utilizzato un pool di thread è stato quello relativo al salvataggio di un file, in particolar modo dopo aver calcolato la posizione corretta del singolo carattere viene utilizzato uno dei thread disponibili per effettuare il salvataggio.
 
 # Gestione del file system
 
@@ -100,13 +101,3 @@ ALESSANDRO/STEFANO/SIMONE
 
 
 Sono state create un certo numero di classi "message" che vengono scambiate tra il client e il server in base all'azione da svolgere. L'azione è definita da una determinata costante, definita in un opportuno file.
-
-
-
-
-
-# TODO Pino
-
-* informare della rinominazione del file tutti gli utenti loggatti
-
-* prima di cancellare il file controllare che nessun utente sia collegato a quel file
