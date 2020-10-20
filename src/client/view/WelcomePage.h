@@ -2,8 +2,8 @@
 // Created by pinoOgni on 10/08/20.
 //
 
-#ifndef WELCOMEPAGE_H
-#define WELCOMEPAGE_H
+#ifndef VIRGILIUM_WELCOMEPAGE_H
+#define VIRGILIUM_WELCOMEPAGE_H
 
 #include <QMainWindow>
 #include "PersonalPage.h"
@@ -27,9 +27,7 @@ public:
 
     ~WelcomePage();
 
-    //later they will be on the server
     void loginDB(QString, QString);
-
     void signinDB(QString, QString, QString, QString);
 
 private slots:
@@ -82,7 +80,7 @@ private:
 
 };
 
-#endif // WELCOMEPAGE_H
+#endif // VIRGILIUM_WELCOMEPAGE_H
 
 
 

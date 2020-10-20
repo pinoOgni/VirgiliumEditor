@@ -78,7 +78,7 @@ void manageCollaborators::isCollaboratorRemoved(bool res) {
         QMessageBox::information(this, "Done", "Collaborator removed");
         this->close();
     } else {
-        QMessageBox::information(this, "Error", "Errore while removing collaborator");
+        QMessageBox::information(this, "Error", "Error while removing collaborator");
 
         //If there is an error, the signal is disconnected so only one message will be show to the user
         disconnect(client, &ClientStuff::isCollaboratorRemoved, this, &manageCollaborators::isCollaboratorRemoved);
@@ -92,7 +92,7 @@ void manageCollaborators::isCollaboratorRemoved(bool res) {
 
 void manageCollaborators::canRemoveCollaborator(bool res) {
     if (!res) {
-        QMessageBox::warning(this, "Error", "Someone has the text editor open, retry later");
+        QMessageBox::warning(this, "Error", "Collaborator " + ui->remove_collaborator->text() + " has the text editor open, retry later");
         //If there is an error, the signal is disconnected so only one message will be show to the user
         disconnect(client, &ClientStuff::isCollaboratorRemoved, this, &manageCollaborators::isCollaboratorRemoved);
         disconnect(client, &ClientStuff::canRemoveCollaborator, this, &manageCollaborators::canRemoveCollaborator);

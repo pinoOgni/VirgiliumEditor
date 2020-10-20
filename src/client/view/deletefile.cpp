@@ -20,7 +20,7 @@ deleteFile::~deleteFile() {
 
 
 void deleteFile::receiveData_2(ClientStuff *client, QString email, QString filename) {
-    //bridge between secondlogin and delete or rename dialog
+    //bridge between persolaPage and deleteorrename dialog
     this->email = email;
     this->filename = filename;
     this->client = client;
@@ -29,7 +29,6 @@ void deleteFile::receiveData_2(ClientStuff *client, QString email, QString filen
     displayText.append(filename).append(" ' file? \n No collaborator can access it anymore. ");
     ui->label->setText(displayText);
     //spdlog::debug("receiveData_2 deletefile");
-
 }
 
 
@@ -52,7 +51,6 @@ void deleteFile::on_pushButton_clicked() {
     connect(client, &ClientStuff::isFileDeleted, this, &deleteFile::isFileDeleted);
     connect(client, &ClientStuff::canDeleteFile, this, &deleteFile::canDeleteFile);
 
-
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     FileManagementMessage fileManagementMessage =
@@ -65,14 +63,13 @@ void deleteFile::on_pushButton_clicked() {
 
 
 void deleteFile::isFileDeleted(bool res) {
-
     if (res) {
         QMessageBox::information(this, "Deleted", "File deleted");
         disconnect(client, &ClientStuff::canDeleteFile, this, &deleteFile::canDeleteFile);
         this->close();
         emit Want2Close3();
     } else {
-        QMessageBox::information(this, "Deleted", "Errore while deleteing file");
+        QMessageBox::information(this, "Deleted", "Error while deleteing file");
         disconnect(client, &ClientStuff::canDeleteFile, this, &deleteFile::canDeleteFile);
         disconnect(client, &ClientStuff::isFileDeleted, this, &deleteFile::isFileDeleted);
     }
@@ -80,7 +77,6 @@ void deleteFile::isFileDeleted(bool res) {
 
 void deleteFile::canDeleteFile(bool res) {
     //res should be always false, but for safety we control it
-
     if (!res) {
         QMessageBox::warning(this, "Attention", "There is someone online for this document, retry later");
         disconnect(client, &ClientStuff::isFileDeleted, this, &deleteFile::isFileDeleted);

@@ -2,8 +2,8 @@
 // Created by pinoOgni on 10/08/20.
 //
 
-#ifndef RENAMEFILE_H
-#define RENAMEFILE_H
+#ifndef VIRGILIUM_RENAMEFILE_H
+#define VIRGILIUM_RENAMEFILE_H
 
 #include "renameordelete.h"
 
@@ -27,18 +27,30 @@ private:
     ClientStuff *client;
 
 signals:
-
+    /*
+     * signal between renameFile and renameordelete
+     */
     void Want2Close3();
 
 private slots:
 
+    /*
+     * override to manage the keypressevent
+     */
     void keyPressEvent(QKeyEvent *) override;
 
+    /*
+     * receive data from PersonalPage
+     */
     void receiveData_2(ClientStuff *, QString, QString);
+
+    /*
+     * this slot is connected with isFileRenamed signal of clientStuff
+     */
+    void isFileRenamed(bool);
 
     void on_pushButton_clicked();
 
-    void isFileRenamed(bool);
 };
 
-#endif // RENAMEFILE_H
+#endif // VIRGILIUM_RENAMEFILE_H

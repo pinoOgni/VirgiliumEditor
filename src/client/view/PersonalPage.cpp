@@ -13,14 +13,8 @@
 
 
 void PersonalPage::closeEvent(QCloseEvent *event) {
-    /*
-     QMessageBox::StandardButton resBtn = QMessageBox::question( this, "Virgilium Client",
-                                                                tr("Are you sure?\n"),
-                                                                QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes,
-                                                                QMessageBox::Yes);
-                                                                */
 
-    //se facciamo così si chiude tutto il client
+    //we close the client
     User u = User(email);
     UserMessage userMessage = UserMessage(client->getSocket()->getClientID(), u);
     client->getSocket()->send(LOGOUT, userMessage);
@@ -92,9 +86,9 @@ void PersonalPage::receiveData(QString string, ClientStuff *client) {
 
     connect(client, &ClientStuff::getAllData, this, &PersonalPage::getAllData2);
 
-    //every time the user push on "new file" I connect a signal
     connect(client, &ClientStuff::isFileCreated, this, &PersonalPage::isFileCreated);
-
+    connect(client, &ClientStuff::isRequestToCollaboratedReceived, this,
+            &PersonalPage::isRequestToCollaboratedReceived);
     getAllData();
 }
 
@@ -214,8 +208,6 @@ void PersonalPage::on_tableWidget_cellDoubleClicked(int row, int column) {
 
         //close renameordelete and refresh table files
         connect(newRenameOrDelete, SIGNAL(Want2Close2()), this, SLOT(getFilesOwner()));
-    } else if (column == 1) {
-        //TODO add something else?
     } else if (column == 2) {
         auto *manageC = new manageCollaborators(this);
         manageC->setAttribute(Qt::WA_DeleteOnClose);
@@ -338,6 +330,7 @@ void PersonalPage::on_requestToCollaborate_clicked() {
 
 
 void PersonalPage::on_invitationCode_returnPressed() {
+    on_requestToCollaborate_clicked();
     on_requestToCollaborate_clicked();
 }
 

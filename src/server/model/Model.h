@@ -57,10 +57,19 @@ public:
      */
     ClientSocket *getLoggedUser(const User &user);
 
+    /*
+     * This method is used to control if the user is online
+     */
     bool isUserOnline(const QString &email);
 
+    /*
+     * This method is used to insert the email of a user in onlineUsers
+     */
     void insertUserOnline(_int, const QString email);
 
+    /*
+     * This method is used to remove the email of a user in onlineUsers
+     */
     void removeUserOnline(_int);
 
     /*
@@ -110,35 +119,79 @@ public:
      */
     QVector<Symbol> getSymbolsForDocument(const QString &fileName);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     static bool loginUser(User user);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     static bool signinUser(User user);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     User getInfoUser(User user);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     std::vector<FilesMessage> getFilesOwner(User user);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     std::vector<FilesMessage> getUserFiles(User user);
 
-    //void getAllData(User user, User &userReturn,  std::vector<FilesMessage> filesOwner,  std::vector<FilesMessage> filesCollabs);
+    /*
+     * This method call the corresponding method of Database
+     */
     bool renameFile(FileManagementMessage fileManagementMessage);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     bool deleteFile(FileManagementMessage fileManagementMessage);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     bool newFile(FileManagementMessage fileManagementMessage);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     bool changePassword(ChangePasswordMessage changePasswordMessage);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     bool addCollaborator(UserManagementMessage userManagementMessage);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     bool removeCollaborator(UserManagementMessage userManagementMessage);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     bool unsubscribe(UserManagementMessage userManagementMessage);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     void closeConnectionDB();
 
+    /*
+     * This method call the corresponding method of Database
+     */
     QString createUrlCollaborator(UserManagementMessage userManagementMessage);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     bool requestToCollaborate(InvitationMessage invitationMessage);
 
     /*
@@ -163,8 +216,14 @@ public:
      */
     QVector<Symbol> getFileFromFileSystem(const QString &filename);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     _int getIdFilename(QString email_owner, QString filename);
 
+    /*
+     * This method call the corresponding method of Database
+     */
     bool updateLastAccess(QString email, _int idFilename);
 
     /*

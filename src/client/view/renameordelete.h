@@ -2,8 +2,8 @@
 // Created by pinoOgni on 10/08/20.
 //
 
-#ifndef RENAMEORDELETE_H
-#define RENAMEORDELETE_H
+#ifndef VIRGILIUM_RENAMEORDELETE_H
+#define VIRGILIUM_RENAMEORDELETE_H
 
 #include <QDialog>
 #include <QMessageBox>
@@ -36,8 +36,14 @@ private:
     PersonalPage *personalPage;
 private slots:
 
+    /*
+     * ovverride to managare the keypressevent
+     */
     void keyPressEvent(QKeyEvent *) override;
 
+    /*
+     * receive data from personalPage
+     */
     void receiveData_2(ClientStuff *, QString, QString, User);
 
     void on_delete_2_clicked();
@@ -48,8 +54,14 @@ private slots:
 
     void on_openTextEditor_clicked();
 
+    /*
+     * this slot is connected tiwh Want2Close3 from deletefile or renamefile
+     */
     void slotWant2Close2();
 
+    /*
+     * this slot is connected with canOpenFile signal from clientStuff
+     */
     void canOpenFile(bool res);
 
 signals:
@@ -62,4 +74,4 @@ signals:
     void Want2Close2();
 };
 
-#endif // RENAMEORDELETE_H
+#endif // VIRGILIUM_RENAMEORDELETE_H

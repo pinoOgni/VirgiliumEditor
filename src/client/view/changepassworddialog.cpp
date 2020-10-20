@@ -57,7 +57,6 @@ void ChangePasswordDialog::keyPressEvent(QKeyEvent *e) {
         case Qt::Key_Enter:
             on_ok_clicked();
             break;
-
         default:
             QDialog::keyPressEvent(e);
     }

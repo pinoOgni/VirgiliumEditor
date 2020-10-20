@@ -2,8 +2,8 @@
 // Created by pinoOgni on 10/08/20.
 //
 
-#ifndef DELETEFILE_H
-#define DELETEFILE_H
+#ifndef VIRGILIUM_DELETEFILE_H
+#define VIRGILIUM_DELETEFILE_H
 
 #include "renameordelete.h"
 
@@ -44,4 +44,4 @@ private slots:
     void canDeleteFile(bool);
 };
 
-#endif // DELETEFILE_H
+#endif // VIRGILIUM_DELETEFILE_H
