@@ -1,5 +1,5 @@
-#ifndef TEXTEDITOR_H
-#define TEXTEDITOR_H
+#ifndef VIRGILIUM_TEXTEDITOR_H
+#define VIRGILIUM_TEXTEDITOR_H
 
 #include <QMainWindow>
 #include <QFile>
@@ -230,4 +230,4 @@ private slots:
 
 };
 
-#endif //TEXTEDITOR_H
+#endif //VIRGILIUM_TEXTEDITOR_H

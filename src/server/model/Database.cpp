@@ -155,7 +155,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
 
             QSqlDatabase::database().transaction();
             qry.prepare("INSERT INTO files(filename, email_owner) VALUES(?,?)");
-            QString filename = "provafile";
+            QString filename = "telegram";
             qry.bindValue(0, filename);
             qry.bindValue(1, "pino@pino.com");
             if (!qry.exec()) {
@@ -168,15 +168,15 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
             QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE)).mkdir(
                     "pino@pino.com");
 
-            //create first file "provafile"
+            //create "telegram"
             QString filenamePath;
             filenamePath = QDir(
                     QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(
-                            "pino@pino.com")).filePath("provafile");
+                            "pino@pino.com")).filePath("telegram");
             QFile file(filenamePath);
             file.open(QIODevice::WriteOnly | QIODevice::Text);
 
-            //aggiungo ale@ale.com e ste@ste.com al mio file "provafile"
+            //add ale@ale.com and ste@ste.com to "telegram"
             qry.prepare("SELECT LAST_INSERT_ROWID();");
             if (!qry.exec()) {
                 //spdlog::error("error retrieve last id inserted in files");
@@ -220,7 +220,7 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
 
             //altra prova
             qry.prepare("INSERT INTO files(filename, email_owner) VALUES(?,?)");
-            filename = "ciao";
+            filename = "system programming";
             qry.bindValue(0, filename);
             qry.bindValue(1, "pino@pino.com");
             if (!qry.exec()) {
@@ -228,14 +228,14 @@ void Database::fillTablesForTests(QString dbPath, QSqlDatabase db) {
                 std::cerr << "error insert in files" << std::endl;
             }
 
-            //create second file "ciao"
+            //create "system programming"
             filenamePath = QDir(
                     QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(VIRGILIUM_STORAGE).append(
-                            "pino@pino.com")).filePath("ciao");
+                            "pino@pino.com")).filePath("system programming");
             QFile file2(filenamePath);
             file2.open(QIODevice::WriteOnly | QIODevice::Text);
 
-            //aggiungo ale@ale.com e ste@ste.com al mio file "provafile"
+            //add ale@ale.com and ste@ste.com to "telegram"
             qry.prepare("SELECT LAST_INSERT_ROWID();");
             if (!qry.exec()) {
                 //spdlog::error("error retrieve last id inserted in files");
@@ -1084,7 +1084,6 @@ bool Database::updateLastAccessDB(QString email, _int idFilename) {
         QSqlDatabase::database().transaction();
         QSqlQuery qry;
 
-
         qry.prepare("UPDATE user_files SET last_access = :last_access WHERE email = :email and id = :idFilename");
         QDateTime dateTime = dateTime.currentDateTime();
         qry.bindValue(":last_access", dateTime.toString("dd/MM/yyyy  hh:mm:ss"));
@@ -1115,7 +1114,7 @@ bool Database::canOpenFileDB(const UserManagementMessage &userManagementMessage)
         qry.bindValue(":id", idFilename);
         qry.bindValue(":email", userManagementMessage.getEmail_collaborator());
         if (!qry.exec()) {
-            qDebug() << "error";
+            std::cerr << "error while select email in canOpenFileDB";
             return false;
         }
         qry.first();

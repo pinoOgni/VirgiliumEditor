@@ -36,7 +36,7 @@ void renameOrDelete::keyPressEvent(QKeyEvent *e) {
 }
 
 void renameOrDelete::receiveData_2(ClientStuff *client, QString email, QString filename, User user) {
-    //bridge between secondlogin and delete or rename dialog
+    //bridge between personalPage and deleteorrenamedialog
     this->currentUser = user;
     this->email = email;
     this->filename = filename;
@@ -50,11 +50,10 @@ void renameOrDelete::on_delete_2_clicked() {
             SLOT(receiveData_2(ClientStuff * , QString, QString)));
     emit sendData_2(client, email, filename);
 
-    //close the qdialog deletefile, send a signal to secondwindow
+    //close the qdialog deletefile, send a signal to personalPage
     connect(newDeleteFile, &deleteFile::Want2Close3, this, &renameOrDelete::slotWant2Close2);
 
     newDeleteFile->show();
-    //this->close();
 }
 
 void renameOrDelete::on_rename_clicked() {
@@ -65,11 +64,10 @@ void renameOrDelete::on_rename_clicked() {
             SLOT(receiveData_2(ClientStuff * , QString, QString)));
     emit sendData_2(client, email, filename);
 
-    //close the qdialog renamefile, send a signal to secondwindow
+    //close the qdialog renamefile, send a signal to personalPage
     connect(newRenameFile, &renameFile::Want2Close3, this, &renameOrDelete::slotWant2Close2);
 
     newRenameFile->show();
-    //this->close();
 }
 
 void renameOrDelete::on_cancel_clicked() {
@@ -95,7 +93,7 @@ void renameOrDelete::on_openTextEditor_clicked() {
 
 void renameOrDelete::canOpenFile(bool res) {
     if (!res) {
-        QMessageBox::warning(this, "Error", "You cannot access this file");
+        QMessageBox::warning(this, "Error", "You cannot access to this file");
         this->close();
         disconnect(client, &ClientStuff::canOpenFile, this, &renameOrDelete::canOpenFile);
 

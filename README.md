@@ -1,6 +1,6 @@
 # Virgilium
 
-Questo è il progetto del corso di Programmazione di Sistema dell'anno 2018/2019. In poche parole un real-time text editor con alla base l'algoritmo CRDT, sviluppato usando Qt.
+Questo è il progetto del corso di Programmazione di Sistema dell'anno 2018/2019. In poche parole un real-time text editor con alla base l'algoritmo CRDT, sviluppato usando Qt (5.12.3).
 
 Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte ed in seguito si passa ad una panoramica della struttura del progetto e delle scelte algoritmiche.
 
@@ -87,7 +87,7 @@ Poiché la maggior parte delle operazioni presenti all'interno dell'applicazioni
 
 # Gestione del database
 
-* E' stato usato QtSql e sqlite
+* E' stato usato sqlite3 per la gestione del database
 
 * Sono state create 4 tabelle:
     * files: id, filename, email_owner

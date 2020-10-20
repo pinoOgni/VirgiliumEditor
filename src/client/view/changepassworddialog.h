@@ -2,8 +2,8 @@
 // Created by pinoOgni on 10/08/20.
 //
 
-#ifndef CHANGEPASSWORDDIALOG_H
-#define CHANGEPASSWORDDIALOG_H
+#ifndef VIRGILIUM_CHANGEPASSWORDDIALOG_H
+#define VIRGILIUM_CHANGEPASSWORDDIALOG_H
 
 #include <QDialog>
 #include <QMessageBox>
@@ -34,13 +34,15 @@ private slots:
 
     void keyPressEvent(QKeyEvent *) override;
 
+    /*
+     * this slot is triggered when the server send a response
+     */
     void isPswChanged(bool);
 
 private:
     Ui::ChangePasswordDialog *ui;
     QString email;
-    bool correctPsw;
     ClientStuff *client;
 };
 
-#endif // CHANGEPASSWORDDIALOG_H
+#endif // VIRGILIUM_CHANGEPASSWORDDIALOG_H

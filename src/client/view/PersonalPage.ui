@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1286</width>
+    <width>1323</width>
     <height>757</height>
    </rect>
   </property>
@@ -20,8 +20,8 @@
    <widget class="QLabel" name="label_orario">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>700</y>
+      <x>40</x>
+      <y>610</y>
       <width>201</width>
       <height>41</height>
      </rect>
@@ -56,8 +56,8 @@
    <widget class="QPushButton" name="logout">
     <property name="geometry">
      <rect>
-      <x>1120</x>
-      <y>680</y>
+      <x>1100</x>
+      <y>590</y>
       <width>161</width>
       <height>51</height>
      </rect>
@@ -71,15 +71,15 @@
      <rect>
       <x>40</x>
       <y>10</y>
-      <width>951</width>
-      <height>651</height>
+      <width>971</width>
+      <height>551</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="2" column="0">
       <widget class="QTableWidget" name="tableWidget_2">
        <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>230</number>
+        <number>240</number>
        </attribute>
        <column>
         <property name="text">
@@ -158,7 +158,7 @@
         </size>
        </property>
        <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>230</number>
+        <number>250</number>
        </attribute>
        <column>
         <property name="text">
@@ -182,8 +182,8 @@
    <widget class="QLineEdit" name="invitationCode">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>700</y>
+      <x>340</x>
+      <y>610</y>
       <width>501</width>
       <height>31</height>
      </rect>
@@ -195,8 +195,8 @@
    <widget class="QPushButton" name="requestToCollaborate">
     <property name="geometry">
      <rect>
-      <x>830</x>
-      <y>700</y>
+      <x>850</x>
+      <y>610</y>
       <width>164</width>
       <height>31</height>
      </rect>
@@ -212,7 +212,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1286</width>
+     <width>1323</width>
      <height>22</height>
     </rect>
    </property>
