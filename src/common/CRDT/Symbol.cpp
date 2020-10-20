@@ -1,3 +1,7 @@
+//
+// Created by alex on 07/12/19.
+//
+
 #include "Symbol.h"
 #include <QDataStream>
 #include <utility>

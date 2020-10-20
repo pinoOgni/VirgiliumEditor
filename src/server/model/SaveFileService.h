@@ -15,9 +15,11 @@ class SaveFileService : public QRunnable {
 public:
     SaveFileService(Model &model, CrdtMessage crdtMessage, QVector<Symbol> symbols);
 
+    /*
+     * Inside the run method the actual storage is performed.
+     */
     void run() override;
 
 };
-
 
 #endif //VIRGILIUM_SAVEFILESERVICE_H

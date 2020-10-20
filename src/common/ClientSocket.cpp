@@ -1,3 +1,7 @@
+//
+// Created by alex on 07/12/19.
+//
+
 #include "ClientSocket.h"
 #include "constants.h"
 
@@ -255,7 +259,7 @@ void ClientSocket::onDisplayError(QTcpSocket::SocketError error) {
             break;
         case QAbstractSocket::SocketResourceError:
             std::cerr << "SocketResourceError: the local system ran out of resources (e.g., too many sockets)."
-                      << std::endl;
+                    << std::endl;
             break;
         case QAbstractSocket::ConnectionRefusedError:
             std::cerr << "ConnectionRefusedError: the connection was refused by the peer (or timed out)." << std::endl;
