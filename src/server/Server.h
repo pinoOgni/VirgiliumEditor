@@ -1,3 +1,7 @@
+//
+// Created by alex on 07/12/19.
+//
+
 #ifndef VIRGILIUM_SERVER_H
 #define VIRGILIUM_SERVER_H
 
@@ -30,6 +34,9 @@ public:
      */
     void incomingConnection(qintptr handle) override;
 
+    /*
+     * This method is used to check if the change is related to font color, font size or font family.
+     */
     static bool checkUpdate(const CrdtMessage &crdtMessage);
 
 private slots:

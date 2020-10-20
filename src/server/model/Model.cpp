@@ -60,17 +60,14 @@ void Model::removeUserOnline(_int id) {
 }
 
 void Model::insertSymbolsForDocument(const QString &fileName, const QVector<Symbol> &symbols) {
-    QMutexLocker lock(&this->symbolsForDocumentMutex);
     symbolsForDocument.insert(std::pair<QString, QVector<Symbol>>(fileName, symbols));
 }
 
 void Model::removeSymbolsForDocument(const QString &fileName) {
-    QMutexLocker lock(&this->symbolsForDocumentMutex); //TODO controllare se i lock stanno bene
     symbolsForDocument.erase(fileName);
 }
 
 QVector<Symbol> Model::getSymbolsForDocument(const QString &fileName) {
-    QMutexLocker lock(&this->symbolsForDocumentMutex);
     auto it = symbolsForDocument.find(fileName);
     if (it == symbolsForDocument.end())
         throw std::runtime_error("Document not opened!");
@@ -79,7 +76,6 @@ QVector<Symbol> Model::getSymbolsForDocument(const QString &fileName) {
 }
 
 QList<User> Model::addActiveUserForDocument(const User &user, const QString &fileName) {
-    //fileName is email_owner/filename
     QRegExp tagExp("/");
     QStringList firstList = fileName.split(tagExp);
     QString email_owner = firstList.at(0);
@@ -228,18 +224,15 @@ void Model::save(CrdtMessage crdtMessage) {
     auto symbols = this->getSymbolsForDocument(crdtMessage.getFileName());
     auto toBeSaved = this->performServerProcess(symbols, crdtMessage);
 
-    QMutexLocker lockSymbols(&this->symbolsForDocumentMutex);
     auto it = symbolsForDocument.find(crdtMessage.getFileName());
     if (it != symbolsForDocument.end())
         it->second = toBeSaved;
-    lockSymbols.unlock();
 
     auto *saveFileService = new SaveFileService(*this, std::move(crdtMessage), toBeSaved);
     QThreadPool::globalInstance()->start(saveFileService);
 }
 
 QVector<Symbol> Model::performServerProcess(QVector<Symbol> symbols, const CrdtMessage &crdtMessage) {
-    QMutexLocker lock(&this->editorMutex);
     return this->editor->serverProcess(std::move(symbols),
                                        crdtMessage);
 }

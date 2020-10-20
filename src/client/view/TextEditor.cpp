@@ -202,7 +202,6 @@ void TextEditor::drawFontComboBox() {
                                               });
 
                              qd->show();
-                             //ui->textEdit->setFont(text); //TODO si potrebbe risolvere con QDialog
                          } else {
                              ui->textEdit->setCurrentFont(text);
                          }

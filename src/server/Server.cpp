@@ -1,3 +1,7 @@
+//
+// Created by alex on 07/12/19.
+//
+
 #include <common/ClientSocket.h>
 #include <common/constants.h>
 #include <common/messages/CrdtMessage.h>
@@ -425,9 +429,14 @@ void Server::onLogoutReceived(_int code, UserMessage userMessage) {
         case LOGOUT: {
             //spdlog::debug("close connection DB");
             model.closeConnectionDB();
-            this->model.removeActiveUser(sender->getClientID());
-            this->model.removeUserOnline(sender->getClientID());
-            this->model.removeLoggedUser(sender);
+            try {
+                this->model.removeActiveUser(sender->getClientID());
+                this->model.removeUserOnline(sender->getClientID());
+                this->model.removeLoggedUser(sender);
+            } catch (std::exception &e) {
+                std::cerr << e.what() << std::endl;
+                throw;
+            }
         }
             break;
     }
