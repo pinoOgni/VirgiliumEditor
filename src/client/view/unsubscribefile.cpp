@@ -28,7 +28,6 @@ void unsubscribeFile::on_unsubscribe_clicked() {
     connect(client, &ClientStuff::isUnsubscribed, this, &unsubscribeFile::isUnsubscribed);
     connect(client, &ClientStuff::canOpenFile, this, &unsubscribeFile::canOpenFile);
 
-
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     UserManagementMessage userManagementMessage =

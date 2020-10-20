@@ -391,9 +391,19 @@ void Server::onUserManagementMessageReceived(_int code, const UserManagementMess
                                                   userManagementMessage.getFilename());
 
             auto it = activeUsersForDocument.find(idFilename);
+            bool tryToRemove = true;
             if (it != activeUsersForDocument.end()) {
-                sender->send(CANNOT_REMOVE_COLL);
-            } else {
+                for (auto const &i : activeUsersForDocument.at(idFilename)) {
+                    if (QString::compare(i.getEmail(), userManagementMessage.getEmail_collaborator()) == 0) {
+                        tryToRemove = false;
+                        sender->send(CANNOT_REMOVE_COLL);
+                        break;
+                    }
+                }
+            }
+            qDebug() << "non cazzo";
+
+            if(tryToRemove) {
                 if (model.removeCollaborator(userManagementMessage))
                     sender->send(REMOVE_COLLABORATOR_OK);
                 else

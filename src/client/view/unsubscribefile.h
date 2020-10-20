@@ -2,8 +2,8 @@
 // Created by pinoOgni on 10/08/20.
 //
 
-#ifndef UNSUBSCRIBEFILE_H
-#define UNSUBSCRIBEFILE_H
+#ifndef VIRGILIUM_UNSUBSCRIBEFILE_H
+#define VIRGILIUM_UNSUBSCRIBEFILE_H
 
 #include <QDialog>
 #include "../clientstuff.h"
@@ -38,23 +38,39 @@ private:
 
 private slots:
 
-    void keyPressEvent(QKeyEvent *) override;
-
-    void receiveData_2(ClientStuff *, QString, QString, QString, User);
-
     void on_unsubscribe_clicked();
 
     void on_cancel_clicked();
 
+    void on_pushButton_clicked();
+
+    /*
+     * override toi manage keypressevent
+     */
+    void keyPressEvent(QKeyEvent *) override;
+
+    /*
+     * receive data form PersonalPage
+     */
+    void receiveData_2(ClientStuff *, QString, QString, QString, User);
+
+    /*
+     * this slot is connected with isUnsubscribed from ClientStuff
+     */
     void isUnsubscribed(bool);
 
+    /*
+     * this slot is connected withcanOpenFile from ClientStuff
+     */
     void canOpenFile(bool);
 
-    void on_pushButton_clicked();
 
 signals:
 
+    /*
+     * signal between unsubscribefile and PersonalPage
+     */
     void Want2Close2();
 };
 
-#endif // UNSUBSCRIBEFILE_H
+#endif // VIRGILIUM_UNSUBSCRIBEFILE_H

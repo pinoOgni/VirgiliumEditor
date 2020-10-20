@@ -2,8 +2,8 @@
 // Created by pinoOgni on 10/08/20.
 //
 
-#ifndef MANAGECOLLABORATORS_H
-#define MANAGECOLLABORATORS_H
+#ifndef VIRGILIUM_MANAGECOLLABORATORS_H
+#define VIRGILIUM_MANAGECOLLABORATORS_H
 
 #include <QDialog>
 #include "../clientstuff.h"
@@ -41,18 +41,28 @@ private slots:
 
     void on_remove_clicked();
 
+    /*
+    * this slot is triggered when the server send a response
+    */
     void isInviteCreated(InvitationMessage);
 
-    //void isCollaboratorAdded(bool);
+    /*
+    * this slot is triggered when the server send a response
+    */
     void isCollaboratorRemoved(bool);
 
+    /*
+    * this slot is triggered when the server send a response
+    */
     void canRemoveCollaborator(bool);
 
     void on_cancel_clicked();
 
 signals:
-
+    /*
+     * signal used to tell something to the personalPage
+     */
     void Want2Close2();
 };
 
-#endif // MANAGECOLLABORATORS_H
+#endif // VIRGILIUM_MANAGECOLLABORATORS_H

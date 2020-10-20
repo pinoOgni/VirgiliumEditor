@@ -1,6 +1,6 @@
 # Virgilium
 
-Questo è il progetto del corso di Programmazione di Sistema dell'anno 2018/2019. In poche parole un real-time text editor con alla base l'algoritmo CRDT, sviluppato usando Qt.
+Questo è il progetto del corso di Programmazione di Sistema dell'anno 2018/2019. In poche parole un real-time text editor con alla base l'algoritmo CRDT, sviluppato usando Qt (5.12.3).
 
 Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte ed in seguito si passa ad una panoramica della struttura del progetto e delle scelte algoritmiche.
 
@@ -42,7 +42,7 @@ Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte e
     * cambiare password
     
 
-# Text editor
+## Text editor
 
 * In alto a sinistra è possibile vedere gli utenti che stanno attualmente modificando il file, ad ognuno di questi è assegnato un colore con il quale è possibile distinguere i diversi cursori all'interno del foglio di lavoro.
 
@@ -58,7 +58,7 @@ Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte e
 
 
 
-## Struttura del progetto
+# Struttura del progetto
 
 Il progetto è diviso in 3 directory:
 * client: sono presenti tutte i file .h/.cpp/.ui che rappresentano le viste del client e la classe **clientStuff** che si occupa della gestione di tutto ciò che riguarda client e server, usando la classe **ClientSocket**. 
@@ -74,10 +74,11 @@ Il progetto è diviso in 3 directory:
     
 
 # Algoritmo CRDT
-ALESSANDRO/STEFANO/SIMONE
+Per l'implementazione della logica dell'applicazione è stato utilizzato l'algoritmo CRDT, per maggiori informazioni è possibile cliccare [qui](https://conclave-team.github.io/conclave-site/#what-is-a-real-time-collaborative-text-editor).
+In particolar modo sono state implementate diverse funzioni con lo scopo di raccogliere tutti i cambiamenti all'interno dell'editor di un client in modo tale da trasmettere queste informazioni al server, che ha lo scopo di distribuire i dati agli altri client interessati. Come descritto dall'algoritmo, lo sforzo è stato quello di ottenere in tutti i casi una situazione coerente nei diversi client, ottenuta rendendo l’operazione di inserimento commutativa e quella di cancellazione, oltre che commutativa, anche idempotente. Nello specifico commutabilità e idempotenza sono state ottenute aggiungendo alle proprietà base dell’oggetto (valore, posizione) proprietà quali il siteID (identificativo del client) e counterID (numero progressivo associato al carattere e assegnato dal client). Proprio per questo motivo due aspetti fondamentali sono quelli relativi alla posizione assoluta di un singolo carattere e al suo formato.
 
 # Threading
-ALESSANDRO/STEFANO/SIMONE
+Poiché la maggior parte delle operazioni presenti all'interno dell'applicazioni sono abbastanza veloci si è pensato di ridurre al minimo l'utilizzo dei thread. L'unico caso in cui si è utilizzato un pool di thread è stato quello relativo al salvataggio di un file, in particolar modo dopo aver calcolato la posizione corretta del singolo carattere viene utilizzato uno dei thread disponibili per effettuare il salvataggio.
 
 # Gestione del file system
 
@@ -86,7 +87,7 @@ ALESSANDRO/STEFANO/SIMONE
 
 # Gestione del database
 
-* E' stato usato QtSql e sqlite
+* E' stato usato sqlite3 per la gestione del database
 
 * Sono state create 4 tabelle:
     * files: id, filename, email_owner
@@ -96,17 +97,7 @@ ALESSANDRO/STEFANO/SIMONE
 
 # Gestione comunicazione client e server
 
-ALESSANDRO/STEFANO/SIMONE
-
-
-Sono state create un certo numero di classi "message" che vengono scambiate tra il client e il server in base all'azione da svolgere. L'azione è definita da una determinata costante, definita in un opportuno file.
-
-
-
-
-
-# TODO Pino
-
-* informare della rinominazione del file tutti gli utenti loggatti
-
-* prima di cancellare il file controllare che nessun utente sia collegato a quel file
+La comunicazione tra client e server avviene attraverso lo scambio di diverse tipologie di messaggi.
+Ciascuno di questi messaggi è individuato da un codice identificativo che specifica l’azione da svolgere, seguito dal contenuto del messaggio vero e proprio.
+Nella classe **ClientSocket** il ruolo centrale è svolto dalla funzione onReadyRead. Questo slot viene chiamato ogniqualvolta dei dati sono disponibili per essere letti. Appena ciò si verifica, viene emesso un segnale verso il client o il server destinazione. In questa stessa classe sono anche definiti altri metodi che specificano l’invio dei vari messaggi. Essendo le funzioni svolte da questa classe comuni sia per il server che per il client, la classe stessa è condivisa.
+In questa senso anche altre classi sono in comune: in particolare quelle relative alla definizione dei messaggi e il file costants.h dove sono elencate le costanti usate nel programma tra cui, appunto, i codici identificativi.

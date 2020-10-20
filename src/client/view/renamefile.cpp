@@ -55,11 +55,10 @@ void renameFile::keyPressEvent(QKeyEvent *e) {
 
 
 void renameFile::receiveData_2(ClientStuff *client, QString email, QString oldFilename) {
-    //bridge between secondlogin and delete or rename dialog
+    //bridge between personalPage and deleteorrenamedialog
     this->email = email;
     this->oldFilename = oldFilename;
     this->client = client;
-
 
     QString displayText = "You are renaming the ' ";
     displayText.append(oldFilename).append(" ' file!");
