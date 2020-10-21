@@ -176,7 +176,6 @@ void ClientSocket::onReadyRead() {
         }
             break;
         case CREATE_INVITE:
-        case ADD_COLLABORATOR:
         case REMOVE_COLLABORATOR:
         case UNSUBSCRIBE:
         case CAN_OPEN_FILE: {

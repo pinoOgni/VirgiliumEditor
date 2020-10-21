@@ -215,7 +215,6 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
                 sender->send(GET_FILES_OWNER_KO, filesMessage);
             } else {
                 //spdlog::debug("get_files_owner ok");
-                //TODO problema con sender dove lo metto?
                 for (auto &i : filesMessage)
                     i.setSender(sender->getClientID());
                 sender->send(GET_FILES_OWNER_OK, filesMessage);
@@ -229,7 +228,6 @@ void Server::onProcessUserMessage(_int code, UserMessage userMessage) {
                 sender->send(GET_FILES_COLLABORATOR_OK, filesMessage);
             } else {
                 //spdlog::debug("get_user_files ok");
-                //TODO problema con sender dove lo metto?
                 for (auto &i : filesMessage)
                     i.setSender(sender->getClientID());
                 sender->send(GET_FILES_COLLABORATOR_KO, filesMessage);
@@ -373,14 +371,6 @@ void Server::onUserManagementMessageReceived(_int code, const UserManagementMess
                                                                     invitationCode);
             //spdlog::debug("CREATE INVITE SERVER ");
             sender->send(INVITE_CREATED, invitationMessage);
-        }
-            break;
-        case ADD_COLLABORATOR: {
-            //spdlog::debug("add_collaborator: {} ", userManagementMessage.getEmail_owner().toStdString());
-            if (model.addCollaborator(userManagementMessage))
-                sender->send(ADD_COLLABORATOR_OK);
-            else
-                sender->send(ADD_COLLABORATOR_KO);
         }
             break;
         case REMOVE_COLLABORATOR: {
