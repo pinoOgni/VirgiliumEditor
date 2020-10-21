@@ -37,12 +37,20 @@ private:
 
     Database();
 
+    /*
+     * This method is used to init the database
+     */
     void initDatabase();
 
-    bool openConnection(); //TODO
-
+    /*
+     * This metthod is used to create initial tables
+     */
     void createTables(QString, QSqlDatabase);
 
+    /*
+     * This methos is used to create put some data in the tables
+     * like users, files and so on
+     */
     void fillTablesForTests(QString, QSqlDatabase);
 
 
@@ -62,122 +70,113 @@ public:
     /*
      * serve per controllare se le credenziali di un utente che sta cercando
      * di loggarsi siano corrette
-     * @return true se va bene, false altrimenti
+     * @return true if true, false otherwise
      */
     bool loginDB(User);
 
     /*
-     * serve per iscrivere un utente, controllando se non esiste già un utente
-     * con quella email
-     * @return true se va bene, false altrimenti
+     * it is used to register a user, checking if there is already a user with that email
+     * @return true if true, false otherwise
      */
     bool signinDB(User);
 
     /*
-     * lo User ritornato è fatto da email, firstName, lastName
-     * da far visualizzare nella pagina personale dell'utente
+     * the User returned is made up of email, firstName, lastName to be displayed on the user's personal page
      * @return User
      */
     User getInfoUser(User);
 
     /*
-     * ritorna i file di proprietà dello User, insieme ai collaboratori
-     * l'ultimo accesso dello User owner e il nome del file
+     * returns the files owned by the User, together with the collaborators
+     * the last access of the User owner and the name of the file
      */
     std::vector<FilesMessage> getFilesOwner(User);
 
     /*
-     * ritorna i file a cui collabora lo User, con il suo ultimo accesso
-     *
+     * returns the files to which the User collaborates, with his last access
      */
     std::vector<FilesMessage> getUserFiles(User);
 
     /*
-     * serve per rinominare un file nel DB, controllando che i parametri siano corretti
-     * @return true se va bene, altrimenti false
+     * it is used to rename a file in the DB, checking that the parameters are correct
+     * @return true if true, false otherwise
      */
     bool renameFileDB(FileManagementMessage);
 
     /*
-     * serve per eliminare un file nel DB, controllando che i parametri siano corretti
-     * @return true se va bene, altrimenti false
+     * it is used to delete a file in the DB, checking that the parameters are correct
+     * @return true if true, false otherwise
      */
     bool deleteFileDB(FileManagementMessage);
 
     /*
-    * serve per creare un file nel DB, controllando che i parametri siano corretti
-    * @return true se va bene, altrimenti false
+    * it is used to create a file in the DB, checking that the parameters are correct
+    * @return true if true, false otherwise
     */
     bool newFileDB(FileManagementMessage);
 
     /*
-    * serve per cambiare la password di un utente controllando che i parametri siano corretti
-    * @return true se va bene, altrimenti false
+    * it is used to change a user's password by checking that the parameters are correct
+    * @return true if true, false otherwise
     */
     bool changePasswordDB(const ChangePasswordMessage &);
 
     /*
-     * serve per aggiungere un collaboratore ad un file di proprietà del client User
-     * controlla se il nuovo collaboratore esiste, se è già un collaboratore
-     * controlla anche la password
-     * @return true se va bene, false altrimenti
+     * used to add a collaborator to a file owned by the client User checks
+     * if the new collaborator exists, if he is already a collaborator also check the password
+     * @return true if true, false otherwise
      */
     bool addCollaboratorDB(UserManagementMessage);
 
     /*
-    * serve per rimuovere un collaboratore ad un file di proprietà del client User
-    * controlla se il nuovo collaboratore esiste, se è davvero un collaboratore
-    * controlla anche la password
-    * @return true se va bene, false altrimenti
-    */
+     * used to remove a collaborator from a file owned by the client User
+     * if the new collaborator exists, if he is really a collaborator also check the password
+     * @return true if true, false otherwise
+     */
     bool removeCollaboratorDB(const UserManagementMessage &);
 
     /*
-    * serve per rimuovere il client che ne fa richiesta da un file a cui collabora
-    * controlla se in effetti il client collabora a quel file (magari è già stato rimosso)
-    * controlla anche la password
-    * @return true se va bene, false altrimenti
+    * used to remove the client requesting it from a file
+    * it collaborates with check if the client actually collaborates with that file
+    * (maybe it has already been removed) also check the password
+    * @return true if true, false otherwise
     */
     bool unsubscribeDB(const UserManagementMessage &);
 
     /*
-     * chiude il database, ossia la connessione con il DB
-     * quando lo User clicca su logout
+     * closes the database, ie the connection with the DB
      * @return void
      */
     void closeConnectionDB();
 
 
     /*
-    * serve a creare un URL che lo user invierà attraverso terze parti ad un altro user
-    * lo aggiunge al DB nella tabella invitation_url
-    * @return l'URL se va bene, empty string altrimenti
-    */
+     * is used to create a URL that the user will send through third parties to another user adds it to the DB in the invitation_url table
+     * @return URL if okay, empty string otherwise
+     */
     QString createUrlCollaboratorDB(const UserManagementMessage &);
 
     /*
-    * serve, per aggiungere uno user ad un file, grazie ad un codice di invito
-    * @return true se va bene, false altrimenti
-    */
+     * is used to add a user to a file, thanks to an invitation code
+     * @return true if true, false otherwise
+     */
     bool requestToCollaborateDB(const InvitationMessage &invitationMessage);
 
     /*
-    * serve per aggiornare il last access ad un file
-    * return true se va bene, false altrimenti
+     * it is used to update the last access to a file
+     * @return true if true, false otherwise
     */
     bool updateLastAccessDB(QString email, _int idFilename);
 
     /*
-    * serve per ritoranre un id dato un utente e un filename, utile per gli utenti attivi e per l'aggiornamento del last access
-    * return id se va bene, 0 altrimenti
-    */
+     * used to return an id given a user and a filename, useful for active users and for updating the last access
+     * return id if ok, 0 otherwise
+     */
     _int getIdFilenameDB(QString email_owner, QString filename);
 
-    /* serve per vedere se un utente può accedere ad un file, si controlla la tabella user_files
-     * dentro storageMessage c'è:
-     *     email_owner/filename dentro fileName
-     *     email dell'utente che fa richiesta dentro storageMessage.getActiveUsers().at(0).getEmail();
-     * return true se può accedere, false, altrimenti
+    /*
+     * is to see if a user can access a file, check the user_files table
+     * return true if it can access, false otherwise
      */
     bool canOpenFileDB(const UserManagementMessage &userManagementMessage);
 
