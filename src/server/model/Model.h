@@ -167,11 +167,6 @@ public:
     /*
      * This method call the corresponding method of Database
      */
-    bool addCollaborator(UserManagementMessage userManagementMessage);
-
-    /*
-     * This method call the corresponding method of Database
-     */
     bool removeCollaborator(UserManagementMessage userManagementMessage);
 
     /*
