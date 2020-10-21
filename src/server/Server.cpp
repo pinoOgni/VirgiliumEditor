@@ -11,13 +11,16 @@
 #include "Server.h"
 
 Server::Server(quint16 port, Model &model) : model(model) {
-    freopen("serverLog.txt", "w", stderr);
+
     if (!listen(QHostAddress::LocalHost, port)) {
         //spdlog::error("Error: server is not listening");
         std::cerr << "Error: server is not listening" << std::endl;
         exit(-1);
     }
+    std::cout << "Listening on port " << port << " and address " << QHostAddress::LocalHost << std::endl;
+    std::cout << "TESTDB = " << TESTDB << std::endl;
 
+    freopen("serverLog.txt", "w", stderr);
     //spdlog::info("Server is listening on address: {0}, {1} ", this->serverAddress().toString().toStdString(), this->serverPort());
     if (TESTDB) {
         QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation).append(

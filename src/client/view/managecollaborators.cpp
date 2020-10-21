@@ -39,11 +39,32 @@ void manageCollaborators::on_add_clicked() {
 
 void manageCollaborators::isInviteCreated(InvitationMessage invitationMessage) {
     if (!invitationMessage.getInvitationCode().isEmpty()) {
-        QMessageBox::information(this, "Invite created: it expires in 60 minutes",
-                                 invitationMessage.getInvitationCode());
+        auto *qd = new QDialog;
+        qd->setWindowTitle("Invite created: it expires in 60 minutes");
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/Icons/v.png"), QSize(), QIcon::Normal, QIcon::On);
+        qd->setWindowIcon(icon);
+        auto *vl = new QVBoxLayout;
+        qd->setLayout(vl);
+
+        auto label = new QLabel(invitationMessage.getInvitationCode());
+        label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        auto *ok = new QPushButton("Ok");
+        ok->setMaximumWidth(100);
+
+        vl->addWidget(label);
+        vl->addWidget(ok);
+
+        QObject::connect(ok, &QPushButton::clicked,
+                         [qd]() {
+                             qd->close();
+                         });
+
+        qd->show();
+
         this->close();
     } else {
-        QMessageBox::information(this, "Error", "Errore while creating invite");
+        QMessageBox::information(this, "Error", "Error while creating invite");
 
         //If there is an error, the signal is disconnected so only one message will be show to the user
         disconnect(client, &ClientStuff::isInviteCreated, this, &manageCollaborators::isInviteCreated);

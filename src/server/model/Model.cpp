@@ -184,10 +184,6 @@ bool Model::changePassword(ChangePasswordMessage changePasswordMessage) {
     return Database::getInstance().changePasswordDB(changePasswordMessage);
 }
 
-bool Model::addCollaborator(UserManagementMessage userManagementMessage) {
-    //return Database::getInstance().addCollaboratorDB(userManagementMessage);
-}
-
 bool Model::removeCollaborator(UserManagementMessage userManagementMessage) {
     return Database::getInstance().removeCollaboratorDB(userManagementMessage);
 }
