@@ -101,3 +101,26 @@ La comunicazione tra client e server avviene attraverso lo scambio di diverse ti
 Ciascuno di questi messaggi è individuato da un codice identificativo che specifica l’azione da svolgere, seguito dal contenuto del messaggio vero e proprio.
 Nella classe **ClientSocket** il ruolo centrale è svolto dalla funzione onReadyRead. Questo slot viene chiamato ogniqualvolta dei dati sono disponibili per essere letti. Appena ciò si verifica, viene emesso un segnale verso il client o il server destinazione. In questa stessa classe sono anche definiti altri metodi che specificano l’invio dei vari messaggi. Essendo le funzioni svolte da questa classe comuni sia per il server che per il client, la classe stessa è condivisa.
 In questa senso anche altre classi sono in comune: in particolare quelle relative alla definizione dei messaggi e il file costants.h dove sono elencate le costanti usate nel programma tra cui, appunto, i codici identificativi.
+
+
+
+
+# Some screens
+
+![](screens/welcomePage.png)
+
+![](screens/personalPage.png)
+
+![](screens/renameOrDelete.png)
+
+![](screens/rename.png)
+
+![](screens/delete.png)
+
+![](screens/textEditor.png)
+
+![](screens/manageCollaborators.png)
+
+![](screens/invitationCode.png)
+
+![](screens/unsubscribe.png)
