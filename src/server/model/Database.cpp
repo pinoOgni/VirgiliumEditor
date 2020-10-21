@@ -856,26 +856,51 @@ QString Database::createUrlCollaboratorDB(const UserManagementMessage &userManag
         QSqlQuery qry;
         qry.prepare("SELECT password FROM users WHERE email = :email");
         qry.bindValue(":email", userManagementMessage.getEmail_owner());
-        qry.exec();
+        if (!qry.exec()) {
+            //spdlog::error("error select password in createUrlCollaboratorDB");
+            std::cerr << "error select password in createUrlCollaboratorDB" << std::endl;
+            QSqlDatabase::database().commit();
+            db.close();
+            return nullptr;
+        }
         qry.first();
         QString psw = qry.value(0).toString();
 
         qry.prepare("SELECT email FROM users WHERE email = :collaborator");
         qry.bindValue(":collaborator", userManagementMessage.getEmail_collaborator());
-        qry.exec();
+        if (!qry.exec()) {
+            //spdlog::error("error select email in createUrlCollaboratorDB");
+            std::cerr << "error select email in createUrlCollaboratorDB" << std::endl;
+            QSqlDatabase::database().commit();
+            db.close();
+            return nullptr;
+        }
         qry.first();
         QString resUser = qry.value(0).toString();
 
-        qry.prepare("SELECT id FROM files WHERE filename =:filename");
+        qry.prepare("SELECT id FROM files WHERE filename =:filename AND email_owner =:email_owner");
         qry.bindValue(":filename", userManagementMessage.getFilename());
-        qry.exec();
+        qry.bindValue(":email_owner", userManagementMessage.getEmail_owner());
+        if (!qry.exec()) {
+            //spdlog::error("error select id in createUrlCollaboratorDB");
+            std::cerr << "error select id in createUrlCollaboratorDB" << std::endl;
+            QSqlDatabase::database().commit();
+            db.close();
+            return nullptr;
+        }
         qry.first();
         int id = qry.value(0).toInt();
 
         qry.prepare("SELECT email FROM user_files WHERE id =:id AND email =:email");
         qry.bindValue(":id", id);
         qry.bindValue(":email", userManagementMessage.getEmail_collaborator());
-        qry.exec();
+        if (!qry.exec()) {
+            //spdlog::error("error email password in createUrlCollaboratorDB");
+            std::cerr << "error select email in createUrlCollaboratorDB" << std::endl;
+            QSqlDatabase::database().commit();
+            db.close();
+            return nullptr;
+        }
         qry.first();
         QString isAlreadyCollaborator = qry.value(0).toString();
         QSqlDatabase::database().commit();
