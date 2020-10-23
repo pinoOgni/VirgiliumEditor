@@ -12,7 +12,7 @@
 
 Server::Server(quint16 port, Model &model) : model(model) {
     freopen("serverLog.txt", "w", stderr);
-    if (!listen(QHostAddress::LocalHost, port)) {
+    if (!listen(QHostAddress::AnyIPv4, port)) {
         //spdlog::error("Error: server is not listening");
         std::cerr << "Error: server is not listening" << std::endl;
         exit(-1);

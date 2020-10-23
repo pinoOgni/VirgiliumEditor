@@ -18,7 +18,14 @@ int main(int argc, char *argv[]) {
     }*/
 
     freopen("clientLog.txt", "w", stderr);
-    WelcomePage w;
+
+    QString address;
+    if(argc < 2)
+        address = "127.0.0.1";
+    else
+        address = argv[1];
+
+    WelcomePage w(0,address);
     w.show();
     return a.exec();
 }
