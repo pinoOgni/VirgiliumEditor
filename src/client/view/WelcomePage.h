@@ -23,7 +23,7 @@ class WelcomePage : public QMainWindow {
 Q_OBJECT
 
 public:
-    explicit WelcomePage(QWidget *parent = 0);
+    explicit WelcomePage(QWidget *parent = 0, QString address=0);
 
     ~WelcomePage();
 
@@ -74,6 +74,8 @@ private:
 
     PersonalPage *personalPage;
 
+    QString address;
+private:
 
     ClientStuff *client;
 

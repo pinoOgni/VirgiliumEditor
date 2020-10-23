@@ -7,7 +7,7 @@
 #include "../../../cmake-build-debug/VirgiliumClient_autogen/include/ui_WelcomePage.h"
 
 
-WelcomePage::WelcomePage(QWidget *parent) :
+WelcomePage::WelcomePage(QWidget *parent, QString address) :
         QMainWindow(parent),
         ui(new Ui::WelcomePage) {
     ui->setupUi(this);
@@ -23,7 +23,9 @@ WelcomePage::WelcomePage(QWidget *parent) :
     icon.addFile(QString::fromUtf8(":/Icons/v.png"), QSize(), QIcon::Normal, QIcon::On);
     this->setWindowIcon(icon);
 
-    client = new ClientStuff("127.0.0.1", LISTENING_PORT);
+    //client = new ClientStuff("127.0.0.1", LISTENING_PORT);
+    qDebug() << "adddress " << address;
+    client = new ClientStuff(address, LISTENING_PORT);
 
     connect(client, &ClientStuff::tryToLogin, this, &WelcomePage::loggedIn);
     connect(client, &ClientStuff::tryToSignup, this, &WelcomePage::registered);

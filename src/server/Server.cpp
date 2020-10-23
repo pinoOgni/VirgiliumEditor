@@ -11,7 +11,6 @@
 #include "Server.h"
 
 Server::Server(quint16 port, Model &model) : model(model) {
-
     if (!listen(QHostAddress::LocalHost, port)) {
         //spdlog::error("Error: server is not listening");
         std::cerr << "Error: server is not listening" << std::endl;
