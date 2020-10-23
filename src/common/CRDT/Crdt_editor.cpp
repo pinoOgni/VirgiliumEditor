@@ -302,7 +302,7 @@ void Crdt_editor::localUpdate(_int pos, const Symbol::CharFormat &charData) {
 }
 
 void Crdt_editor::changeFirstSymbol(_int index) {
-    if (index == 0) {
+    if (index == 0 && this->_symbols.size() > 1) {
         QString format = this->_symbols[0].getFont().font;
         auto second = this->_symbols[1];
         Symbol::CharFormat charData;

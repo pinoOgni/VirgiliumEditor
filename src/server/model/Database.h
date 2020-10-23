@@ -122,13 +122,6 @@ public:
     bool changePasswordDB(const ChangePasswordMessage &);
 
     /*
-     * used to add a collaborator to a file owned by the client User checks
-     * if the new collaborator exists, if he is already a collaborator also check the password
-     * @return true if true, false otherwise
-     */
-    bool addCollaboratorDB(UserManagementMessage);
-
-    /*
      * used to remove a collaborator from a file owned by the client User
      * if the new collaborator exists, if he is really a collaborator also check the password
      * @return true if true, false otherwise
