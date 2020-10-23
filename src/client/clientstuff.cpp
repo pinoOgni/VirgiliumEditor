@@ -9,11 +9,6 @@ ClientStuff::ClientStuff(
         quint16 port,
         QObject *parent
 ) : QObject(parent) {
-    /*status = false;
-
-    host = hostAddress;
-    port = portNumber;*/
-
     clientSocket = new ClientSocket(hostName, port, parent);
 
     connect(clientSocket, &ClientSocket::basicMessageReceived, this, &ClientStuff::processBasicMessage);
@@ -27,7 +22,6 @@ ClientStuff::ClientStuff(
     connect(clientSocket, &ClientSocket::invitationReceived, this, &ClientStuff::processInvitation);
     connect(clientSocket, &ClientSocket::requestToCollaborateReceived, this, &ClientStuff::processRequestToCollaborate);
 
-    //clientSocket->connectToHost(host,port);
 }
 
 void ClientStuff::processAllData(_int code, UserMessage userMessage,

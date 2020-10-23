@@ -25,10 +25,16 @@ public:
 
     ClientSocket *clientSocket;
 
+    /*
+     * This method is used to get the socket
+     */
     ClientSocket *getSocket();
 
 public slots:
 
+    /*
+     * All of these slots are used to process a particular type of message
+     */
     void processBasicMessage(_int, BasicMessage);
 
     void processLoginAndSignup(_int);
@@ -51,9 +57,9 @@ public slots:
     void processRequestToCollaborate(_int);
 
 signals:
-
-    void hasReadSome(QString msg);
-
+    /*
+     * All of these signals are connected to a particular slot for a particular action
+     */
     void tryToLogin(bool logged);
 
     void tryToSignup(bool registered);
@@ -92,14 +98,6 @@ signals:
 
     void isRequestToCollaboratedReceived(bool);
 
-
-private slots:
-
-private:
-    /*QString host;
-    unsigned short port; //da modificare
-    bool status;*/
-    // ClientSocket *clientSocket;
 };
 
 #endif // VIRGILIUM_CLIENTSTUFF_H
