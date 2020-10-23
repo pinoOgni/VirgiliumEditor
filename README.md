@@ -4,6 +4,16 @@ Questo è il progetto del corso di Programmazione di Sistema dell'anno 2018/2019
 
 Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte ed in seguito si passa ad una panoramica della struttura del progetto e delle scelte algoritmiche.
 
+Per lanciare il server:
+```
+./VirgiliumServer
+```
+
+Per lanciare il client:
+```
+./VirgiliumClient [ip address]
+```
+
 
 ## Welcome page
 
