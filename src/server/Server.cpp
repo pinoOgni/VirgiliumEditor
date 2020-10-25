@@ -16,7 +16,7 @@ Server::Server(quint16 port, Model &model) : model(model) {
         std::cerr << "Error: server is not listening" << std::endl;
         exit(-1);
     }
-    std::cout << "Listening on port " << port << " and address " << QHostAddress::LocalHost << std::endl;
+    std::cout << "Listening on port " << port << std::endl;
     std::cout << "TESTDB = " << TESTDB << std::endl;
 
     freopen("serverLog.txt", "w", stderr);
