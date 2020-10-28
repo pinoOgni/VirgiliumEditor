@@ -44,9 +44,6 @@ bool Model::isUserOnline(const QString &email) {
     return find;
 }
 
-/*void Model::insertLoggedUser(ClientSocket *socket, const User &user) {
-    clientToUser.insert(std::pair<_int, ClientSocket *>(user.getSiteId(), socket));
-}*/
 
 void Model::insertUserOnline(_int id, const QString email) {
     onlineUsers.insert(std::pair<_int, QString>(id, email));
@@ -158,15 +155,6 @@ std::vector<FilesMessage> Model::getFilesOwner(User user) {
 std::vector<FilesMessage> Model::getUserFiles(User user) {
     return Database::getInstance().getUserFiles(user);
 }
-
-/*
-void Model::getAllData(User user, User &userReturn, std::vector<FilesMessage> filesOwner,
-                       std::vector<FilesMessage> filesCollabs) {
-    userReturn = Database::getInstance().getInfoUser(user);
-    filesOwner = Database::getInstance().getFilesOwner(user);
-    filesCollabs = Database::getInstance().getUserFiles(user);
-}
-*/
 
 bool Model::renameFile(FileManagementMessage fileManagementMessage) {
     return Database::getInstance().renameFileDB(fileManagementMessage);

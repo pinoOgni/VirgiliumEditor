@@ -74,7 +74,7 @@
 
 //true --> create db from scratch
 //false --> db is not create again but old data is used
-#define TESTDB false
+#define TESTDB true
 #define VIRGILIUM_STORAGE "/VIRGILIUM_STORAGE/"
 
 #endif //VIRGILIUM_CONSTANTS_H

@@ -90,7 +90,6 @@ void Database::createTables(QString dbPath, QSqlDatabase db) {
                 QSqlDatabase::database().commit();
             }
             db.close();
-            //QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
         }
     } else {
         //spdlog::error("createTables error opened db");

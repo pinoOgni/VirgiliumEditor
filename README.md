@@ -14,6 +14,22 @@ Per lanciare il client:
 ./VirgiliumClient [ip address]
 ```
 
+## TESTDB
+
+Nel file constants.h è presente un costante TESTDB che se messa a true, ogni volta che il server viene lanciato, 
+ricrea gli utenti e i file di prova.
+
+## Utenti di prova
+
+Questi sono i 4 utenti già presenti con le rispettive password:
+
+* ale@ale.com, ale
+
+* pino@pino.com, pino
+
+* simo@simo.com, simo
+
+* ste@ste.com, ste
 
 ## Welcome page
 

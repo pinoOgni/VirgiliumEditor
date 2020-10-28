@@ -393,7 +393,6 @@ void Server::onUserManagementMessageReceived(_int code, const UserManagementMess
                     }
                 }
             }
-            qDebug() << "non cazzo";
 
             if(tryToRemove) {
                 if (model.removeCollaborator(userManagementMessage))
