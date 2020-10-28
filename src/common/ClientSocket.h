@@ -5,6 +5,7 @@
 #ifndef VIRGILIUM_CLIENTSOCKET_H
 #define VIRGILIUM_CLIENTSOCKET_H
 
+
 #include "../common/messages/UserMessage.h"
 #include "../common/messages/BasicMessage.h"
 #include <QtNetwork/QTcpSocket>

@@ -226,7 +226,6 @@ public:
      * other open editors and if the user is a collaborator for the document.
      */
     bool canOpenFile(const UserManagementMessage &userManagementMessage);
-
 };
 
 #endif // VIRGILIUM_MODEL_H
