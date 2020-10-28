@@ -278,5 +278,6 @@ bool Model::canOpenFile(const UserManagementMessage &userManagementMessage) {
             }
         }
     }
+
     return isCollaborator && isFileNotOpen;
 }

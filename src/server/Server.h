@@ -5,6 +5,7 @@
 #ifndef VIRGILIUM_SERVER_H
 #define VIRGILIUM_SERVER_H
 
+
 #include <QtNetwork/QTcpServer>
 #include <common/messages/UserMessage.h>
 #include <server/model/Model.h>

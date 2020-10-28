@@ -71,6 +71,7 @@
 #define CAN_OPEN_FILE_OK 758
 #define CAN_OPEN_FILE_KO 759
 
+
 //true --> create db from scratch
 //false --> db is not create again but old data is used
 #define TESTDB true
