@@ -1,133 +1,119 @@
 # Virgilium
 
-Questo è il progetto del corso di Programmazione di Sistema dell'anno 2018/2019. In poche parole un real-time text editor con alla base l'algoritmo CRDT, sviluppato usando Qt (5.12.3).
+This is the project of the System adn Device Programming course of the year 2018/2019. In short, a real-time text editor based on the CRDT algorithm, developed using Qt (5.12.3).
 
-Di seguito si descrive prima un'elenco delle funzionalità che vengono offerte ed in seguito si passa ad una panoramica della struttura del progetto e delle scelte algoritmiche.
+The following describes first a list of the functions that are offered and then moves on to an overview of the project structure and algorithmic choices.
 
-Per lanciare il server:
+If you want to use VirgiliumEditor, these are the libraries to install on your device:
+* Qt (at least from version 5.12.3)
+* sqlite3
+
+
+To launch the server:
 ```
 ./VirgiliumServer
 ```
 
-Per lanciare il client:
+To launch the client:
 ```
 ./VirgiliumClient [ip address]
 ```
 
 ## TESTDB
 
-Nel file constants.h è presente un costante TESTDB che se messa a true, ogni volta che il server viene lanciato, 
-ricrea gli utenti e i file di prova.
+In the constants.h file there is a constant TESTDB which if set to true, every time the server is launched,
+recreates the users and test files.
 
-## Utenti di prova
+## Test users
 
-Questi sono i 4 utenti già presenti con le rispettive password:
+These are the 4 users already present with their respective passwords:
 
 * ale@ale.com, ale
-
 * pino@pino.com, pino
-
 * simo@simo.com, simo
-
 * ste@ste.com, ste
 
 ## Welcome page
 
-* Possibilità di loggarsi con email e password dell'utente
-
-* Possibilità di registrarsi, digitando nome, cognome, email e password
+* Ability to log in with the user's email and password
+* Ability to register by entering name, surname, email and password
 
 ## Personal page
 
-* Informazioni sull'utente loggato: nome, cognome, email
-
-* Nella prima tabella vengono mostrati i file di cui l'utente loggato è il proprietario ossia il creatore. Le colonne della tabella sono: nome del file, ultimo accesso e lista dei collaboratori (indicati dalle loro mail)
-    * Cliccando sul nome del filename è possibile svolgere 3 azioni: 
-        * Rinominare il file, previo inserimento della password
-        * Cancellare il file, previo inserimento della password
-        * Aprire il text editor. Quando si chiude il text editor viene aggiornato l'ultimo accesso.
-    * Cliccando sulla lista dei collaboratori è possibile svolgere 2 azioni:
-        * Aggiungere un collaboratore, creando un invito (previo inserimento della password) il quale sarà poi mandato attraverso terze parti all'utente che si vuole aggiungere come collaboratore e che se vorrà accetterà di collaborare. Il codice ha validità di 24 ore.
-        * Rimuovere un collaboratore, previo inserimento della password
-
-* Nella seconda tabella vengono mostrati i file a cui l'utente loggato collabora. Le colonne della tabella sono: nome del file, proprietario, lista dei collaboratori e ultimo accesso al file da parte dell'utente
-    * Cliccando sul qualsiasi colonna di un file è possibile svolgere 2 azioni:
-        * Disinscriversi come collaboratore di un file
-        * Aprire il text editor. Quando si chiude il text editor viene aggiornato l'ultimo accesso.
-
-* Nella parte centrale in basso, c'è la possibilità di inserire un invito (codice) ricevuto per terze parti da un altro utente e quindi di accettare la collaborazione ad un determinato file. Il codice ha validità di 24 ore.
-
-* In basso a destra c'è il bottone di logout. Premendo, si ritorna alla welcome page.
-
-* In alto a destra è possibile creare un nuovo file. E' possibile creare file con lo stesso nome, il nome verra automaticamente modificato aggiungendo un "_" ed un numero nel caso di omonimia, per esempio "filename_2"
-
-* In alto a sinitra è possibile:
-    
-    * cambiare tema: default e light mode
-    
-    * cambiare password
+* Information on the logged in user: name, surname, email
+* The first table shows the files of which the logged in user is the owner or the creator. The columns of the table are: file name, last access and list of collaborators (indicated by their emails)
+    * By clicking on the filename name it is possible to perform 3 actions:
+        * Rename the file, after entering the password
+        * Delete the file after entering the password
+        * Open the text editor. When the text editor is closed, the last access is updated.
+    * By clicking on the list of collaborators it is possible to perform 2 actions:
+        * Add a collaborator by creating an invitation (after entering the password) which will then be sent through third parties to the user you want to add as a collaborator and who will agree to collaborate if he wishes. The code is valid for 24 hours.
+        * Remove a collaborator, after entering the password
+* The second table shows the files to which the logged in user collaborates. The columns of the table are: file name, owner, list of collaborators and last access to the file by the user
+    * By clicking on any column of a file it is possible to perform 2 actions:
+        * Unsubscribe as a contributor to a file
+        * Open the text editor. When the text editor is closed, the last access is updated.
+* In the central part at the bottom, there is the possibility to insert an invitation (code) received for third parties by another user and then to accept the collaboration with a particular file. The code is valid for 24 hours.
+* At the bottom right is the logout button. By pressing, you return to the welcome page.
+* At the top right you can create a new file. It is possible to create files with the same name, the name will be automatically modified by adding a "_" and a number in the case of homonymy, for example "filename_2"
+* Top left you can:
+    * change theme: default and light mode
+    * change password
     
 
 ## Text editor
 
-* In alto a sinistra è possibile vedere gli utenti che stanno attualmente modificando il file, ad ognuno di questi è assegnato un colore con il quale è possibile distinguere i diversi cursori all'interno del foglio di lavoro.
-
-* Nella parte superiore della pagina ci sono diverse azioni che possono essere eseguite, la maggior parte di queste possono essere attivate sia dal menù che utilizzando delle apposite icone, tra le più importanti abbiamo 
-   * la creazione di un file PDF con il contenuto del documento
-   * le operazioni di copia, taglia e incolla
-   * l'allineamento e l'indentazione
-   * la possibilità di modificare il testo in corsivo, grassetto o sottolineato
-   * l'opzione per sostituire tutte le occorrenze di una o più parole con delle altre
-   * le azioni per modificare il font, la dimensione del testo ed anche il suo colore
-
-* Infine, nella parte centrale della finestra c'è un foglio a disposizione dove è possibile inserire tutto ciò che farà parte del documento attualmente modificato.
+* At the top left you can see the users who are currently editing the file, each of these is assigned a color with which it is possible to distinguish the different cursors within the worksheet.
+* At the top of the page there are several actions that can be performed, most of these can be activated both from the menu and using the appropriate icons, among the most important we have
+   * creating a PDF file with the content of the document
+   * copy, cut and paste operations
+   * alignment and indentation
+   * the ability to change the text to italic, bold or underline
+   * the option to replace all occurrences of one or more words with others
+   * actions to change the font, the size of the text and also its color
+* Finally, in the central part of the window there is a sheet available where you can insert everything that will be part of the currently edited document.
 
 
+# Project's structure
 
-# Struttura del progetto
-
-Il progetto è diviso in 3 directory:
-* client: sono presenti tutte i file .h/.cpp/.ui che rappresentano le viste del client e la classe **clientStuff** che si occupa della gestione di tutto ciò che riguarda client e server, usando la classe **ClientSocket**. 
-* server: è presente la classe **server** che è quella che sfruttando la classe **ClientSocket** si occupa di gestire la connessione client-server e che sfrutta la classe **model** che si occupa di varie cose tra cui la gestione del database, usando
- la classe **database**.
-* common: come si può intuire dal nome, questa cartella conserva tutti i file che sono in comune tra client e server. 
-    * Nella directory common sono presenti: il file **constants.h** dove sono definite tutte le costanti usate; **User(.h/.cpp)** che rappresenta uno user e che viene usato
-    all'interno del client o del server; **ClientSocket(.h/.cpp)** che verrà speigato nella sezione **Gestione comunicazione client e server**
-    * Ci sono poi due directory **CRDT** e **messages** dove sono presenti rispettivamente i file che servono per attuare l'algoritmo di CRDT e i file ossia le classi
-    che rappresentano i wrapper dei messaggi che vengono scambiati tra client e server
+The project is divided into 3 directories:
+* client: there are all the .h/.cpp/.ui files that represent the client views and the **clientStuff** class that deals with the management of everything related to client and server, using the **ClientSocket class**.
+* server: the **server** class is present which is the one that, using the **ClientSocket** class, takes care of managing the client-server connection and that uses the **model** class that takes care of various things between which database management, using
+ the **database** class.
+* common: As you can guess from the name, this folder holds all the files that are shared between client and server.
+    * In the common directory there are: the file **constants.h** where all the constants used are defined; **User (.h/.cpp)** representing a user and being used
+    within the client or server; **ClientSocket (.h/.cpp)** which will be explained in the **Client and server communication management** section
+    * Then there are two directories **CRDT** and **messages** where there are respectively the files that are used to implement the CRDT algorithm and the files or the classes
+    which represent the wrappers of the messages that are exchanged between client and server
     
     
-    
-
-# Algoritmo CRDT
-Per l'implementazione della logica dell'applicazione è stato utilizzato l'algoritmo CRDT, per maggiori informazioni è possibile cliccare [qui](https://conclave-team.github.io/conclave-site/#what-is-a-real-time-collaborative-text-editor).
-In particolar modo sono state implementate diverse funzioni con lo scopo di raccogliere tutti i cambiamenti all'interno dell'editor di un client in modo tale da trasmettere queste informazioni al server, che ha lo scopo di distribuire i dati agli altri client interessati. Come descritto dall'algoritmo, lo sforzo è stato quello di ottenere in tutti i casi una situazione coerente nei diversi client, ottenuta rendendo l’operazione di inserimento commutativa e quella di cancellazione, oltre che commutativa, anche idempotente. Nello specifico commutabilità e idempotenza sono state ottenute aggiungendo alle proprietà base dell’oggetto (valore, posizione) proprietà quali il siteID (identificativo del client) e counterID (numero progressivo associato al carattere e assegnato dal client). Proprio per questo motivo due aspetti fondamentali sono quelli relativi alla posizione assoluta di un singolo carattere e al suo formato.
+# CRDT algorithm
+The CRDT algorithm was used for the implementation of the application logic, for more information you can click [here] (https://conclave-team.github.io/conclave-site/#what-is-a- real-time-collaborative-text-editor).
+In particular, various functions have been implemented with the aim of collecting all the changes within the editor of a client in such a way as to transmit this information to the server, which has the purpose of distributing the data to the other interested clients. As described by the algorithm, the effort was to obtain in all cases a consistent situation in the different clients, obtained by making the insertion operation commutative and the cancellation operation, as well as commutative, also idempotent. Specifically, switchability and idempotence were obtained by adding to the basic properties of the object (value, position) properties such as siteID (client identification) and counterID (progressive number associated with the character and assigned by the client). Precisely for this reason two fundamental aspects are those relating to the absolute position of a single character and its format.
 
 # Threading
-Poiché la maggior parte delle operazioni presenti all'interno dell'applicazioni sono abbastanza veloci si è pensato di ridurre al minimo l'utilizzo dei thread. L'unico caso in cui si è utilizzato un pool di thread è stato quello relativo al salvataggio di un file, in particolar modo dopo aver calcolato la posizione corretta del singolo carattere viene utilizzato uno dei thread disponibili per effettuare il salvataggio.
+Since most of the operations in the application are quite fast, it was decided to minimize the use of threads. The only case in which a thread pool was used was that related to saving a file, in particular, after having calculated the correct position of the single character, one of the available threads is used to perform the saving.
 
-# Gestione del file system
+# File system management
 
-* Per gestire il file system si è pensato di creare una cartella per ogni utente usando l'email dell'utente stesso e all'interno della cartella salvare i file di cui l'utente è proprietario.
-* Se un utente collabora ad un file, l'apertura del file viene fatta sfruttando il database.
+* To manage the file system, it was decided to create a folder for each user using the user's email and within the folder save the files owned by the user.
+* If a user collaborates on a file, the opening of the file is done using the database.
 
-# Gestione del database
+# Database management
 
-* E' stato usato sqlite3 per la gestione del database
-
-* Sono state create 4 tabelle:
+* Sqlite3 was used for database management
+* 4 tables have been created:
     * files: id, filename, email_owner
-    * users: email, firstname, lastname, password (con hash)
+    * users: email, firstname, lastname, password (with hash)
     * user_files: id, email, last_access
     * invitation_urls: url, id, timeout
 
-# Gestione comunicazione client e server
+# Client and server communication management
 
-La comunicazione tra client e server avviene attraverso lo scambio di diverse tipologie di messaggi.
-Ciascuno di questi messaggi è individuato da un codice identificativo che specifica l’azione da svolgere, seguito dal contenuto del messaggio vero e proprio.
-Nella classe **ClientSocket** il ruolo centrale è svolto dalla funzione onReadyRead. Questo slot viene chiamato ogniqualvolta dei dati sono disponibili per essere letti. Appena ciò si verifica, viene emesso un segnale verso il client o il server destinazione. In questa stessa classe sono anche definiti altri metodi che specificano l’invio dei vari messaggi. Essendo le funzioni svolte da questa classe comuni sia per il server che per il client, la classe stessa è condivisa.
-In questa senso anche altre classi sono in comune: in particolare quelle relative alla definizione dei messaggi e il file costants.h dove sono elencate le costanti usate nel programma tra cui, appunto, i codici identificativi.
-
+Communication between client and server takes place through the exchange of different types of messages.
+Each of these messages is identified by an identification code that specifies the action to be performed, followed by the content of the actual message.
+In the **ClientSocket** class, the central role is played by the onReadyRead function. This slot is called whenever data is available to be read. As soon as this occurs, a signal is issued to the target client or server. In this same class are also defined other methods that specify the sending of the various messages. Since the functions performed by this class are common to both the server and the client, the class itself is shared.
+In this sense, other classes are also in common: in particular those relating to the definition of messages and the file constants.h where the constants used in the program are listed, including the identification codes.
 
 
 
