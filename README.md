@@ -8,7 +8,6 @@ Per lanciare il server:
 ```
 ./VirgiliumServer
 ```
-
 Per lanciare il client:
 ```
 ./VirgiliumClient [ip address]
